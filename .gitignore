@@ -10,7 +10,7 @@ cache/
 ## Stego Dev Environment
 #################
 .idea/
-
+.venv/
 
 #################
 ## ctags
