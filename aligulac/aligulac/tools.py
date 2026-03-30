@@ -36,7 +36,8 @@ from ratings.models import (
 )
 from ratings.tools import get_latest_period, find_player
 from ratings.templatetags.ratings_extras import urlfilter
-from django.utils.translation import ugettext as _
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 # }}}
 
 # {{{ JsonResponse
@@ -75,14 +76,14 @@ class Message:
             self.title = None
             self.text = field + ': ' + error
             self.type = self.ERROR
-        self.id = ''.join([random.choice(string.ascii_letters+string.digits) for _ in range(10)])
+        self.id = ''.join([random.choice(string.ascii_letters+string.digits) for i in range(10)])
 # }}}
 
 # {{{ NotUniquePlayerMessage
 class NotUniquePlayerMessage(Message):
 
     def __init__(self, search, players, update=None, updateline=None, type='error'):
-        id = ''.join([random.choice(string.ascii_letters+string.digits) for _ in range(10)])
+        id = ''.join([random.choice(string.ascii_letters+string.digits) for i in range(10)])
 
         ctx = dict()
         ctx['msg_id'] = id
