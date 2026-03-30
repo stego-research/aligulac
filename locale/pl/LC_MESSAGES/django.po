@@ -5314,12 +5314,8 @@ msgstr ""
 
 #: templates/index.djhtml:162
 #, python-format
-msgid ""
-"Powered by %(a1)sDjango 1.6</a>, %(a2)sPython 3.2</a>, %(a3)sApache 2</a> "
-"and %(a4)sDebian GNU/Linux 6</a>."
-msgstr ""
-"Wspomagane przez %(a1)sDjango 1.6</a>, %(a2)sPython 3.2</a>, %(a3)sApache 2</"
-"a> i %(a4)sDebiana GNU/Linuxa 6</a>."
+msgid "Powered by %(a1)sDjango 4.2</a>, %(a2)sPython 3.12</a>"
+msgstr "Wspomagane przez %(a1)sDjango 4.2</a>, %(a2)sPython 3.12</a>"
 
 #: templates/index.djhtml:167
 #, python-format
