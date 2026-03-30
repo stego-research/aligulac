@@ -1,5 +1,5 @@
 # {{{ Imports
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 
 from aligulac.cache import cache_page
 from aligulac.tools import (
@@ -61,7 +61,7 @@ def history(request):
         'patches': PATCHES,
     })
 
-    return render_to_response('history.djhtml', base)
+    return render(request, 'history.djhtml', base)
 
 
 # }}}
@@ -76,7 +76,7 @@ def hof(request):
         ).order_by('-dom_val')
     )
 
-    return render_to_response('hof.djhtml', base)
+    return render(request, 'hof.djhtml', base)
 
 
 # }}}
@@ -124,5 +124,5 @@ def race(request):
         'race': race if race != 'all' else '',
     })
 
-    return render_to_response('records.djhtml', base)
+    return render(request, 'records.djhtml', base)
 # }}}

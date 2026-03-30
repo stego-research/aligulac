@@ -8,10 +8,10 @@ from django.db.models import (
     Count,
 )
 from django.shortcuts import (
-    render_to_response,
+    render,
     get_object_or_404,
 )
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
 from aligulac.tools import (
@@ -127,7 +127,7 @@ def teams(request):
         'inactive': inactive,
     })
 
-    return render_to_response('teams.djhtml', base)
+    return render(request, 'teams.djhtml', base)
 
 
 # }}}
@@ -197,7 +197,7 @@ def team(request, team_id):
     })
     # }}}
 
-    return render_to_response('team.djhtml', base)
+    return render(request, 'team.djhtml', base)
 
 
 # }}}
@@ -249,5 +249,5 @@ def transfers(request):
 
     base['trades'] = pretrades[0:25]
 
-    return render_to_response('player_transfers.djhtml', base)
+    return render(request, 'player_transfers.djhtml', base)
 # }}}

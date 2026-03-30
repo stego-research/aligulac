@@ -1,5 +1,5 @@
 # Must be lazy because these are module-level declarations and are evaluated before language is even known!
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 ctca2_to_ctn = {
     'AF': _('Africa'),

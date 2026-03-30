@@ -1,6 +1,6 @@
 # {{{ Imports
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 
 from aligulac.cache import cache_page
 from aligulac.tools import (
@@ -27,5 +27,5 @@ def balance(request):
         'entries': BalanceEntry.objects.all().order_by('date'),
     })
 
-    return render_to_response('reports_balance.djhtml', base)
+    return render(request, 'reports_balance.djhtml', base)
 # }}}

@@ -16,7 +16,7 @@ from django.db.models import (
     Q,
 )
 from django.utils.translation import (
-    ugettext_lazy as _,
+    gettext_lazy as _,
     pgettext_lazy
 )
 
@@ -398,7 +398,7 @@ class Event(models.Model):
         help_text='TL.net thread id'
     )
 
-    prizepool = models.NullBooleanField(
+    prizepool = models.BooleanField(
         'Has prize pool', blank=True, null=True, db_index=True,
         help_text='Has prizepool? True, false or null (unknown)'
     )

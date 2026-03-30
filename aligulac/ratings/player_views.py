@@ -8,8 +8,8 @@ from urllib.parse import urlencode
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.db.models import Sum, Q
-from django.shortcuts import render_to_response, get_object_or_404
-from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import render, get_object_or_404
+from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
 from aligulac.settings import INACTIVE_THRESHOLD
@@ -402,7 +402,7 @@ def player(request, player_id):
         base['messages'].append(Message(msg_nochart % player.tag, type=Message.INFO))
     # }}}
 
-    return render_to_response('player.djhtml', base)
+    return render(request, 'player.djhtml', base)
 
 
 # }}}
@@ -430,7 +430,7 @@ def adjustment(request, player_id, period_id):
 
     # If there are no matches, we don't need to continue
     if not matches.exists():
-        return render_to_response('ratingdetails.djhtml', base)
+        return render(request, 'ratingdetails.djhtml', base)
 
     base.update({
         'matches': display_matches(matches, fix_left=player, ratings=True),
@@ -481,7 +481,7 @@ def adjustment(request, player_id, period_id):
     })
     # }}}
 
-    return render_to_response('ratingdetails.djhtml', base)
+    return render(request, 'ratingdetails.djhtml', base)
 
 
 # }}}
@@ -772,7 +772,7 @@ def results(request, player_id):
 
     # }}}
 
-    return render_to_response('player_results.djhtml', base)
+    return render(request, 'player_results.djhtml', base)
 
 
 # }}}
@@ -798,7 +798,7 @@ def historical(request, player_id):
         'historical': historical,
     })
 
-    return render_to_response('historical.djhtml', base)
+    return render(request, 'historical.djhtml', base)
 
 
 # }}}
@@ -849,7 +849,7 @@ def earnings(request, player_id):
         'valid_years': reversed(list(valid_years))
     })
 
-    return render_to_response('player_earnings.djhtml', base)
+    return render(request, 'player_earnings.djhtml', base)
 
 
 # }}}
