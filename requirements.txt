@@ -1,6 +1,6 @@
 beautifulsoup4==4.7.1
 ccy==1.0.0
-certifi==2019.3.9
+certifi==2024.7.4
 Django==2.2.4
 django-debug-toolbar==1.11
 django-sniplates==0.6.0
@@ -16,4 +16,4 @@ pytz==2019.1
 scipy==1.17.1
 six==1.17.0
 soupsieve==1.8
-sqlparse==0.3.0
+sqlparse==0.5.4
