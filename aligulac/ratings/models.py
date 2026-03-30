@@ -1343,8 +1343,7 @@ class Group(models.Model):
             "is_team": True
         }
         q = Group.objects.filter(**filters) \
-            .exclude(id=self.id) \
- \
+            .exclude(id=self.id)
         c = q.count()
         self._ranks[rank_type] = c + 1
         return self._ranks[rank_type]
