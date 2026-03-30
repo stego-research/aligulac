@@ -8,11 +8,11 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import (
     redirect,
-    render_to_response,
+    render,
 )
 from django.utils.translation import (
-    ugettext_lazy as _,
-    ugettext
+    gettext_lazy as _,
+    gettext
 )
 
 from aligulac.cache import cache_page
@@ -239,13 +239,13 @@ def predict(request):
 
     if 'submitted' not in request.GET:
         base['form'] = PredictForm()
-        return render_to_response('predict.djhtml', base)
+        return render(request, 'predict.djhtml', base)
 
     base['form'] = PredictForm(request=request)
     base['messages'] += base['form'].get_messages()
 
     if not base['form'].is_valid():
-        return render_to_response('predict.djhtml', base)
+        return render(request, 'predict.djhtml', base)
     return redirect(base['form'].generate_url())
 
 
@@ -370,7 +370,7 @@ def match(request):
 
     postable_match(base, request)
 
-    return render_to_response('pred_match.djhtml', base)
+    return render(request, 'pred_match.djhtml', base)
 
 
 # }}}
@@ -539,7 +539,7 @@ def dual(request):
 
     postable_dual(base, request)
 
-    return render_to_response('pred_4pswiss.djhtml', base)
+    return render(request, 'pred_4pswiss.djhtml', base)
 
 
 # }}}
@@ -620,7 +620,7 @@ def sebracket(request):
 
     postable_sebracket(base, request, group_by(base['meanres'], key=lambda a: a['eventtext']))
 
-    return render_to_response('pred_sebracket.djhtml', base)
+    return render(request, 'pred_sebracket.djhtml', base)
 
 
 # }}}
@@ -711,7 +711,7 @@ def rrgroup(request):
 
     postable_rrgroup(base, request)
 
-    return render_to_response('pred_rrgroup.djhtml', base)
+    return render(request, 'pred_rrgroup.djhtml', base)
 
 
 # }}}
@@ -802,7 +802,7 @@ def proleague(request):
 
     postable_proleague(base, request)
 
-    return render_to_response('pred_proleague.djhtml', base)
+    return render(request, 'pred_proleague.djhtml', base)
 
 
 # }}}
@@ -955,9 +955,9 @@ def postable_dual(base, request):
     numlen = max([len(p['player']['tag']) for p in base['table'] if p['player']['id'] is not None])
 
     strings = (
-            [('{s: >9}'.format(s=ugettext('Top 2')) + '{s: >9}'.format(s=ugettext('1st')) +
-              '{s: >9}'.format(s=ugettext('2nd')) + '{s: >9}'.format(s=ugettext('3rd')) +
-              '{s: >9}'.format(s=ugettext('4th')), '', ''), None] +
+            [('{s: >9}'.format(s=gettext('Top 2')) + '{s: >9}'.format(s=gettext('1st')) +
+              '{s: >9}'.format(s=gettext('2nd')) + '{s: >9}'.format(s=gettext('3rd')) +
+              '{s: >9}'.format(s=gettext('4th')), '', ''), None] +
             [('{name: >{nl}}   {top2: >7.2f}% {p1: >7.2f}% {p2: >7.2f}% {p3: >7.2f}% {p4: >7.2f}%'.format(
                 top2=100 * (p['probs'][0] + p['probs'][1]),
                 p1=100 * p['probs'][0],
@@ -998,9 +998,9 @@ def postable_sebracket(base, request, bracket):
 
     strings = [(''.join(
         # Translators: Win a tournament
-        ['{s: >9}'.format(s=ugettext('Win'))] +
+        ['{s: >9}'.format(s=gettext('Win'))] +
         # Translators: Top 2, 4 etc. (in tournament)
-        ['{s: >9}'.format(s=ugettext('Top {i}').format(i=2 ** rnd))
+        ['{s: >9}'.format(s=gettext('Top {i}').format(i=2 ** rnd))
          for rnd in range(1, int(log(len(base['table']), 2)) + 1)]
     ), '', ''), None]
 
@@ -1137,9 +1137,9 @@ def postable_proleague(base, request):
     numlen = len(str((len(base['matches']) + 1) // 2))
     strings = [(
         # Translators: Team [player], e.g. "Team Jaedong"
-        ugettext('Team {p}').format(p=base['matches'][0]['pla']['tag']),
+        gettext('Team {p}').format(p=base['matches'][0]['pla']['tag']),
         '{sca: >{nl}}-{scb: <{nl}}'.format(sca=base['s1'], scb=base['s2'], nl=numlen),
-        ugettext('Team {p}').format(p=base['matches'][0]['plb']['tag']),
+        gettext('Team {p}').format(p=base['matches'][0]['plb']['tag']),
     ), None]
 
     for r in base['outcomes']:

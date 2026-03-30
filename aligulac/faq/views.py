@@ -1,5 +1,5 @@
-from django.shortcuts import render_to_response
-from django.utils.translation import ugettext as _
+from django.shortcuts import render
+from django.utils.translation import gettext as _
 
 from aligulac.cache import cache_page
 from aligulac.tools import (
@@ -20,4 +20,4 @@ def faq(request):
         ))
 
     base['posts'] = Post.objects.all()
-    return render_to_response('faq.djhtml', base)
+    return render(request, 'faq.djhtml', base)

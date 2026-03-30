@@ -20,11 +20,10 @@ from django.db.models import (
 from django.shortcuts import (
     render,
     redirect,
-    render_to_response,
     get_object_or_404,
 )
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
 
 from aligulac.tools import (
     base_ctx,
@@ -164,14 +163,14 @@ class EventModForm(forms.Form):
         if self.cleaned_data['date'] is not None:
             nchanged = event.get_matchset().update(date=self.cleaned_data['date'])
             ret.append(Message(
-                ungettext_lazy('Changed date for %i match.', 'Changed date for %i matches.', nchanged)
+                ngettext_lazy('Changed date for %i match.', 'Changed date for %i matches.', nchanged)
                 % nchanged, type=Message.SUCCESS
             ))
 
         if self.cleaned_data['game'] != 'nochange':
             nchanged = event.get_matchset().update(game=self.cleaned_data['game'])
             ret.append(Message(
-                ungettext_lazy(
+                ngettext_lazy(
                     'Changed game version for %i match.',
                     'Changed game version for %i matches.',
                     nchanged) % nchanged,
@@ -181,7 +180,7 @@ class EventModForm(forms.Form):
         if self.cleaned_data['offline'] != 'nochange':
             nchanged = event.get_matchset().update(offline=(self.cleaned_data['offline'] == 'offline'))
             ret.append(Message(
-                ungettext_lazy(
+                ngettext_lazy(
                     'Changed on/offline for %i match.',
                     'Changed on/offline for %i matches.',
                     nchanged) % nchanged,
@@ -196,7 +195,7 @@ class EventModForm(forms.Form):
             nchanged += 1
         if nchanged > 0:
             ret.append(Message(
-                ungettext_lazy('Changed type for %i event.', 'Changed type for %i events.', nchanged)
+                ngettext_lazy('Changed type for %i event.', 'Changed type for %i events.', nchanged)
                 % nchanged, type=Message.SUCCESS
             ))
 
@@ -927,7 +926,7 @@ class ResultsModForm(forms.Form):
             matches.update(game=self.cleaned_data['game'])
 
         return [Message(
-            ungettext_lazy('Updated %i match.', 'Updated %i matches.', matches.count()) % matches.count(),
+            ngettext_lazy('Updated %i match.', 'Updated %i matches.', matches.count()) % matches.count(),
             type=Message.SUCCESS
         )]
     # }}}
@@ -964,7 +963,7 @@ def results(request):
     base['matches'] = display_matches(matches, date=False, ratings=True, messages=True,
                                       eventcount=True, add_links=add_links)
 
-    return render_to_response('results.djhtml', base)
+    return render(request, 'results.djhtml', base)
 
 
 # }}}
@@ -1008,7 +1007,7 @@ def events(request, event_id=None):
             type=Message.INFO
         ))
 
-        return render_to_response('events.djhtml', base)
+        return render(request, 'events.djhtml', base)
     # }}}
 
     # {{{ Get object, generate messages, and ensure big is set. Find familial relationships.
@@ -1122,7 +1121,7 @@ def events(request, event_id=None):
     base['tot_mirror'] = base['pvp_games'] + base['tvt_games'] + base['zvz_games']
     # }}}
 
-    return render_to_response('eventres.djhtml', base)
+    return render(request, 'eventres.djhtml', base)
 
 
 # }}}

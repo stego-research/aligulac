@@ -3,7 +3,7 @@ import urllib
 from datetime import timedelta
 from decimal import Decimal
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from aligulac import settings
 

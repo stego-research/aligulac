@@ -7,8 +7,8 @@ from urllib.parse import quote
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import F, Q
-from django.shortcuts import render_to_response, redirect
-from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import render, redirect
+from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
 from aligulac.tools import (
@@ -56,7 +56,7 @@ def home(request):
          }
     )
 
-    return render_to_response("misc.djhtml", ctx)
+    return render(request, "misc.djhtml", ctx)
 
 
 # {{{ Clocks
@@ -284,7 +284,7 @@ def clocks(request):
 
     ctx["clocks"].sort(key=lambda c: c.date, reverse=True)
 
-    return render_to_response("clocks.djhtml", ctx)
+    return render(request, "clocks.djhtml", ctx)
 
 
 # }}}
@@ -391,11 +391,11 @@ def compare_search(request):
     base["form"] = form
 
     if not validate:
-        return render_to_response('compare.search.djhtml', base)
+        return render(request, 'compare.search.djhtml', base)
 
     if not form.is_valid():
         base["messages"] += form.get_messages()
-        return render_to_response('compare.search.djhtml', base)
+        return render(request, 'compare.search.djhtml', base)
 
     return redirect(form.generate_url())
 
@@ -544,7 +544,7 @@ def compare(request, players):
 
     base['comparisons'] = comparisons
 
-    return render_to_response('compare.djhtml', base)
+    return render(request, 'compare.djhtml', base)
 
 
 # (property chain, label)

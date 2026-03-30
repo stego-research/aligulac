@@ -16,10 +16,10 @@ from django.db.models import (
 from django.http import HttpResponse
 from django.shortcuts import (
     redirect,
-    render_to_response,
+    render,
 )
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
 from mwparserfromhell import parse as parsemw
 
 from aligulac.tools import (
@@ -272,7 +272,7 @@ class ReviewMatchesForm(forms.Form):
 
         if self.approve and len(matches) > 0:
             self.messages.append(Message(
-                ungettext_lazy(
+                ngettext_lazy(
                     'Successfully approved %i match.',
                     'Successfully approved %i matches.',
                     len(matches)) % len(matches),
@@ -280,7 +280,7 @@ class ReviewMatchesForm(forms.Form):
             ))
         elif not self.approve and len(prematches) > 0:
             self.messages.append(Message(
-                ungettext_lazy(
+                ngettext_lazy(
                     'Successfully rejected %i match.',
                     'Successfully rejected %i matches.',
                     len(prematches)) % len(prematches),
@@ -427,7 +427,7 @@ class AddMatchesForm(forms.Form):
             m.save()
         if len(matches) > 0:
             self.messages.append(Message(
-                ungettext_lazy(
+                ngettext_lazy(
                     'Successfully added %i match.',
                     'Successfully added %i matches.',
                     len(matches)) % len(matches),
@@ -627,7 +627,7 @@ class AddEventsForm(forms.Form):
                     noprint=self.cleaned_data['noprint'],
                 )
             ret.append(Message(
-                ungettext_lazy(
+                ngettext_lazy(
                     'Successfully created %i new event.',
                     'Successfully created %i new events.',
                     len(self.cleaned_data['names'])) % len(self.cleaned_data['names']),
@@ -827,7 +827,7 @@ def add_matches(request):
 
     base['form'] = form
 
-    return render_to_response('add.djhtml', base)
+    return render(request, 'add.djhtml', base)
 
 
 # View for reviewing matches
@@ -855,7 +855,7 @@ def review_matches(request):
     for g in base['groups']:
         g.prematches = display_matches(g.prematch_set.all(), messages=False, no_events=True)
 
-    return render_to_response('review.djhtml', base)
+    return render(request, 'review.djhtml', base)
 
 
 # View for event manager
@@ -887,7 +887,7 @@ def events(request):
     # for ev in base['events']:
     #     print(ev.name)
 
-    return render_to_response('eventmgr.djhtml', base)
+    return render(request, 'eventmgr.djhtml', base)
 
 
 # Auxiliary view called by JS code in the event manager for progressively opening subtrees
@@ -923,7 +923,7 @@ def open_events(request):
         for id in ids:
             Event.objects.get(id=id).close()
         base['messages'].append(Message(
-            ungettext_lazy(
+            ngettext_lazy(
                 'Successfully closed %i event.',
                 'Successfully closed %i events.',
                 len(ids)) % len(ids),
@@ -933,7 +933,7 @@ def open_events(request):
         ids = [int(i) for i in request.POST.getlist('pp_events_ids')]
         nevents = Event.objects.filter(id__in=ids).update(prizepool=False)
         base['messages'].append(Message(
-            ungettext_lazy(
+            ngettext_lazy(
                 'Successfully marked %i event as having no prize pool.',
                 'Successfully marked %i events as having no prize pool.',
                 nevents) % nevents,
@@ -973,7 +973,7 @@ def open_events(request):
     fill_aux_event(base['open_nogames'])
     fill_aux_event(base['pp_events'])
 
-    return render_to_response('events_open.djhtml', base)
+    return render(request, 'events_open.djhtml', base)
 
 
 class PlayerInfoForm(forms.Form):
@@ -1078,7 +1078,7 @@ def player_info(request, choice=None):
         base["values"] = list(values.items())
         base["values"].sort(key=lambda x: x[0])
 
-    return render_to_response('player_info.djhtml', base)
+    return render(request, 'player_info.djhtml', base)
 
 
 # Helper view for grabbing LP-info
@@ -1176,4 +1176,4 @@ def misc(request):
         'moveform': moveform,
     })
 
-    return render_to_response('manage.djhtml', base)
+    return render(request, 'manage.djhtml', base)

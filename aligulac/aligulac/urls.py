@@ -2,7 +2,6 @@
 from os.path import normpath, dirname, join
 
 import django.views.static
-from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, re_path, include
 from tastypie.api import Api
@@ -63,7 +62,7 @@ for res in resources:
     v1_api.register(res())
 
 urlpatterns = [
-    url(r'^$', aligulac.views.home),
+    path('', aligulac.views.home),
 
     path('i18n/', include('django.conf.urls.i18n')),
     path('language/', aligulac.views.language),
@@ -146,14 +145,17 @@ urlpatterns = [
 
 # {{{ If in debug mode (i.e. with the django server), we must serve CSS and JS ourselves.
 if settings.DEBUG:
-    import debug_toolbar
-
     resources = join(dirname(normpath(settings.PROJECT_PATH)), 'resources')
     urlpatterns += [
         re_path(r'fonts/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'fonts')}),
         re_path(r'css/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'css')}),
         re_path(r'js/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'js')}),
         re_path(r'img/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'img')}),
-        path('__debug__/', include(debug_toolbar.urls)),
     ]
+
+    if settings.DEBUG_TOOLBAR:
+        import debug_toolbar
+        urlpatterns += [
+            path('__debug__/', include(debug_toolbar.urls)),
+        ]
 # }}}

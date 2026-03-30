@@ -5,12 +5,12 @@ from django.db.models import (
 )
 from django.shortcuts import (
     get_object_or_404,
-    render_to_response,
+    render,
 )
 from django.template.defaultfilters import (
     date as django_date_filter
 )
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
 from aligulac.settings import INACTIVE_THRESHOLD, SHOW_PER_LIST_PAGE
@@ -49,7 +49,7 @@ def periods(request):
     base = base_ctx('Ranking', 'History', request)
     base['periods'] = Period.objects.filter(computed=True).order_by('-id')
 
-    return render_to_response('periods.djhtml', base)
+    return render(request, 'periods.djhtml', base)
 
 
 # }}}
@@ -216,7 +216,7 @@ def period(request, period_id=None):
 
     fmt_date = django_date_filter(period.end, "F jS, Y")
 
-    return render_to_response('period.djhtml', base)
+    return render(request, 'period.djhtml', base)
 
 
 # }}}
@@ -309,5 +309,5 @@ def earnings(request):
     base['ranking'] = ranking
     # }}}
 
-    return render_to_response('earnings.djhtml', base)
+    return render(request, 'earnings.djhtml', base)
 # }}}

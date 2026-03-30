@@ -1,5 +1,5 @@
-from django.shortcuts import render_to_response
-from django.utils.translation import ugettext as _
+from django.shortcuts import render
+from django.utils.translation import gettext as _
 
 from aligulac.cache import cache_page
 from aligulac.tools import (
@@ -20,4 +20,4 @@ def blog(request):
         ))
 
     base['blogposts'] = Post.objects.all()
-    return render_to_response('blog.djhtml', base)
+    return render(request, 'blog.djhtml', base)

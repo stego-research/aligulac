@@ -12,10 +12,10 @@ from django.db.models import (
 from django.http import HttpResponseNotFound
 from django.shortcuts import (
     redirect,
-    render_to_response,
+    render,
 )
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 
 from aligulac.cache import cache_page
@@ -356,7 +356,7 @@ def home(request):
         'blogposts': blogs
     })
 
-    return render_to_response('index.djhtml', base)
+    return render(request, 'index.djhtml', base)
 
 
 # }}}
@@ -372,7 +372,7 @@ def language(request):
     else:
         base['return'] = '/'
 
-    return render_to_response('language.djhtml', base)
+    return render(request, 'language.djhtml', base)
 
 
 # }}}
@@ -434,7 +434,7 @@ def db(request):
             'gz_megabytes': stat.st_size / 1048576
         })
 
-    return render_to_response('db.djhtml', base)
+    return render(request, 'db.djhtml', base)
 
 
 # }}}
@@ -506,7 +506,7 @@ def api(request):
         'maru': Player.objects.get(id=49)
     })
 
-    return render_to_response('api.djhtml', base)
+    return render(request, 'api.djhtml', base)
 
 
 # }}}
@@ -540,7 +540,7 @@ def search(request):
         'query': query,
     })
 
-    return render_to_response('search.djhtml', base)
+    return render(request, 'search.djhtml', base)
 
 
 # }}}
@@ -612,7 +612,7 @@ def login_view(request):
     base = base_ctx(request=request)
     login_message(base)
 
-    return render_to_response('login.djhtml', base)
+    return render(request, 'login.djhtml', base)
 
 
 def logout_view(request):
@@ -628,19 +628,19 @@ def changepwd(request):
     login_message(base)
 
     if not ('old' in request.POST and 'new' in request.POST and 'newre' in request.POST):
-        return render_to_response('changepwd.djhtml', base)
+        return render(request, 'changepwd.djhtml', base)
 
     if not request.user.check_password(request.POST['old']):
         base['messages'].append(
             Message(_("The old password didn't match. Your password was not changed."), type=Message.ERROR)
         )
-        return render_to_response('changepwd.djhtml', base)
+        return render(request, 'changepwd.djhtml', base)
 
     if request.POST['new'] != request.POST['newre']:
         base['messages'].append(
             Message(_("The new passwords didn't match. Your password was not changed."), type=Message.ERROR)
         )
-        return render_to_response('changepwd.djhtml', base)
+        return render(request, 'changepwd.djhtml', base)
 
     request.user.set_password(request.POST['new'])
     request.user.save()
@@ -648,7 +648,7 @@ def changepwd(request):
         Message(_('The password for %s was successfully changed.') % request.user.username, type=Message.SUCCESS)
     )
 
-    return render_to_response('changepwd.djhtml', base)
+    return render(request, 'changepwd.djhtml', base)
 
 
 # }}}
