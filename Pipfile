@@ -1,0 +1,32 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+beautifulsoup4 = "==4.7.1"
+ccy = "==1.0.0"
+certifi = "==2019.3.9"
+django = "==2.2.4"
+django-debug-toolbar = "==1.11"
+django-sniplates = "==0.6.0"
+django-tastypie = "==0.14.2"
+markdown2 = "==2.3.7"
+mwparserfromhell = "==0.5.4"
+numpy = "*"
+psycopg2-binary = "*"
+pyparsing = "==2.4.0"
+python-dateutil = "==2.8.0"
+python-mimeparse = "==1.6.0"
+pytz = "==2019.1"
+scipy = "*"
+soupsieve = "==1.8"
+sqlparse = "==0.3.0"
+django-six = "*"
+six = "==1.17.0"
+setuptools = "==75.1.0"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"

@@ -134,7 +134,7 @@ urlpatterns = [
     path('misc/days/', ratings.misc_views.clocks),
     path('misc/balance/', ratings.reports_views.balance),
     path('misc/compare/', ratings.misc_views.compare_search),
-    re_path('misc/compare/(?P<players>\d+(-[^ /,]*)?(,\d+(-[^ /,]*)?)*)/$', ratings.misc_views.compare),
+    re_path(r'misc/compare/(?P<players>\d+(-[^ /,]*)?(,\d+(-[^ /,]*)?)*)/$', ratings.misc_views.compare),
 
     path('404/', aligulac.views.h404, kwargs={'exception': None}),
     path('500/', aligulac.views.h500),
@@ -152,10 +152,10 @@ if settings.DEBUG:
 
     resources = join(dirname(normpath(settings.PROJECT_PATH)), 'resources')
     urlpatterns += [
-        re_path('fonts/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'fonts')}),
-        re_path('css/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'css')}),
-        re_path('js/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'js')}),
-        re_path('img/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'img')}),
+        re_path(r'fonts/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'fonts')}),
+        re_path(r'css/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'css')}),
+        re_path(r'js/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'js')}),
+        re_path(r'img/(?P<path>.*)$', django.views.static.serve, {'document_root': join(resources, 'img')}),
         path('__debug__/', include(debug_toolbar.urls)),
     ]
 # }}}
