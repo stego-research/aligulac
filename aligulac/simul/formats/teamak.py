@@ -1,5 +1,6 @@
 from simul.formats.match import Match
 
+
 class Tally:
 
     def __init__(self, rounds):
@@ -18,7 +19,8 @@ class Tally:
         return iter(self.finishes)
 
     def scale(self, scale):
-        self.finishes = [f/scale for f in self.finishes]
+        self.finishes = [f / scale for f in self.finishes]
+
 
 class TeamAK:
 
@@ -32,8 +34,8 @@ class TeamAK:
     def compute(self):
         N = 100
         self._tally = [Tally(2), Tally(2)]
-        for i in range(0,N):
-            self.compute_match(self._pla, self._plb, 1.0/N)
+        for i in range(0, N):
+            self.compute_match(self._pla, self._plb, 1.0 / N)
 
     def compute_match(self, pla, plb, base):
         obj = Match(self._num)

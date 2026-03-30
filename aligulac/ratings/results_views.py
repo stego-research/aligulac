@@ -1,15 +1,14 @@
 # {{{ Imports
+import operator
+import shlex
 from datetime import (
     datetime,
     date,
 )
 from decimal import Decimal
 from itertools import groupby
-import operator
-import shlex
 
 import ccy
-
 from django import forms
 from django.db.models import (
     Count,
@@ -17,21 +16,16 @@ from django.db.models import (
     Max,
     Sum,
     Q,
-    F,
 )
-from django.http import HttpResponse
 from django.shortcuts import (
     render,
     redirect,
     render_to_response,
     get_object_or_404,
 )
-from django.template import RequestContext
-from django.views.decorators.csrf import csrf_protect
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext_lazy
 
-from aligulac.cache import cache_page
 from aligulac.tools import (
     base_ctx,
     cache_login_protect,
@@ -42,9 +36,7 @@ from aligulac.tools import (
     NotUniquePlayerMessage,
     StrippedCharField,
 )
-
 from currency import RateNotFoundError
-
 from ratings.models import (
     CAT_FREQUENT,
     CAT_INDIVIDUAL,
@@ -75,6 +67,8 @@ from ratings.tools import (
     find_player,
     get_placements
 )
+
+
 # }}}
 
 # {{{ earnings_code, wcs_points_code: Converts a queryset of earnings or
@@ -83,11 +77,12 @@ def earnings_code(queryset):
     if not queryset.exists():
         return ''
     return '\n'.join([
-        '{} {} {}'.format(currency_strip(e.origearnings), 
-                          e.player.tag, 
-                          e.player_id) 
+        '{} {} {}'.format(currency_strip(e.origearnings),
+                          e.player.tag,
+                          e.player_id)
         for e in queryset
     ])
+
 
 def wcs_points_code(queryset):
     if not queryset.exists():
@@ -96,33 +91,35 @@ def wcs_points_code(queryset):
         '{} {} {}'.format(e.points, e.player.tag, e.player_id)
         for e in queryset
     ])
+
+
 # }}}
 
 # {{{ EventModForm: Form for modifying an event.
 class EventModForm(forms.Form):
-    name       = StrippedCharField(max_length=100, required=True, label='Name')
-    date       = forms.DateField(required=False, label='Date')
-    game       = forms.ChoiceField(
-        choices=[('nochange',_('No change'))]+GAMES, required=True,
+    name = StrippedCharField(max_length=100, required=True, label='Name')
+    date = forms.DateField(required=False, label='Date')
+    game = forms.ChoiceField(
+        choices=[('nochange', _('No change'))] + GAMES, required=True,
         label=_('Game version')
     )
-    offline    = forms.ChoiceField(
-        choices=[('nochange',_('No change')), ('online',_('Online')), ('offline',_('Offline'))],
+    offline = forms.ChoiceField(
+        choices=[('nochange', _('No change')), ('online', _('Online')), ('offline', _('Offline'))],
         required=True, label=_('On/offline')
     )
-    type       = forms.ChoiceField(
-        choices=[('nochange',_('No change'))]+EVENT_TYPES,
+    type = forms.ChoiceField(
+        choices=[('nochange', _('No change'))] + EVENT_TYPES,
         # Translators: Type as in event type
         required=True, label=_('Type')
     )
     # Translators: Apply (changes) to…
     same_level = forms.BooleanField(required=False, label=_('Apply to all events on the same level'))
-    homepage   = StrippedCharField(max_length=200, required=False, label=_('Homepage'))
-    tlpd_id    = forms.IntegerField(required=False, label=_('TLPD ID'))
-    tlpd_db    = forms.MultipleChoiceField(
+    homepage = StrippedCharField(max_length=200, required=False, label=_('Homepage'))
+    tlpd_id = forms.IntegerField(required=False, label=_('TLPD ID'))
+    tlpd_db = forms.MultipleChoiceField(
         required=False, choices=TLPD_DBS, label=_('TLPD DB'), widget=forms.CheckboxSelectMultiple)
-    tl_thread  = forms.IntegerField(required=False, label=_('TL thread'))
-    lp_name    = StrippedCharField(max_length=200, required=False, label=_('Liquipedia title'))
+    tl_thread = forms.IntegerField(required=False, label=_('TL thread'))
+    lp_name = StrippedCharField(max_length=200, required=False, label=_('Liquipedia title'))
 
     # {{{ Constructor
     def __init__(self, request=None, event=None):
@@ -144,6 +141,7 @@ class EventModForm(forms.Form):
             })
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ update_event: Pushes updates to event, responds with messages
@@ -181,7 +179,7 @@ class EventModForm(forms.Form):
             ))
 
         if self.cleaned_data['offline'] != 'nochange':
-            nchanged = event.get_matchset().update(offline=(self.cleaned_data['offline']=='offline'))
+            nchanged = event.get_matchset().update(offline=(self.cleaned_data['offline'] == 'offline'))
             ret.append(Message(
                 ungettext_lazy(
                     'Changed on/offline for %i match.',
@@ -198,7 +196,7 @@ class EventModForm(forms.Form):
             nchanged += 1
         if nchanged > 0:
             ret.append(Message(
-                ungettext_lazy('Changed type for %i event.', 'Changed type for %i events.', nchanged) 
+                ungettext_lazy('Changed type for %i event.', 'Changed type for %i events.', nchanged)
                 % nchanged, type=Message.SUCCESS
             ))
 
@@ -207,15 +205,17 @@ class EventModForm(forms.Form):
                 getattr(event, setter)(value)
                 ret.append(Message(_('Changed %s.') % label, type=Message.SUCCESS))
 
-        update(self.cleaned_data['homepage'],   'homepage',   'set_homepage',   _('homepage'))
-        update(self.cleaned_data['tlpd_id'],    'tlpd_id',    'set_tlpd_id',    _('TLPD ID'))
-        update(self.cleaned_data['lp_name'],    'lp_name',    'set_lp_name',    _('Liquipedia title'))
-        update(self.cleaned_data['tl_thread'],  'tl_thread',  'set_tl_thread',  _('TL thread'))
+        update(self.cleaned_data['homepage'], 'homepage', 'set_homepage', _('homepage'))
+        update(self.cleaned_data['tlpd_id'], 'tlpd_id', 'set_tlpd_id', _('TLPD ID'))
+        update(self.cleaned_data['lp_name'], 'lp_name', 'set_lp_name', _('Liquipedia title'))
+        update(self.cleaned_data['tl_thread'], 'tl_thread', 'set_tl_thread', _('TL thread'))
         update(sum([int(a) for a in self.cleaned_data['tlpd_db']]), 'tlpd_db', 'set_tlpd_db', _('TLPD DBs'))
 
         return ret
     # }}}
-# }}} 
+
+
+# }}}
 
 class StoriesForm(forms.Form):
     story_id = forms.IntegerField(required=False)
@@ -294,6 +294,7 @@ class StoriesForm(forms.Form):
 
         return ret
 
+
 # {{{ WCSModForm: Form for changing WCS status.
 class WCSModForm(forms.Form):
     year = forms.ChoiceField(choices=[(None, _('None'))] + WCS_YEARS, required=False, label=_('Year'))
@@ -320,13 +321,14 @@ class WCSModForm(forms.Form):
         ind = line.find(' ')
         points = int(line[:ind])
 
-        queryset = find_player(query=line[ind+1:])
+        queryset = find_player(query=line[ind + 1:])
         if not queryset.exists():
-            raise Exception(_("No such player: '%s'.") % line[ind+1:])
+            raise Exception(_("No such player: '%s'.") % line[ind + 1:])
         elif queryset.count() > 1:
-            raise Exception(_("Ambiguous player: '%s'.") % line[ind+1:])
+            raise Exception(_("Ambiguous player: '%s'.") % line[ind + 1:])
         else:
             return points, queryset.first()
+
     # }}}
 
     # {{{ update_event: Pushes changes to event object
@@ -385,15 +387,17 @@ class WCSModForm(forms.Form):
         return ret
         # }}}
     # }}}
+
+
 # }}}
 
 # {{{ PrizepoolModForm: Form for changing prizepools.
 class PrizepoolModForm(forms.Form):
     sorted_curs = sorted(ccy.currencydb(), key=operator.itemgetter(0))
-    currencies  = [(ccy.currency(c).code, ccy.currency(c).name) for c in sorted_curs]
-    currency    = forms.ChoiceField(choices=currencies, required=True, label=_('Currency'))
-    ranked      = forms.CharField(required=False, max_length=10000, label=_('Ranked'))
-    unranked    = forms.CharField(required=False, max_length=10000, label=_('Unranked'))
+    currencies = [(ccy.currency(c).code, ccy.currency(c).name) for c in sorted_curs]
+    currency = forms.ChoiceField(choices=currencies, required=True, label=_('Currency'))
+    ranked = forms.CharField(required=False, max_length=10000, label=_('Ranked'))
+    unranked = forms.CharField(required=False, max_length=10000, label=_('Unranked'))
 
     # {{{ Constructor
     def __init__(self, request=None, event=None):
@@ -401,7 +405,7 @@ class PrizepoolModForm(forms.Form):
             super(PrizepoolModForm, self).__init__(request.POST)
         else:
             initial = {
-                'ranked':   earnings_code(event.earnings_set.filter(placement__gt=0).order_by('-earnings')),
+                'ranked': earnings_code(event.earnings_set.filter(placement__gt=0).order_by('-earnings')),
                 'unranked': earnings_code(event.earnings_set.filter(placement=0).order_by('-earnings')),
             }
 
@@ -413,6 +417,7 @@ class PrizepoolModForm(forms.Form):
             super(PrizepoolModForm, self).__init__(initial=initial)
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ Function for parsing a single line
@@ -420,13 +425,14 @@ class PrizepoolModForm(forms.Form):
         ind = line.find(' ')
         prize = Decimal(line[:ind])
 
-        queryset = find_player(query=line[ind+1:])
+        queryset = find_player(query=line[ind + 1:])
         if not queryset.exists():
-            raise Exception(_("No such player: '%s'.") % line[ind+1:])
+            raise Exception(_("No such player: '%s'.") % line[ind + 1:])
         elif queryset.count() > 1:
-            raise Exception(_("Ambiguous player: '%s'.") % line[ind+1:])
+            raise Exception(_("Ambiguous player: '%s'.") % line[ind + 1:])
         else:
             return prize, queryset.first()
+
     # }}}
 
     # {{{ update_event: Pushes changes to event object
@@ -488,13 +494,15 @@ class PrizepoolModForm(forms.Form):
 
         return ret
     # }}}
+
+
 # }}}
 
 # {{{ StoryModForm: Form for adding stories.
 class StoryModForm(forms.Form):
     player = forms.ChoiceField(required=True, label=_('Player'))
-    date   = forms.DateField(required=True, label=_('Date'))
-    text   = StrippedCharField(max_length=200, required=True, label=_('Text'))
+    date = forms.DateField(required=True, label=_('Date'))
+    text = StrippedCharField(max_length=200, required=True, label=_('Text'))
 
     # {{{ Constructor
     def __init__(self, request=None, event=None):
@@ -510,6 +518,7 @@ class StoryModForm(forms.Form):
         self.label_suffix = ''
 
         self.existing_stories = Player.objects.filter(story__event=event)
+
     # }}}
 
     # {{{ update_event: Pushes changes
@@ -536,14 +545,16 @@ class StoryModForm(forms.Form):
 
         return ret
     # }}}
+
+
 # }}}
 
 # {{{ AddForm: Form for adding subevents.
 class AddForm(forms.Form):
-    name    = StrippedCharField(max_length=100, required=True, label=_('Name'))
-    type    = forms.ChoiceField(choices=EVENT_TYPES, required=True, label=_('Type'))
+    name = StrippedCharField(max_length=100, required=True, label=_('Name'))
+    type = forms.ChoiceField(choices=EVENT_TYPES, required=True, label=_('Type'))
     noprint = forms.BooleanField(required=False, label=_('No Print'))
-    closed  = forms.BooleanField(required=False, label=_('Closed'))
+    closed = forms.BooleanField(required=False, label=_('Closed'))
 
     # {{{ Constructor
     def __init__(self, request=None, event=None):
@@ -557,6 +568,7 @@ class AddForm(forms.Form):
             })
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ update_event: Pushes changes
@@ -581,6 +593,8 @@ class AddForm(forms.Form):
 
         return ret
     # }}}
+
+
 # }}}
 
 # {{{ ReorderForm: Form for reordering events.
@@ -593,6 +607,7 @@ class ReorderForm(forms.Form):
             super(ReorderForm, self).__init__(request.POST)
         else:
             super(ReorderForm, self).__init__()
+
     # }}}
 
     # {{{ Custom validation
@@ -604,6 +619,7 @@ class ReorderForm(forms.Form):
             raise ValidationError(_('Unable to get these events.'))
 
         return [events[i] for i in ids]
+
     # }}}
 
     # {{{ update_event: Pushes changes
@@ -635,52 +651,54 @@ class ReorderForm(forms.Form):
             '(no more than six hours away).'
         ) % len(self.cleaned_data['order']), type=Message.SUCCESS)]
     # }}}
+
+
 # }}}
 
 # {{{ SearchForm: Form for searching.
 class SearchForm(forms.Form):
-    after      = forms.DateField(required=False, label=_('After'), initial=None)
-    before     = forms.DateField(required=False, label=_('Before'), initial=None)
-    players    = forms.CharField(max_length=10000, required=False, label=_('Involving players'), initial='')
-    event      = StrippedCharField(max_length=200, required=False, label=_('Event'), initial='')
+    after = forms.DateField(required=False, label=_('After'), initial=None)
+    before = forms.DateField(required=False, label=_('Before'), initial=None)
+    players = forms.CharField(max_length=10000, required=False, label=_('Involving players'), initial='')
+    event = StrippedCharField(max_length=200, required=False, label=_('Event'), initial='')
     # Translators: Unassigned as in not assigned to an event.
     unassigned = forms.BooleanField(required=False, label=_('Only show unassigned matches'))
-    bestof     = forms.ChoiceField(
+    bestof = forms.ChoiceField(
         choices=[
-            ('all',_('All')),
-            ('3',_('Best of 3+')),
-            ('5',_('Best of 5+')),
+            ('all', _('All')),
+            ('3', _('Best of 3+')),
+            ('5', _('Best of 5+')),
         ],
         required=False, label=_('Match format'), initial='all'
     )
     offline = forms.ChoiceField(
         choices=[
-            ('both',_('Both')),
-            ('offline',_('Offline')),
-            ('online',_('Online')),
+            ('both', _('Both')),
+            ('offline', _('Offline')),
+            ('online', _('Online')),
         ],
         required=False, label=_('On/offline'), initial='both',
     )
     wcs_season = forms.ChoiceField(
         choices=[
-            ('',     _('All events')),
-            ('all',  _('All seasons')),
-        ]+WCS_YEARS,
+                    ('', _('All events')),
+                    ('all', _('All seasons')),
+                ] + WCS_YEARS,
         required=False, label=_('WCS Season'), initial='',
     )
     _all_tiers = ''.join(map(lambda t: str(t[0]), WCS_TIERS))
     wcs_tier = forms.ChoiceField(
         choices=[
-            ('',         _('All events')),
-            (_all_tiers, _('All tiers')),
-        ] + WCS_TIERS + [
-            (''.join(map(lambda t: str(t[0]), WCS_TIERS[1:])),  _('Non-native'))
-        ],
+                    ('', _('All events')),
+                    (_all_tiers, _('All tiers')),
+                ] + WCS_TIERS + [
+                    (''.join(map(lambda t: str(t[0]), WCS_TIERS[1:])), _('Non-native'))
+                ],
         required=False, label=_('WCS Tier'), initial='',
     )
 
     game = forms.ChoiceField(
-        choices=[('all',_('All'))]+GAMES, required=False, label=_('Game version'), initial='all')
+        choices=[('all', _('All'))] + GAMES, required=False, label=_('Game version'), initial='all')
 
     # {{{ Constructor
     def __init__(self, request=None):
@@ -690,6 +708,7 @@ class SearchForm(forms.Form):
             super(SearchForm, self).__init__()
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ search: Performs a search, returns a dict with results to be added to the rendering context
@@ -706,8 +725,8 @@ class SearchForm(forms.Form):
 
         matches = (
             Match.objects.all().prefetch_related('message_set')
-                .prefetch_related('pla', 'plb', 'period', 'eventobj')
-                .annotate(Count('eventobj__match'))
+            .prefetch_related('pla', 'plb', 'period', 'eventobj')
+            .annotate(Count('eventobj__match'))
         )
 
         # {{{ All the easy filtering
@@ -726,7 +745,7 @@ class SearchForm(forms.Form):
             matches = matches.filter(Q(sca__gte=3) | Q(scb__gte=3))
 
         if self.cleaned_data['offline'] != 'both':
-            matches = matches.filter(offline=(self.cleaned_data['offline']=='offline'))
+            matches = matches.filter(offline=(self.cleaned_data['offline'] == 'offline'))
 
         if self.cleaned_data['game'] != 'all':
             matches = matches.filter(game=self.cleaned_data['game'])
@@ -844,18 +863,20 @@ class SearchForm(forms.Form):
         return ret
         # }}}
     # }}}
+
+
 # }}}
 
 # {{{ ResultsModForm: Form for modifying search results.
 class ResultsModForm(forms.Form):
-    event   = forms.ChoiceField(required=True, label=_('Event'))
-    date    = forms.DateField(required=False, label=_('Date'), initial=None)
+    event = forms.ChoiceField(required=True, label=_('Event'))
+    date = forms.DateField(required=False, label=_('Date'), initial=None)
     offline = forms.ChoiceField(
-        choices=[('nochange',_('No change')), ('online',_('Online')), ('offline',_('Offline'))],
+        choices=[('nochange', _('No change')), ('online', _('Online')), ('offline', _('Offline'))],
         required=True, label=_('On/offline'), initial='nochange'
     )
     game = forms.ChoiceField(
-        choices=[('nochange',_('No change'))]+GAMES,
+        choices=[('nochange', _('No change'))] + GAMES,
         required=True, label=_('Game version'), initial='nochange'
     )
 
@@ -868,11 +889,12 @@ class ResultsModForm(forms.Form):
 
         self.fields['event'].choices = [(0, _('No change'))] + [
             (e['id'], e['fullname']) for e in Event.objects.filter(closed=False)
-                .annotate(num_downlinks=Count('downlink'))
-                .filter(num_downlinks=1)
-                .order_by('idx')
-                .values('id', 'fullname')
+            .annotate(num_downlinks=Count('downlink'))
+            .filter(num_downlinks=1)
+            .order_by('idx')
+            .values('id', 'fullname')
         ]
+
     # }}}
 
     # {{{ modify: Commits modifications
@@ -899,16 +921,18 @@ class ResultsModForm(forms.Form):
             matches.update(date=self.cleaned_data['date'])
 
         if self.cleaned_data['offline'] != 'nochange':
-            matches.update(offline=(self.cleaned_data['offline']=='offline'))
+            matches.update(offline=(self.cleaned_data['offline'] == 'offline'))
 
         if self.cleaned_data['game'] != 'nochange':
             matches.update(game=self.cleaned_data['game'])
 
         return [Message(
-            ungettext_lazy('Updated %i match.', 'Updated %i matches.', matches.count()) % matches.count(), 
+            ungettext_lazy('Updated %i match.', 'Updated %i matches.', matches.count()) % matches.count(),
             type=Message.SUCCESS
         )]
     # }}}
+
+
 # }}}
 
 # {{{ results view
@@ -926,13 +950,13 @@ def results(request):
     base.update({
         'mindate': bounds['date__min'],
         'maxdate': bounds['date__max'],
-        'td':      day,
+        'td': day,
     })
 
     matches = (
         Match.objects.filter(date=day).order_by('eventobj__idx', 'eventobj__latest', 'event', 'id')
-            .prefetch_related('message_set', 'rta', 'rtb', 'pla', 'plb', 'eventobj')
-            .annotate(Count('eventobj__match'))
+        .prefetch_related('message_set', 'rta', 'rtb', 'pla', 'plb', 'eventobj')
+        .annotate(Count('eventobj__match'))
     )
 
     add_links = request.user.is_authenticated and request.user.is_staff
@@ -941,6 +965,8 @@ def results(request):
                                       eventcount=True, add_links=add_links)
 
     return render_to_response('results.djhtml', base)
+
+
 # }}}
 
 # {{{ events view
@@ -957,21 +983,21 @@ def events(request, event_id=None):
     if event_id is None:
         root_events = (
             Event.objects
-                  .annotate(num_uplinks=Count("uplink"))
-                  .filter(num_uplinks=1)
-                  .order_by('name')
-                  .only('id', 'name', 'big', 'category', 'fullname')
+            .annotate(num_uplinks=Count("uplink"))
+            .filter(num_uplinks=1)
+            .order_by('name')
+            .only('id', 'name', 'big', 'category', 'fullname')
         )
         base.update({
             'bigs': (
-                list(root_events.filter(big=True, category=CAT_INDIVIDUAL)) +
-                list(root_events.filter(big=True, category=CAT_TEAM)) +
-                list(root_events.filter(big=True, category=CAT_FREQUENT))
+                    list(root_events.filter(big=True, category=CAT_INDIVIDUAL)) +
+                    list(root_events.filter(big=True, category=CAT_TEAM)) +
+                    list(root_events.filter(big=True, category=CAT_FREQUENT))
             ),
             'smalls': (
-                list(root_events.filter(big=False, category=CAT_INDIVIDUAL).order_by('name')) +
-                list(root_events.filter(big=False, category=CAT_TEAM).order_by('name')) +
-                list(root_events.filter(big=False, category=CAT_FREQUENT).order_by('name'))
+                    list(root_events.filter(big=False, category=CAT_INDIVIDUAL).order_by('name')) +
+                    list(root_events.filter(big=False, category=CAT_TEAM).order_by('name')) +
+                    list(root_events.filter(big=False, category=CAT_FREQUENT).order_by('name'))
             )
         })
 
@@ -994,11 +1020,11 @@ def events(request, event_id=None):
         event.set_big(True)
 
     base.update({
-        'event':            event,
-        'siblings':         event.get_parent().get_immediate_children().exclude(id=event.id)
-                                if event.get_parent() else None,
-        'path':             event.get_ancestors(id=True),
-        'children':         event.get_immediate_children(),
+        'event': event,
+        'siblings': event.get_parent().get_immediate_children().exclude(id=event.id)
+        if event.get_parent() else None,
+        'path': event.get_ancestors(id=True),
+        'children': event.get_immediate_children(),
     })
     # }}}
 
@@ -1032,8 +1058,8 @@ def events(request, event_id=None):
 
     local_earnings = Earnings.objects.filter(event=event)
 
-    ranked_prize = local_earnings.exclude(placement=0)\
-                                 .order_by('-earnings', 'placement')
+    ranked_prize = local_earnings.exclude(placement=0) \
+        .order_by('-earnings', 'placement')
     unranked_prize = list(
         local_earnings.filter(placement=0).order_by('-earnings')
     )
@@ -1051,10 +1077,10 @@ def events(request, event_id=None):
 
     currencies = list({r['currency'] for r in total_earnings.values('currency').distinct()})
     base.update({
-        'prizepool':     total_earnings.aggregate(Sum('earnings'))['earnings__sum'],
-        'nousdpp':       len(currencies) > 1 or len(currencies) == 1 and currencies[0] != 'USD',
+        'prizepool': total_earnings.aggregate(Sum('earnings'))['earnings__sum'],
+        'nousdpp': len(currencies) > 1 or len(currencies) == 1 and currencies[0] != 'USD',
         'prizepoolorig': [{
-            'pp':  total_earnings.filter(currency=k).aggregate(Sum('origearnings'))['origearnings__sum'],
+            'pp': total_earnings.filter(currency=k).aggregate(Sum('origearnings'))['origearnings__sum'],
             'cur': k,
         } for k in currencies],
     })
@@ -1065,21 +1091,21 @@ def events(request, event_id=None):
     add_links = request.user.is_authenticated and request.user.is_staff
 
     base.update({
-        'game':      etn(lambda: dict(GAMES)[matches.values('game').distinct()[0]['game']]),
-        'nmatches':  matches.count(),
-        'ngames':    sum(count_winloss_games(matches)),
+        'game': etn(lambda: dict(GAMES)[matches.values('game').distinct()[0]['game']]),
+        'nmatches': matches.count(),
+        'ngames': sum(count_winloss_games(matches)),
         'pvp_games': count_mirror_games(matches, 'P'),
         'tvt_games': count_mirror_games(matches, 'T'),
         'zvz_games': count_mirror_games(matches, 'Z'),
-        'matches':   display_matches(
+        'matches': display_matches(
             matches.prefetch_related('message_set')
-                .prefetch_related('pla', 'plb', 'eventobj')
-                .annotate(Count('eventobj__match'))
-                .order_by('-eventobj__latest', '-eventobj__idx', '-date', '-id')[0:200],
+            .prefetch_related('pla', 'plb', 'eventobj')
+            .annotate(Count('eventobj__match'))
+            .order_by('-eventobj__latest', '-eventobj__idx', '-date', '-id')[0:200],
             eventcount=True,
             add_links=add_links
         ),
-        'nplayers':  Player.objects.filter(
+        'nplayers': Player.objects.filter(
             Q(id__in=matches.values('pla')) | Q(id__in=matches.values('plb'))
         ).count(),
     })
@@ -1097,6 +1123,8 @@ def events(request, event_id=None):
     # }}}
 
     return render_to_response('eventres.djhtml', base)
+
+
 # }}}
 
 # {{{ search view

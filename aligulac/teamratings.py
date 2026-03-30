@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
-from itertools import combinations
 import os
-from random import shuffle
-import sys
+from datetime import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aligulac.settings')
 import django
+
 django.setup()
 
 from aligulac.tools import get_latest_period
@@ -17,10 +15,6 @@ from ratings.models import (
     Rating,
 )
 from ratings.tools import filter_active
-
-from simul.formats.teamak import TeamAK
-from simul.formats.teampl import TeamPL
-from simul.playerlist import make_player
 
 print('[%s] Updating team ratings' % str(datetime.now()), flush=True)
 

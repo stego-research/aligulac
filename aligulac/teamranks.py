@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
+import os
+import sys
 from datetime import datetime
 from itertools import combinations
-import os
 from random import shuffle
-import sys
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aligulac.settings')
 import django
+
 django.setup()
 
 from aligulac.tools import get_latest_period
@@ -54,8 +55,8 @@ nteams = len(allowed_teams)
 
 # {{{ Simulate
 print(
-    '[%s] Simulating %s for %i teams' 
-    % (str(datetime.now()), 'PL' if proleague else 'AK', nteams), 
+    '[%s] Simulating %s for %i teams'
+    % (str(datetime.now()), 'PL' if proleague else 'AK', nteams),
     flush=True
 )
 
@@ -87,11 +88,11 @@ for ta, tb in combinations(allowed_teams, 2):
     sim.compute()
 
     if proleague:
-        scores[ta] += sim._tally[0].win/(nteams-1)
-        scores[tb] += sim._tally[1].win/(nteams-1)
+        scores[ta] += sim._tally[0].win / (nteams - 1)
+        scores[tb] += sim._tally[1].win / (nteams - 1)
     else:
-        scores[ta] += sim._tally[0][1]/(nteams-1)
-        scores[tb] += sim._tally[1][1]/(nteams-1)
+        scores[ta] += sim._tally[0][1] / (nteams - 1)
+        scores[tb] += sim._tally[1][1] / (nteams - 1)
 # }}}
 
 # {{{ Save

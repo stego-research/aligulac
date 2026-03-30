@@ -1,6 +1,7 @@
 from incf.countryutils import data
 from incf.countryutils import transformations as trafos
 
+
 class Country(object):
     """encapsulating information about a country
     
@@ -33,11 +34,11 @@ class Country(object):
         self.cca2 = self.alpha2 = trafos.ccn_to_cca2(self.numeric)
         self.cca3 = self.alpha3 = trafos.ccn_to_cca3(self.numeric)
         self.con = self.official_name = trafos.ccn_to_con(self.numeric)
-        
+
         self.ctca2 = trafos.ccn_to_ctca2(self.numeric)
         self.ctn = trafos.ccn_to_ctn(self.numeric)
 
-    @property 
+    @property
     def continent(self):
         return Continent(self.ctn)
 
@@ -66,4 +67,4 @@ class Continent(object):
 
     @property
     def countries(self):
-        return (Country(c) for c in data.ctca2_to_ccn[self.alpha2]) 
+        return (Country(c) for c in data.ctca2_to_ccn[self.alpha2])

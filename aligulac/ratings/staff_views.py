@@ -1,18 +1,15 @@
-from datetime import date, timedelta
 # Misc staff tools
 import json
 import re
 import shlex
+from datetime import date, timedelta
 from urllib.request import Request, urlopen
 
+import pyparsing
 from bs4 import UnicodeDammit
-from countries import data
 from django import forms
 from django.core.exceptions import ValidationError
-from django.db import connection
 from django.db.models import (
-    F,
-    Max,
     Q,
     Count
 )
@@ -24,20 +21,17 @@ from django.shortcuts import (
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext_lazy
 from mwparserfromhell import parse as parsemw
-import pyparsing
-import re
 
-from aligulac.views import EXTRA_NULL_SELECT
 from aligulac.tools import (
     base_ctx,
     etn,
     JsonResponse,
     login_message,
     Message,
-    ntz,
     StrippedCharField,
 )
-
+from aligulac.views import EXTRA_NULL_SELECT
+from countries import data
 from ratings.models import (
     CAT_TEAM,
     Earnings,
@@ -46,14 +40,12 @@ from ratings.models import (
     EVENT_TYPES,
     GAMES,
     GroupMembership,
-    HOTS,
     LOTV,
     Match,
     Player,
     PreMatch,
     PreMatchGroup,
     Rating,
-    TYPE_CATEGORY,
     TYPE_EVENT,
     TYPE_ROUND,
 )
@@ -64,6 +56,7 @@ from ratings.tools import (
     find_player,
     parse_match
 )
+
 
 def find_dashes(line):
     in_quote = False
@@ -77,7 +70,10 @@ def find_dashes(line):
 
     return dashes
 
+
 race_override_re = re.compile(r"r:([ptzr])", flags=re.IGNORECASE)
+
+
 def find_race_override(lst):
     override = None
     i = 0
@@ -96,6 +92,7 @@ def find_race_override(lst):
 
     return override
 
+
 def check_duplicates(match, dup_flag):
     if dup_flag:
         return False
@@ -108,6 +105,7 @@ def check_duplicates(match, dup_flag):
 
     return matches.exists()
 
+
 def review_find_player(query):
     lst = shlex.split(query)
     override = find_race_override(lst)
@@ -115,6 +113,7 @@ def review_find_player(query):
     lst = [l for l in lst if l != '!MAKE']
 
     return find_player(lst=lst, make=make_flag, soft=False), override
+
 
 def fill_players(pm):
     messages = []
@@ -141,6 +140,7 @@ def fill_players(pm):
 
     return messages
 
+
 def fill_aux_event(qset):
     for e in qset:
         e.up_homepage, e.up_tl_thread, e.up_lp_name, e.up_tlpd_id, e.up_tlpd_db = None, None, None, None, None
@@ -151,6 +151,7 @@ def fill_aux_event(qset):
             if l.parent.tlpd_db is not None:
                 e.up_tlpd_db = l.parent.tlpd_db
                 e.up_tlpd_id = l.parent.tlpd_id
+
 
 # Form for reviewing matches.
 class ReviewMatchesForm(forms.Form):
@@ -171,10 +172,10 @@ class ReviewMatchesForm(forms.Form):
         self.fields['eventobj'] = forms.ChoiceField(
             choices=[
                 (e['id'], e['fullname']) for e in Event.objects.filter(closed=False)
-                    .annotate(num_downlinks=Count('downlink'))
-                    .filter(num_downlinks=1)
-                    .order_by('idx')
-                    .values('id', 'fullname')
+                .annotate(num_downlinks=Count('downlink'))
+                .filter(num_downlinks=1)
+                .order_by('idx')
+                .values('id', 'fullname')
             ],
             required=False, label=_('Event'),
         )
@@ -228,31 +229,31 @@ class ReviewMatchesForm(forms.Form):
 
             if pm.is_valid():
                 m = Match(
-                    pla       = pm.pla,
-                    plb       = pm.plb,
-                    sca       = pm.sca,
-                    scb       = pm.scb,
-                    rca       = pm.rca or (pm.pla.race if pm.pla.race != 'S' else 'R'),
-                    rcb       = pm.rcb or (pm.plb.race if pm.plb.race != 'S' else 'R'),
-                    date      = self.cleaned_data['date'] or pm.group.date,
-                    eventobj  = self.cleaned_data['eventobj'],
-                    event     = pm.group.event,
-                    submitter = submitter,
-                    offline   = pm.group.offline,
-                    game      = pm.group.game,
+                    pla=pm.pla,
+                    plb=pm.plb,
+                    sca=pm.sca,
+                    scb=pm.scb,
+                    rca=pm.rca or (pm.pla.race if pm.pla.race != 'S' else 'R'),
+                    rcb=pm.rcb or (pm.plb.race if pm.plb.race != 'S' else 'R'),
+                    date=self.cleaned_data['date'] or pm.group.date,
+                    eventobj=self.cleaned_data['eventobj'],
+                    event=pm.group.event,
+                    submitter=submitter,
+                    offline=pm.group.offline,
+                    game=pm.group.game,
                 )
 
                 if check_duplicates(m, self.cleaned_data['dup_flag']):
                     self.messages.append(Message(
                         _("Could not make match %(pla)s vs %(plb)s: possible duplicate found.")
-                            % {'pla': m.pla.tag, 'plb': m.plb.tag},
+                        % {'pla': m.pla.tag, 'plb': m.plb.tag},
                         type=Message.ERROR,
                     ))
                     continue
                 if 'R' in [m.rca, m.rcb]:
                     self.messages.append(Message(
                         _("Unknown race in %(pla)s vs %(plb)s: set to random.")
-                            % {'pla': pla.tag, 'plb': plb.tag},
+                        % {'pla': pla.tag, 'plb': plb.tag},
                         type=Message.WARNING,
                     ))
 
@@ -286,16 +287,17 @@ class ReviewMatchesForm(forms.Form):
                 type=Message.SUCCESS
             ))
 
+
 # AddMatchesForm: Form for adding matches (duh).
 class AddMatchesForm(forms.Form):
     eventtext = StrippedCharField(max_length=200, required=False, label=_('Event'))
-    date      = forms.DateField(required=True, label=_('Date'))
-    game      = forms.ChoiceField(choices=GAMES, label=_('Game version'), initial=LOTV)
-    offline   = forms.BooleanField(required=False, label=_('Offline'), initial=False)
-    source    = StrippedCharField(max_length=1000, required=False, label=_('Source'))
-    contact   = StrippedCharField(max_length=1000, required=False, label=_('Contact'))
-    notes     = forms.CharField(max_length=10000, required=False, label=_('Notes'), initial='')
-    matches   = forms.CharField(max_length=10000, required=True, label=_('Matches'), initial='')
+    date = forms.DateField(required=True, label=_('Date'))
+    game = forms.ChoiceField(choices=GAMES, label=_('Game version'), initial=LOTV)
+    offline = forms.BooleanField(required=False, label=_('Offline'), initial=False)
+    source = StrippedCharField(max_length=1000, required=False, label=_('Source'))
+    contact = StrippedCharField(max_length=1000, required=False, label=_('Contact'))
+    notes = forms.CharField(max_length=10000, required=False, label=_('Notes'), initial='')
+    matches = forms.CharField(max_length=10000, required=True, label=_('Matches'), initial='')
 
     def __init__(self, is_adm, request=None):
         if request is not None:
@@ -315,8 +317,8 @@ class AddMatchesForm(forms.Form):
             choices=[
                 (e['id'], e['fullname'])
                 for e in Event.objects.filter(
-                        closed=False,
-                        type__in=(TYPE_ROUND, TYPE_EVENT)
+                    closed=False,
+                    type__in=(TYPE_ROUND, TYPE_EVENT)
                 )
                 .annotate(num_downlinks=Count('downlink'))
                 .filter(num_downlinks=1)
@@ -362,13 +364,13 @@ class AddMatchesForm(forms.Form):
 
         if not self.is_adm:
             self.prematchgroup = PreMatchGroup(
-                date    = self.cleaned_data['date'],
-                event   = self.cleaned_data['eventtext'],
-                source  = self.cleaned_data['source'],
-                contact = self.cleaned_data['contact'],
-                notes   = self.cleaned_data['notes'],
-                game    = self.cleaned_data['game'],
-                offline = self.cleaned_data['offline'],
+                date=self.cleaned_data['date'],
+                event=self.cleaned_data['eventtext'],
+                source=self.cleaned_data['source'],
+                contact=self.cleaned_data['contact'],
+                notes=self.cleaned_data['notes'],
+                game=self.cleaned_data['game'],
+                offline=self.cleaned_data['offline'],
             )
             self.prematchgroup.save()
 
@@ -473,36 +475,36 @@ class AddMatchesForm(forms.Form):
 
         if not self.is_adm:
             match = PreMatch(
-                group      = self.prematchgroup,
-                pla        = pla,
-                plb        = plb,
-                pla_string = ' '.join(pla_query),
-                plb_string = ' '.join(plb_query),
-                sca        = sca,
-                scb        = scb,
-                date       = self.cleaned_data['date'],
-                rca        = pla_race_or,
-                rcb        = plb_race_or,
+                group=self.prematchgroup,
+                pla=pla,
+                plb=plb,
+                pla_string=' '.join(pla_query),
+                plb_string=' '.join(plb_query),
+                sca=sca,
+                scb=scb,
+                date=self.cleaned_data['date'],
+                rca=pla_race_or,
+                rcb=plb_race_or,
             )
             return match
         else:
             match = Match(
-                pla      = pla,
-                plb      = plb,
-                sca      = sca,
-                scb      = scb,
-                rca      = pla_race_or or (pla.race if pla.race != 'S' else 'R'),
-                rcb      = plb_race_or or (plb.race if plb.race != 'S' else 'R'),
-                date     = self.cleaned_data['date'],
-                treated  = False,
-                eventobj = self.cleaned_data['eventobj'],
-                game     = self.cleaned_data['game'],
-                offline  = self.cleaned_data['offline'],
+                pla=pla,
+                plb=plb,
+                sca=sca,
+                scb=scb,
+                rca=pla_race_or or (pla.race if pla.race != 'S' else 'R'),
+                rcb=plb_race_or or (plb.race if plb.race != 'S' else 'R'),
+                date=self.cleaned_data['date'],
+                treated=False,
+                eventobj=self.cleaned_data['eventobj'],
+                game=self.cleaned_data['game'],
+                offline=self.cleaned_data['offline'],
             )
             if check_duplicates(match, dup_flag):
                 self.messages.append(Message(
-                    _("Could not make match %(pla)s vs %(plb)s: possible duplicate found.") 
-                        % {'pla': pla.tag, 'plb': plb.tag},
+                    _("Could not make match %(pla)s vs %(plb)s: possible duplicate found.")
+                    % {'pla': pla.tag, 'plb': plb.tag},
                     type=Message.ERROR,
                 ))
                 self.close_after = False
@@ -510,12 +512,13 @@ class AddMatchesForm(forms.Form):
             if 'R' in [match.rca, match.rcb]:
                 self.messages.append(Message(
                     _("Unknown race in %(pla)s vs %(plb)s: set to random.")
-                        % {'pla': pla.tag, 'plb': plb.tag},
+                    % {'pla': pla.tag, 'plb': plb.tag},
                     type=Message.WARNING,
                 ))
             match.set_period()
             match.set_ratings()
             return match
+
 
 # Form for adding events.
 class AddEventsForm(forms.Form):
@@ -541,7 +544,7 @@ class AddEventsForm(forms.Form):
         ('Early rounds,Ro8,Ro4,Final', _('Ro8→Final + early rounds')),
         ('Early rounds,Ro4,Final', _('Ro4→Final + early rounds')),
         ('Early rounds,Ro64,Ro32,Ro16,Ro8,Ro4,Third place match,Final',
-            _('Ro64→Final + 3rd place and early rounds')),
+         _('Ro64→Final + 3rd place and early rounds')),
         ('Early rounds,Ro32,Ro16,Ro8,Ro4,Third place match,Final', _('Ro32→Final + 3rd place and early rounds')),
         ('Early rounds,Ro16,Ro8,Ro4,Third place match,Final', _('Ro16→Final + 3rd place and early rounds')),
         ('Early rounds,Ro8,Ro4,Third place match,Final', _('Ro8→Final + 3rd place and early rounds')),
@@ -618,7 +621,7 @@ class AddEventsForm(forms.Form):
             )
             for name in self.cleaned_data['names']:
                 adder(
-                    name=name, 
+                    name=name,
                     type=self.cleaned_data['type'],
                     big=self.cleaned_data['big'],
                     noprint=self.cleaned_data['noprint'],
@@ -635,6 +638,7 @@ class AddEventsForm(forms.Form):
             ret.append(Message(_('Successfully closed event.'), type=Message.SUCCESS))
 
         return ret
+
 
 # Form for merging players.
 class MergePlayersForm(forms.Form):
@@ -707,6 +711,7 @@ class MergePlayersForm(forms.Form):
 
         return ret
 
+
 # Form for merging players.
 class MoveEventForm(forms.Form):
     subject = forms.IntegerField(required=True, label=_('Event ID to move'))
@@ -736,8 +741,8 @@ class MoveEventForm(forms.Form):
     def clean(self):
         print(self.cleaned_data)
         if EventAdjacency.objects.filter(
-            parent=self.cleaned_data['subject'],
-            child=self.cleaned_data['target'],
+                parent=self.cleaned_data['subject'],
+                child=self.cleaned_data['target'],
         ).exists():
             raise ValidationError(_("Can't move an event to one of its descendants."))
         return self.cleaned_data
@@ -770,9 +775,9 @@ class MoveEventForm(forms.Form):
         for ul in EventAdjacency.objects.filter(child=target):
             for dl in downlinks:
                 links.append(EventAdjacency(
-                    parent_id = ul.parent_id,
-                    child_id  = dl.child_id,
-                    distance  = ul.distance + dl.distance + 1,
+                    parent_id=ul.parent_id,
+                    child_id=dl.child_id,
+                    distance=ul.distance + dl.distance + 1,
                 ))
         EventAdjacency.objects.bulk_create(links)
 
@@ -796,6 +801,7 @@ class MoveEventForm(forms.Form):
         ))
 
         return ret
+
 
 # View for adding matches
 def add_matches(request):
@@ -823,6 +829,7 @@ def add_matches(request):
 
     return render_to_response('add.djhtml', base)
 
+
 # View for reviewing matches
 def review_matches(request):
     base = base_ctx('Submit', 'Review', request)
@@ -840,15 +847,16 @@ def review_matches(request):
 
     base['groups'] = (
         PreMatchGroup.objects.filter(prematch__isnull=False)
-            .prefetch_related('prematch_set')
-            .order_by('id', 'event')
-            .distinct()
+        .prefetch_related('prematch_set')
+        .order_by('id', 'event')
+        .distinct()
     )
 
     for g in base['groups']:
         g.prematches = display_matches(g.prematch_set.all(), messages=False, no_events=True)
 
     return render_to_response('review.djhtml', base)
+
 
 # View for event manager
 def events(request):
@@ -871,15 +879,16 @@ def events(request):
     # Build event list
     base['events'] = (
         Event.objects.filter(downlink__child__closed=False)
-                     .filter(parent__isnull=True)
-                     .order_by('idx')
-                     .distinct()
+        .filter(parent__isnull=True)
+        .order_by('idx')
+        .distinct()
     )
 
     # for ev in base['events']:
     #     print(ev.name)
 
     return render_to_response('eventmgr.djhtml', base)
+
 
 # Auxiliary view called by JS code in the event manager for progressively opening subtrees
 def event_children(request, id):
@@ -890,7 +899,7 @@ def event_children(request, id):
 
     ret = [
         dict(q) for q in
-        query.order_by('name').values('id','type','name','fullname','parent_id')
+        query.order_by('name').values('id', 'type', 'name', 'fullname', 'parent_id')
     ]
 
     for q in ret:
@@ -899,6 +908,7 @@ def event_children(request, id):
         )
 
     return HttpResponse(json.dumps(ret))
+
 
 # Event overview
 def open_events(request):
@@ -933,30 +943,30 @@ def open_events(request):
     # Open events with games
     base['open_games'] = (
         Event.objects.filter(type=TYPE_EVENT, closed=False)
-            .filter(downlink__child__match__isnull=False)
-            .distinct()
-            .prefetch_related('uplink__parent')
-            .order_by('latest', 'idx', 'fullname')
+        .filter(downlink__child__match__isnull=False)
+        .distinct()
+        .prefetch_related('uplink__parent')
+        .order_by('latest', 'idx', 'fullname')
     )
 
     # Open events without games
     base['open_nogames'] = (
         Event.objects.filter(type=TYPE_EVENT, closed=False)
-            .exclude(id__in=Event.objects.filter(downlink__child__match__isnull=False).distinct())
-            .distinct()
-            .exclude(id=2)
-            .prefetch_related('uplink__parent')
-            .order_by('fullname')
+        .exclude(id__in=Event.objects.filter(downlink__child__match__isnull=False).distinct())
+        .distinct()
+        .exclude(id=2)
+        .prefetch_related('uplink__parent')
+        .order_by('fullname')
     )
 
     # Closed non-team events with unknown prizepool status.
     base['pp_events'] = (
         Event.objects.filter(type=TYPE_EVENT, prizepool__isnull=True)
-            .filter(match__isnull=False, closed=True)
-            .exclude(uplink__parent__category=CAT_TEAM)
-            .distinct()
-            .prefetch_related('uplink__parent')
-            .order_by('idx', 'fullname')
+        .filter(match__isnull=False, closed=True)
+        .exclude(uplink__parent__category=CAT_TEAM)
+        .distinct()
+        .prefetch_related('uplink__parent')
+        .order_by('idx', 'fullname')
     )
 
     fill_aux_event(base['open_games'])
@@ -964,6 +974,7 @@ def open_events(request):
     fill_aux_event(base['pp_events'])
 
     return render_to_response('events_open.djhtml', base)
+
 
 class PlayerInfoForm(forms.Form):
     id = forms.IntegerField(required=True)
@@ -991,6 +1002,7 @@ class PlayerInfoForm(forms.Form):
         player.save()
 
         return player
+
 
 def player_info(request, choice=None):
     base = base_ctx('Submit', 'Player Info', request)
@@ -1040,13 +1052,13 @@ def player_info(request, choice=None):
     if all_count == 0:
         base['no_players'] = True
     elif choice is not None and choice in ('birthday', 'name', 'country'):
-        q = queries[choice].extra(select=EXTRA_NULL_SELECT)\
-                           .order_by(
-                               "-null_curr",
-                               "-current_rating__rating",
-                               "id"
-                           )
-        base["players"] = q[(page-1)*50:page*50]
+        q = queries[choice].extra(select=EXTRA_NULL_SELECT) \
+            .order_by(
+            "-null_curr",
+            "-current_rating__rating",
+            "id"
+        )
+        base["players"] = q[(page - 1) * 50:page * 50]
         base["page"] = page
         base["next_page"] = q.count() > page * 50
         base["form"] = PlayerInfoForm()
@@ -1056,7 +1068,7 @@ def player_info(request, choice=None):
             c = all_count - v.count()
             values[k] = {
                 'count': c,
-                'pctg': '%.2f' % (100*float(c)/float(all_count))
+                'pctg': '%.2f' % (100 * float(c) / float(all_count))
             }
 
         values["birthday"]["title"] = _("Players with birthday")
@@ -1067,6 +1079,7 @@ def player_info(request, choice=None):
         base["values"].sort(key=lambda x: x[0])
 
     return render_to_response('player_info.djhtml', base)
+
 
 # Helper view for grabbing LP-info
 def player_info_lp(request):
@@ -1079,6 +1092,7 @@ def player_info_lp(request):
 
     return player_info_lp_helper(request.GET['title'])
 
+
 def player_info_lp_helper(title):
     API_URL_BASE = (
         "https://liquipedia.net/starcraft2/api.php?"
@@ -1088,6 +1102,7 @@ def player_info_lp_helper(title):
         "prop=revisions&"
         "rvprop=content"
     )
+
     def get_lp_api_url(page_title):
         return API_URL_BASE.format(title=page_title)
 
@@ -1132,6 +1147,7 @@ def player_info_lp_helper(title):
             return JsonResponse({"message": "Success", "data": return_data})
     return JsonResponse({"message": "No data found"})
 
+
 # Misc staff tools
 def misc(request):
     base = base_ctx('Submit', 'Misc', request)
@@ -1156,8 +1172,8 @@ def misc(request):
         base['messages'] += moveform.move()
 
     base.update({
-        'mergeform':  mergeform,
-        'moveform':   moveform,
+        'mergeform': mergeform,
+        'moveform': moveform,
     })
 
     return render_to_response('manage.djhtml', base)

@@ -1,14 +1,12 @@
 import html.parser
 
 from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
-from django.utils.translation import ugettext_lazy as _
 
 from aligulac.cache import cache_page
-from aligulac.tools import base_ctx
-
 from miniURL.models import MiniURL
+
 
 @csrf_protect
 def new(request):
@@ -23,6 +21,7 @@ def new(request):
         miniURL = MiniURL.objects.get(longURL=longurl)
 
     return HttpResponse(miniURL.code)
+
 
 @cache_page
 def find_redirect(request, code):

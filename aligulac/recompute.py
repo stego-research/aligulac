@@ -4,6 +4,7 @@ import os
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aligulac.settings')
 import django
+
 django.setup()
 
 from datetime import date, datetime
@@ -32,10 +33,11 @@ if q.count() > 0:
 
     period_set = set()
 
+
     @atomic
     def fix_artifacts():
         periods = list(Period.objects.filter(start__lte=datetime.today()))
-    
+
         def get_period(date):
             for period in periods:
                 if period.start <= date and period.end >= date:
@@ -44,13 +46,14 @@ if q.count() > 0:
         for match in matches:
             print("    Correcting match: %s" % str(match))
             period_set.add(match.period_id)
-        
+
             target = get_period(match.date)
-            
+
             match.period_id = target.id
             match.save()
 
             period_set.add(target.id)
+
 
     fix_artifacts()
 
@@ -75,6 +78,7 @@ count = q.count() + q2.count()
 if count != 0:
     period_set = set()
 
+
     @atomic
     def fix_artifacts():
         print("Found")
@@ -85,6 +89,7 @@ if count != 0:
             m.save()
             period_set.add(m.period_id)
 
+
     fix_artifacts()
     Period.objects.filter(id__in=period_set).update(needs_recompute=True)
 
@@ -92,14 +97,13 @@ if count != 0:
 else:
     print('Done! None found!')
 
-
 if 'all' in sys.argv:
     earliest = Period.objects.earliest('id')
 else:
     try:
         earliest = (
             Period.objects.filter(Q(needs_recompute=True) | Q(match__treated=False))
-                .filter(start__lte=date.today()).earliest('id')
+            .filter(start__lte=date.today()).earliest('id')
         )
     except:
         print('[%s] Nothing to do' % str(datetime.now()), flush=True)
@@ -110,7 +114,7 @@ latest = Period.objects.filter(start__lte=date.today()).latest('id')
 
 print('[%s] Recomputing periods %i through %i' % (str(datetime.now()), earliest.id, latest.id), flush=True)
 
-for i in range(earliest.id, latest.id+1):
+for i in range(earliest.id, latest.id + 1):
     subprocess.call([os.path.join(PROJECT_PATH, 'period.py'), str(i)])
 
 if 'debug' not in sys.argv:
@@ -130,12 +134,12 @@ if 'debug' not in sys.argv:
             match_pla__offline=True,
             match_pla__plb__mcnum=g,
             mcnum__isnull=True
-        ).distinct().update(mcnum=g+1)
+        ).distinct().update(mcnum=g + 1)
         upd += Player.objects.filter(
             match_plb__offline=True,
             match_plb__pla__mcnum=g,
             mcnum__isnull=True
-        ).distinct().update(mcnum=g+1)
+        ).distinct().update(mcnum=g + 1)
         if upd == 0:
             break
         g += 1

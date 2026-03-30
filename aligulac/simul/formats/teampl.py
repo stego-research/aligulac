@@ -1,5 +1,6 @@
 from simul.formats.match import Match
 
+
 class Tally:
 
     def __init__(self, rounds):
@@ -19,7 +20,8 @@ class Tally:
         return iter(self.finishes)
 
     def scale(self, scale):
-        self.finishes = [f/scale for f in self.finishes]
+        self.finishes = [f / scale for f in self.finishes]
+
 
 class TeamPL:
 
@@ -27,14 +29,14 @@ class TeamPL:
         self._num = num
 
     def set_players(self, players):
-        self._pla = players[:len(players)//2]
-        self._plb = players[len(players)//2:]
+        self._pla = players[:len(players) // 2]
+        self._plb = players[len(players) // 2:]
         self._nplayers = len(self._pla)
-        self._numw = self._nplayers//2 + 1
-        self._nums = (self._nplayers - 1)//2
+        self._numw = self._nplayers // 2 + 1
+        self._nums = (self._nplayers - 1) // 2
 
         self._matches = []
-        for i in range(0,self._nplayers):
+        for i in range(0, self._nplayers):
             m = Match(self._num)
             m.set_players([self._pla[i], self._plb[i]])
             self._matches.append(m)
@@ -46,13 +48,13 @@ class TeamPL:
         return self._tally
 
     def compute(self, N=1000):
-        self._tally = [Tally(self._nplayers+1), Tally(self._nplayers+1)]
+        self._tally = [Tally(self._nplayers + 1), Tally(self._nplayers + 1)]
 
         for m in self._matches:
             m.compute()
 
-        for i in range(0,N):
-            self.compute_inst(1.0/N)
+        for i in range(0, N):
+            self.compute_inst(1.0 / N)
 
     def compute_inst(self, base):
         sca, scb = 0, 0

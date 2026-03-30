@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
 import os
+from datetime import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aligulac.settings')
 import django
+
 django.setup()
 
 from django.db import connection, transaction
@@ -39,7 +40,7 @@ Rating.objects.filter(period=last).update(
 
 cur = connection.cursor()
 
-for period_id in range(last.id-1, 0, -1):
+for period_id in range(last.id - 1, 0, -1):
     print('[%s] Smoothing period %i' % (str(datetime.now()), period_id), flush=True)
 
     # {{{ Update RDs
@@ -57,8 +58,8 @@ for period_id in range(last.id-1, 0, -1):
                WHERE p.player_id = m.player_id AND p.period_id = {pid} AND m.period_id = {mid}
           ) i
          WHERE rating.id = i.id'''
-         .format(dec=DECAY_DEV, pid=period_id+1, mid=period_id)
-        )
+                    .format(dec=DECAY_DEV, pid=period_id + 1, mid=period_id)
+                    )
     # }}}
 
     # {{{ Update ratings
@@ -80,8 +81,8 @@ for period_id in range(last.id-1, 0, -1):
                WHERE p.player_id = m.player_id AND p.period_id = {pid} AND m.period_id = {mid}
           ) i
          WHERE rating.id = i.id'''
-        .format(dec=DECAY_DEV, pid=period_id+1, mid=period_id)
-        )
+                    .format(dec=DECAY_DEV, pid=period_id + 1, mid=period_id)
+                    )
     # }}}
 
     # {{{ Enforce RD between min and max (init)
@@ -99,8 +100,8 @@ for period_id in range(last.id-1, 0, -1):
                WHERE m.period_id = {mid}
           ) i
          WHERE rating.id = i.id'''
-        .format(min=MIN_DEV, init=INIT_DEV, mid=period_id)
-        )
+                    .format(min=MIN_DEV, init=INIT_DEV, mid=period_id)
+                    )
     # }}}
 
     # {{{ Subtract mean to renormalize
@@ -118,6 +119,6 @@ for period_id in range(last.id-1, 0, -1):
                WHERE m.period_id = {mid}
           ) i
          WHERE rating.id = i.id'''
-        .format(mid=period_id)
-        )
+                    .format(mid=period_id)
+                    )
     # }}}

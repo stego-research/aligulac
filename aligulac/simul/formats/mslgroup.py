@@ -1,8 +1,9 @@
 import itertools
 
 from simul.formats.composite import Composite
-from simul.formats.match import Match
 from simul.formats.format import Tally as ParentTally
+from simul.formats.match import Match
+
 
 class Tally(ParentTally):
 
@@ -12,11 +13,12 @@ class Tally(ParentTally):
         for p in players:
             self.pairs[p] = 0
 
+
 class MSLGroup(Composite):
-    
+
     def __init__(self, num):
         self._num = num
-        Composite.__init__(self, [1]*4, [1]*4)
+        Composite.__init__(self, [1] * 4, [1] * 4)
 
     def setup(self):
         self._first = [Match(self._num), Match(self._num)]
@@ -69,7 +71,7 @@ class MSLGroup(Composite):
         for m in self._first:
             m.compute_partial()
 
-        for (if0, if1) in itertools.product(self._first[0].instances(),\
+        for (if0, if1) in itertools.product(self._first[0].instances(), \
                                             self._first[1].instances()):
             base_f = if0[0] * if1[0]
             if0[2].broadcast_instance(if0)
@@ -77,7 +79,7 @@ class MSLGroup(Composite):
             for m in self._second:
                 m.compute_partial()
 
-            for (is0, is1) in itertools.product(self._second[0].instances(),\
+            for (is0, is1) in itertools.product(self._second[0].instances(), \
                                                 self._second[1].instances()):
                 base_s = base_f * is0[0] * is1[0]
                 is0[2].broadcast_instance(is0)
@@ -108,7 +110,7 @@ class MSLGroup(Composite):
             out += '\n' + strings['ptablename'].format(player=p.name)
             for i in tally[p]:
                 if i > 1e-10:
-                    out += strings['ptableentry'].format(prob=100*i)
+                    out += strings['ptableentry'].format(prob=100 * i)
                 else:
                     out += strings['ptableempty']
 
@@ -127,7 +129,7 @@ class MSLGroup(Composite):
                 if q.name == 'BYE':
                     continue
                 if p != q and tally[p].pairs[q] >= 1e-10:
-                    out += strings['ptableentry'].format(prob=100*tally[p].pairs[q])
+                    out += strings['ptableentry'].format(prob=100 * tally[p].pairs[q])
                 else:
                     out += strings['ptableempty']
 
@@ -142,13 +144,13 @@ class MSLGroup(Composite):
             title = 'MSL-style four-player group'
         out = strings['header'].format(title=title)
 
-        players = sorted(self._players, key=lambda a: sum(tally[a][2:]),\
+        players = sorted(self._players, key=lambda a: sum(tally[a][2:]), \
                          reverse=True)
 
         for p in players:
             if sum(tally[p][2:]) > 1e-10 and p.name != 'BYE':
-                out += strings['mslgplayer'].format(player=p.name,\
-                                                    prob=100*sum(tally[p][2:]))
+                out += strings['mslgplayer'].format(player=p.name, \
+                                                    prob=100 * sum(tally[p][2:]))
 
         out += strings['nomimage']
         out += strings['footer'].format(title=title)

@@ -1,10 +1,14 @@
-from django.utils.translation import ugettext as _
 import json
 import urllib
-from aligulac import settings
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
-#Class adapted from https://bitbucket.org/alquimista/currency
+
+from django.utils.translation import ugettext as _
+
+from aligulac import settings
+
+
+# Class adapted from https://bitbucket.org/alquimista/currency
 
 class ExchangeRates(object):
 
@@ -18,12 +22,12 @@ class ExchangeRates(object):
         try:
             jsonfile = urllib.request.urlopen(url)
         except urllib.error.HTTPerror as err:
-            #API limit reached for the month or other error
+            # API limit reached for the month or other error
             return False
 
         data = json.loads(jsonfile.read().decode())
 
-        #print(sorted(data['rates'].keys()))
+        # print(sorted(data['rates'].keys()))
 
         # ccy use XBT instead
         try:
@@ -90,7 +94,7 @@ class ExchangeRates(object):
             raise RateNotFoundError(currency, self._date)
 
         coeff = (rate_after - rate_before) / (nafter + nbefore)
-        self.rates[currency] =  rate_before + coeff * nbefore
+        self.rates[currency] = rate_before + coeff * nbefore
 
 
 class RateNotFoundError(Exception):
@@ -99,6 +103,6 @@ class RateNotFoundError(Exception):
             _("Exchange rate not found for currency %(code)s on %(date)s") % {
                 'code': currency,
                 'date': date,
-            }, 
+            },
             *args, **kwargs
         )

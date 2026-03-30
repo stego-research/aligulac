@@ -1,18 +1,24 @@
 # {{{ Imports
+from django.db.models import (
+    Q,
+    Sum,
+)
 from django.shortcuts import (
     get_object_or_404,
     render_to_response,
-)
-from django.db.models import (
-    F,
-    Q,
-    Sum,
 )
 from django.template.defaultfilters import (
     date as django_date_filter
 )
 from django.utils.translation import ugettext_lazy as _
 
+from aligulac.cache import cache_page
+from aligulac.settings import INACTIVE_THRESHOLD, SHOW_PER_LIST_PAGE
+from aligulac.tools import (
+    Message,
+    base_ctx,
+    get_param,
+)
 from ratings.models import (
     Earnings,
     P,
@@ -32,24 +38,20 @@ from ratings.tools import (
     total_ratings,
 )
 
-from aligulac.cache import cache_page
-from aligulac.tools import (
-    Message,
-    base_ctx,
-    get_param,
-)
-from aligulac.settings import INACTIVE_THRESHOLD, SHOW_PER_LIST_PAGE
 # }}}
 
 msg_preview = _('This is a <em>preview</em> of the next rating list. It will not be finalized until %s.')
+
 
 # {{{ periods view
 @cache_page
 def periods(request):
     base = base_ctx('Ranking', 'History', request)
     base['periods'] = Period.objects.filter(computed=True).order_by('-id')
-    
+
     return render_to_response('periods.djhtml', base)
+
+
 # }}}
 
 # {{{ period view
@@ -77,49 +79,49 @@ def period(request, period_id=None):
     qsett = qset.filter(player__race=T)
     qsetz = qset.filter(player__race=Z)
     base.update({
-        'best':     qset.latest('rating'),
-        'bestvp':   qset.latest('tot_vp'),
-        'bestvt':   qset.latest('tot_vt'),
-        'bestvz':   qset.latest('tot_vz'),
-        'bestp':    qsetp.latest('rating'),
-        'bestpvp':  qsetp.latest('tot_vp'),
-        'bestpvt':  qsetp.latest('tot_vt'),
-        'bestpvz':  qsetp.latest('tot_vz'),
-        'bestt':    qsett.latest('rating'),
-        'besttvp':  qsett.latest('tot_vp'),
-        'besttvt':  qsett.latest('tot_vt'),
-        'besttvz':  qsett.latest('tot_vz'),
-        'bestz':    qsetz.latest('rating'),
-        'bestzvp':  qsetz.latest('tot_vp'),
-        'bestzvt':  qsetz.latest('tot_vt'),
-        'bestzvz':  qsetz.latest('tot_vz'),
-        'specvp':   qset.extra(select={'d':   'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
-        'specvt':   qset.extra(select={'d':   'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
-        'specvz':   qset.extra(select={'d':   'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
-        'specpvp':  qsetp.extra(select={'d':  'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
-        'specpvt':  qsetp.extra(select={'d':  'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
-        'specpvz':  qsetp.extra(select={'d':  'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
-        'spectvp':  qsett.extra(select={'d':  'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
-        'spectvt':  qsett.extra(select={'d':  'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
-        'spectvz':  qsett.extra(select={'d':  'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
-        'speczvp':  qsetz.extra(select={'d':  'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
-        'speczvt':  qsetz.extra(select={'d':  'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
-        'speczvz':  qsetz.extra(select={'d':  'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
+        'best': qset.latest('rating'),
+        'bestvp': qset.latest('tot_vp'),
+        'bestvt': qset.latest('tot_vt'),
+        'bestvz': qset.latest('tot_vz'),
+        'bestp': qsetp.latest('rating'),
+        'bestpvp': qsetp.latest('tot_vp'),
+        'bestpvt': qsetp.latest('tot_vt'),
+        'bestpvz': qsetp.latest('tot_vz'),
+        'bestt': qsett.latest('rating'),
+        'besttvp': qsett.latest('tot_vp'),
+        'besttvt': qsett.latest('tot_vt'),
+        'besttvz': qsett.latest('tot_vz'),
+        'bestz': qsetz.latest('rating'),
+        'bestzvp': qsetz.latest('tot_vp'),
+        'bestzvt': qsetz.latest('tot_vt'),
+        'bestzvz': qsetz.latest('tot_vz'),
+        'specvp': qset.extra(select={'d': 'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
+        'specvt': qset.extra(select={'d': 'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
+        'specvz': qset.extra(select={'d': 'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
+        'specpvp': qsetp.extra(select={'d': 'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
+        'specpvt': qsetp.extra(select={'d': 'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
+        'specpvz': qsetp.extra(select={'d': 'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
+        'spectvp': qsett.extra(select={'d': 'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
+        'spectvt': qsett.extra(select={'d': 'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
+        'spectvz': qsett.extra(select={'d': 'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
+        'speczvp': qsetz.extra(select={'d': 'rating_vp/dev_vp*(rating+1.5)'}).latest('d'),
+        'speczvt': qsetz.extra(select={'d': 'rating_vt/dev_vt*(rating+1.5)'}).latest('d'),
+        'speczvz': qsetz.extra(select={'d': 'rating_vz/dev_vz*(rating+1.5)'}).latest('d'),
     })
     # }}}
 
     # {{{ Highest gainer and biggest losers
 
     # TODO: Fix these queries, highly dependent on the way django does things.
-    gainers = filter_active(Rating.objects.filter(period=period))\
-        .filter(prev__isnull=False)\
-        .select_related('prev', 'player')\
-        .extra(select={'diff': 'rating.rating - T3.rating'})\
+    gainers = filter_active(Rating.objects.filter(period=period)) \
+        .filter(prev__isnull=False) \
+        .select_related('prev', 'player') \
+        .extra(select={'diff': 'rating.rating - T3.rating'}) \
         .order_by('-diff')
-    losers = filter_active(Rating.objects.filter(period=period))\
-        .filter(prev__isnull=False)\
-        .select_related('prev', 'player')\
-        .extra(select={'diff': 'rating.rating - T3.rating'})\
+    losers = filter_active(Rating.objects.filter(period=period)) \
+        .filter(prev__isnull=False) \
+        .select_related('prev', 'player') \
+        .extra(select={'diff': 'rating.rating - T3.rating'}) \
         .order_by('diff')
 
     base.update({
@@ -165,10 +167,10 @@ def period(request, period_id=None):
 
     # Sorting
     sort = get_param(request, 'sort', '')
-    if sort not in ['vp', 'vt', 'vz']: 
+    if sort not in ['vp', 'vt', 'vz']:
         entries = entries.order_by('-rating', 'player__tag')
     else:
-        entries = entries.extra(select={'d':'rating+rating_'+sort}).order_by('-d', 'player__tag')
+        entries = entries.extra(select={'d': 'rating+rating_' + sort}).order_by('-d', 'player__tag')
 
     entries = entries.prefetch_related('prev')
 
@@ -183,9 +185,9 @@ def period(request, period_id=None):
     pagesize = SHOW_PER_LIST_PAGE
     page = int(get_param(request, 'page', 1))
     nitems = entries.count()
-    npages = nitems//pagesize + (1 if nitems % pagesize > 0 else 0)
+    npages = nitems // pagesize + (1 if nitems % pagesize > 0 else 0)
     page = min(max(page, 1), npages)
-    entries = entries[(page-1)*pagesize : page*pagesize] if page > 0 else []
+    entries = entries[(page - 1) * pagesize: page * pagesize] if page > 0 else []
 
     pn_start, pn_end = page - 2, page + 2
     if pn_start < 1:
@@ -198,23 +200,25 @@ def period(request, period_id=None):
         pn_start = 1
 
     base.update({
-        'page':       page,
-        'npages':     npages,
-        'startcount': (page-1)*pagesize,
-        'entries':    populate_teams(entries),
-        'nperiods':   Period.objects.filter(computed=True).count(),
-        'pn_range':   range(pn_start, pn_end+1),
+        'page': page,
+        'npages': npages,
+        'startcount': (page - 1) * pagesize,
+        'entries': populate_teams(entries),
+        'nperiods': Period.objects.filter(computed=True).count(),
+        'pn_range': range(pn_start, pn_end + 1),
     })
     # }}}
 
     base.update({
-        'sortable':   True,
+        'sortable': True,
         'localcount': True,
     })
-        
+
     fmt_date = django_date_filter(period.end, "F jS, Y")
 
     return render_to_response('period.djhtml', base)
+
+
 # }}}
 
 # {{{ earnings view
@@ -252,16 +256,16 @@ def earnings(request):
 
     ranking = (
         preranking.values('player')
-            .annotate(totalorigearnings=Sum('origearnings'))
-            .annotate(totalearnings=Sum('earnings'))
-            .order_by('-totalearnings', 'player')
+        .annotate(totalorigearnings=Sum('origearnings'))
+        .annotate(totalearnings=Sum('earnings'))
+        .order_by('-totalearnings', 'player')
     )
     # }}}
 
     # {{{ Calculate total earnings
     base.update({
         'totalorigprizepool': preranking.aggregate(Sum('origearnings'))['origearnings__sum'],
-        'totalprizepool':     preranking.aggregate(Sum('earnings'))['earnings__sum'],
+        'totalprizepool': preranking.aggregate(Sum('earnings'))['earnings__sum'],
     })
     # }}}
 
@@ -269,7 +273,7 @@ def earnings(request):
     pagesize = SHOW_PER_LIST_PAGE
     page = int(get_param(request, 'page', 1))
     nitems = ranking.count()
-    npages = nitems//pagesize + (1 if nitems % pagesize > 0 else 0)
+    npages = nitems // pagesize + (1 if nitems % pagesize > 0 else 0)
     page = min(max(page, 1), npages)
 
     pn_start, pn_end = page - 2, page + 2
@@ -283,14 +287,14 @@ def earnings(request):
         pn_start = 1
 
     base.update({
-        'page':       page,
-        'npages':     npages,
-        'startcount': (page-1)*pagesize,
-        'pn_range':   range(pn_start, pn_end+1)
+        'page': page,
+        'npages': npages,
+        'startcount': (page - 1) * pagesize,
+        'pn_range': range(pn_start, pn_end + 1)
     })
 
     if nitems > 0:
-        ranking = ranking[(page-1)*pagesize : page*pagesize]
+        ranking = ranking[(page - 1) * pagesize: page * pagesize]
     else:
         base['empty'] = True
     # }}}

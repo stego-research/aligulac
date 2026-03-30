@@ -1,43 +1,39 @@
 # {{{ Imports
-from itertools import chain
 import json
 import random
 import shlex
 import string
 import subprocess
 from datetime import (
-    date, 
     datetime,
 )
+from itertools import chain
 
 from django import forms
 from django.contrib.auth import (
     authenticate,
     login,
 )
-from django.template.context_processors import csrf
-from django.db.models import Q, F
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.http import HttpResponse
+from django.template.context_processors import csrf
 from django.template.loader import render_to_string
-from django.views.decorators.csrf import csrf_protect
+from django.utils.translation import gettext as _
 
 from aligulac.cache import cache_page
 from aligulac.settings import PROJECT_PATH, DEBUG
-
 from ratings.models import (
-    Earnings,
     Event,
     Group,
     Player,
-    Rating,
     TYPE_CATEGORY,
-    TYPE_EVENT,
-    TYPE_ROUND
+    TYPE_EVENT
 )
-from ratings.tools import get_latest_period, find_player
 from ratings.templatetags.ratings_extras import urlfilter
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext as _
+from ratings.tools import get_latest_period, find_player
+
+
 # }}}
 
 # {{{ JsonResponse
@@ -51,6 +47,8 @@ class JsonResponse(HttpResponse):
             kwargs["content_type"] = "application/json"
 
         super().__init__(scontent, *args, **kwargs)
+
+
 # }}}
 
 
@@ -76,23 +74,25 @@ class Message:
             self.title = None
             self.text = field + ': ' + error
             self.type = self.ERROR
-        self.id = ''.join([random.choice(string.ascii_letters+string.digits) for i in range(10)])
+        self.id = ''.join([random.choice(string.ascii_letters + string.digits) for i in range(10)])
+
+
 # }}}
 
 # {{{ NotUniquePlayerMessage
 class NotUniquePlayerMessage(Message):
 
     def __init__(self, search, players, update=None, updateline=None, type='error'):
-        id = ''.join([random.choice(string.ascii_letters+string.digits) for i in range(10)])
+        id = ''.join([random.choice(string.ascii_letters + string.digits) for i in range(10)])
 
         ctx = dict()
         ctx['msg_id'] = id
         player_list = list(
             chain(
                 players.filter(current_rating__isnull=False)
-                  .order_by('-current_rating__rating'),
+                .order_by('-current_rating__rating'),
                 players.filter(current_rating__isnull=True)
-                  .order_by('tag')
+                .order_by('tag')
             )
         )
         ctx['players'] = player_list
@@ -105,11 +105,15 @@ class NotUniquePlayerMessage(Message):
 
         Message.__init__(self, s, _('\'%s\' not unique') % search, type)
         self.id = id
+
+
 # }}}
 
 # {{{ generate_messages: Generates a list of message objects for an object that supports them.
 def generate_messages(obj):
     return [Message(m.get_message(), m.get_title(), m.type) for m in obj.message_set.all()]
+
+
 # }}}
 
 # {{{ login_message: Generates a message notifying about login status.
@@ -125,6 +129,8 @@ def login_message(base, extra=''):
             )
         ])
     base['messages'].append(Message(text, type=Message.INFO))
+
+
 # }}}
 
 # {{{ StrippedCharField: Subclass of CharField that performs stripping.
@@ -139,6 +145,8 @@ class StrippedCharField(forms.CharField):
                 return None
             return value
         return None
+
+
 # }}}
 
 # {{{ get_param(request, param, default): Returns request.GET[param] if available, default if not.
@@ -147,6 +155,8 @@ def get_param(request, param, default):
         return request.GET[param]
     except:
         return default
+
+
 # }}}
 
 # {{{ get_param_choice(request, param, choices, default): Returns request.GET[param] if available and in
@@ -154,10 +164,12 @@ def get_param(request, param, default):
 def get_param_choice(request, param, choices, default):
     try:
         val = request.GET[param]
-        assert(val in choices)
+        assert (val in choices)
         return val
     except:
         return default
+
+
 # }}}
 
 # {{{ get_param_range(request, param, range, default): Returns request.GET[param] as an int, restricted to the
@@ -168,6 +180,8 @@ def get_param_range(request, param, rng, default):
         return min(max(val, rng[0]), rng[1])
     except:
         return default
+
+
 # }}}
 
 # {{{ get_param_date(request, param, default): Converts a GET param to a date.
@@ -177,6 +191,8 @@ def get_param_date(request, param, default):
         return datetime.strptime(param, '%Y-%m-%d').date()
     except:
         return default
+
+
 # }}}
 
 # {{{ post_param(request, param, default): Returns request.POST[param] if available, default if not.
@@ -186,6 +202,8 @@ def post_param(request, param, default):
         return request.POST[param]
     except:
         return default
+
+
 # }}}
 
 # {{{ base_ctx: Generates a minimal context, required to render the site layout and menus
@@ -199,27 +217,27 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
     curp = get_latest_period()
 
     base = {
-        'curp':      curp,
-        'debug':     DEBUG,
-        'cur_path':  request.get_full_path(),
-        'messages':  [],
-        'lang':      request.LANGUAGE_CODE,
-        'menu':      [{
+        'curp': curp,
+        'debug': DEBUG,
+        'cur_path': request.get_full_path(),
+        'messages': [],
+        'lang': request.LANGUAGE_CODE,
+        'menu': [{
             'id': 'Ranking',
             'name': _('Ranking'),
             'url': '/periods/latest/',
             'submenu': [
-                ('Current', _('Current'),  '/periods/latest/'),
-                ('History', _('History'),  '/periods/'),
+                ('Current', _('Current'), '/periods/latest/'),
+                ('History', _('History'), '/periods/'),
                 ('Earnings', _('Earnings'), '/earnings/'),
-        ]}, {
+            ]}, {
             'id': 'Teams',
             'name': _('Teams'),
             'url': '/teams/',
             'submenu': [
                 ('Ranking', _('Ranking'), '/teams/'),
                 ('Transfers', _('Transfers'), '/transfers/'),
-        ]}, {
+            ]}, {
             'id': 'Records',
             'name': _('Records'),
             'url': '/records/history/',
@@ -231,7 +249,7 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
                 ('Protoss', _('Protoss'), '/records/race/?race=P'),
                 ('Terran', _('Terran'), '/records/race/?race=T'),
                 ('Zerg', _('Zerg'), '/records/race/?race=Z'),
-        ]}, {
+            ]}, {
             'id': 'Results',
             'name': _('Results'),
             'url': '/results/',
@@ -239,13 +257,13 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
                 ('By Date', _('By Date'), '/results/'),
                 ('By Event', _('By Event'), '/results/events/'),
                 ('Search', _('Search'), '/results/search/'),
-        ]}, {
+            ]}, {
             'id': 'Inference',
             'name': _('Inference'),
             'url': '/inference/',
             'submenu': [
                 ('Predict', _('Predict'), '/inference/'),
-        ]}, {
+            ]}, {
             'id': 'Misc',
             'name': _('Misc'),
             'url': '/misc/',
@@ -253,7 +271,7 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
                 ('Balance Report', _('Balance Report'), '/misc/balance/'),
                 ('Days Since…', _('Days Since…'), '/misc/days/'),
                 ('Compare', _('Compare'), '/misc/compare/')
-        ]}, {
+            ]}, {
             'id': 'About',
             'name': _('About'),
             'url': '/about/faq/',
@@ -262,7 +280,7 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
                 ('Blog', _('Blog'), '/about/blog/'),
                 ('Database', _('Database'), '/about/db/'),
                 ('API', _('API'), '/about/api/'),
-        ]}, {
+            ]}, {
             'id': 'Submit',
             'name': _('Submit'),
             'url': '/add/',
@@ -274,13 +292,15 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
                 ('Open events', _('Open events'), '/add/open_events/'),
                 ('Player info', _('Player info'), '/add/player_info/'),
                 ('Misc', _('Misc'), '/add/misc/'),
-        ]}]
+            ]}]
     }
     base.update({"subnav": None})
+
     def add_subnav(title, url):
         if base["subnav"] is None:
             base["subnav"] = []
         base["subnav"].append((title, url))
+
     base.update(csrf(request))
 
     # Log in if possible
@@ -324,7 +344,6 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
             if rating is not None:
                 add_subnav(_('Adjustments'), base_url + 'period/%i/' % rating.period.id)
 
-
     if DEBUG:
         p = subprocess.Popen(['git', '-C', PROJECT_PATH, 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
         base['commithash'] = p.communicate()[0].decode().strip()[:8]
@@ -334,6 +353,8 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
         base['commitbranch'] = p.communicate()[0].decode().strip()
 
     return base
+
+
 # }}}
 
 # {{{ cache_login_protect: Decorator for caching only if user is not logged in.
@@ -348,7 +369,10 @@ def cache_login_protect(view):
         else:
             final_view = cache_page(view)
         return final_view(request, *args, **kwargs)
+
     return handler
+
+
 # }}}
 
 # {{{ etn: Executes a function and returns its result if it doesn't throw an exception, or None if it does.
@@ -357,11 +381,15 @@ def etn(f):
         return f()
     except:
         return None
+
+
 # }}}
 
 # {{{ ntz: Helper function with aggregation, sending None to 0, so that the sum of an empty list is 0.
 # AS IT FUCKING SHOULD BE.
 ntz = lambda k: k if k is not None else 0
+
+
 # }}}
 
 

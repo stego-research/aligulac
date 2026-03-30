@@ -1,10 +1,9 @@
 # {{{ Imports
 import datetime
+import random
+import string
 from itertools import islice
 from math import sqrt, ceil
-import random
-import re
-import string
 
 from django.contrib.auth.models import User
 from django.db import (
@@ -12,7 +11,6 @@ from django.db import (
     transaction,
 )
 from django.db.models import (
-    F,
     Max,
     Min,
     Q,
@@ -27,14 +25,13 @@ from aligulac.settings import (
     INACTIVE_THRESHOLD,
     SHOW_PER_LIST_PAGE
 )
-
-from currency import ExchangeRates
-
 from countries import (
     transformations,
     data,
 )
+from currency import ExchangeRates
 from ratings.model_tools import swap_q_object
+
 # }}}
 
 # List of countries
@@ -44,46 +41,46 @@ countries = [(code, transformations.cc_to_cn(code)) for code in data.ccn_to_cca2
 countries.sort(key=lambda a: a[1])
 
 # {{{ Various enum-types
-TLPD_DB_WOLKOREAN        = 0b00001
+TLPD_DB_WOLKOREAN = 0b00001
 TLPD_DB_WOLINTERNATIONAL = 0b00010
-TLPD_DB_HOTS             = 0b00100
-TLPD_DB_HOTSBETA         = 0b01000
-TLPD_DB_WOLBETA          = 0b10000
+TLPD_DB_HOTS = 0b00100
+TLPD_DB_HOTSBETA = 0b01000
+TLPD_DB_WOLBETA = 0b10000
 TLPD_DBS = [
     # Translators: TLPD database
-    (TLPD_DB_WOLBETA,          _('WoL Beta')),
+    (TLPD_DB_WOLBETA, _('WoL Beta')),
     # Translators: TLPD database
-    (TLPD_DB_WOLKOREAN,        _('WoL Korean')),
+    (TLPD_DB_WOLKOREAN, _('WoL Korean')),
     # Translators: TLPD database
     (TLPD_DB_WOLINTERNATIONAL, _('WoL International')),
     # Translators: TLPD database
-    (TLPD_DB_HOTSBETA,         _('HotS Beta')),
+    (TLPD_DB_HOTSBETA, _('HotS Beta')),
     # Translators: TLPD database
-    (TLPD_DB_HOTS,             _('HotS')),
+    (TLPD_DB_HOTS, _('HotS')),
 ]
 
 CAT_INDIVIDUAL = 'individual'
-CAT_TEAM       = 'team'
-CAT_FREQUENT   = 'frequent'
+CAT_TEAM = 'team'
+CAT_FREQUENT = 'frequent'
 EVENT_CATEGORIES = [
     # Translators: Event category
     (CAT_INDIVIDUAL, _('Individual')),
     # Translators: Event category
-    (CAT_TEAM,       _('Team')),
+    (CAT_TEAM, _('Team')),
     # Translators: Event category
-    (CAT_FREQUENT,   _('Frequent')),
+    (CAT_FREQUENT, _('Frequent')),
 ]
 
 TYPE_CATEGORY = 'category'
-TYPE_EVENT    = 'event'
-TYPE_ROUND    = 'round'
+TYPE_EVENT = 'event'
+TYPE_ROUND = 'round'
 EVENT_TYPES = [
     # Translators: Event type
     (TYPE_CATEGORY, _('Category')),
     # Translators: Event type
-    (TYPE_EVENT,    _('Event')),
+    (TYPE_EVENT, _('Event')),
     # Translators: Event type
-    (TYPE_ROUND,    _('Round')),
+    (TYPE_ROUND, _('Round')),
 ]
 
 WCS_YEARS = [
@@ -122,129 +119,129 @@ SRACES = dict([
 ])
 MRACES = RACES[:-1]
 
-WOL  = 'WoL'
+WOL = 'WoL'
 HOTS = 'HotS'
 LOTV = 'LotV'
 GAMES = [
-    (WOL,  _('Wings of Liberty')),
+    (WOL, _('Wings of Liberty')),
     (HOTS, _('Heart of the Swarm')),
     (LOTV, _('Legacy of the Void')),
 ]
 
-TYPE_INFO    = 'info'
+TYPE_INFO = 'info'
 TYPE_WARNING = 'warning'
-TYPE_ERROR   = 'error'
+TYPE_ERROR = 'error'
 TYPE_SUCCESS = 'success'
 MESSAGE_TYPES = [
     # Translators: Message type
-    (TYPE_INFO,    _('info')),
+    (TYPE_INFO, _('info')),
     # Translators: Message type
     (TYPE_WARNING, _('warning')),
     # Translators: Message type
-    (TYPE_ERROR,   _('error')),
+    (TYPE_ERROR, _('error')),
     # Translators: Message type
     (TYPE_SUCCESS, _('success')),
 ]
 
 MESSAGES_SRC = [
     (_('Possible confusion'),
-        'You might be looking for %(player)s.', _('You might be looking for %(player)s.')),
+     'You might be looking for %(player)s.', _('You might be looking for %(player)s.')),
     (_('Possible confusion'),
-        'You might be looking for %(players)s or %(player)s.',
-        _('You might be looking for %(players)s or %(player)s.')),
+     'You might be looking for %(players)s or %(player)s.',
+     _('You might be looking for %(players)s or %(player)s.')),
     (_('Walkover'), '%(player)s recieved a walkover.', _('%(player)s recieved a walkover.')),
     (_('Walkover'),
-        '%(player)s recieved a walkover against %(opponent)s.',
-        _('%(player)s recieved a walkover against %(opponent)s.')),
+     '%(player)s recieved a walkover against %(opponent)s.',
+     _('%(player)s recieved a walkover against %(opponent)s.')),
     (_('Forfeit'), '%(player)s forfeited.', _('%(player)s forfeited.')),
     (_('Disqualification'), '%(player)s was disqualified.', _('%(player)s was disqualified.')),
     (_('Forfeit'),
-        '%(player)s forfeited and was replaced by %(otherplayer)s.',
-        _('%(player)s forfeited and was replaced by %(otherplayer)s.')),
+     '%(player)s forfeited and was replaced by %(otherplayer)s.',
+     _('%(player)s forfeited and was replaced by %(otherplayer)s.')),
     (_('Forfeits'), '%(players)s and %(player)s forfeited.', _('%(players)s and %(player)s forfeited.')),
     (_('Forfeit'),
-        '%(player)s forfeited against %(opponent)s.', _('%(player)s forfeited against %(opponent)s.')),
+     '%(player)s forfeited against %(opponent)s.', _('%(player)s forfeited against %(opponent)s.')),
     (_('Forfeit'), '%(player)s forfeited after game %(num)s.', _('%(player)s forfeited after game %(num)s.')),
     (_('Forfeit'), '%(player)s forfeited game %(num)s.', _('%(player)s forfeited game %(num)s.')),
     (_('Forfeit'),
-        '%(player)s forfeited the remaining games.', _('%(player)s forfeited the remaining games.')),
+     '%(player)s forfeited the remaining games.', _('%(player)s forfeited the remaining games.')),
     (_('Forfeit'),
-        '%(player)s forfeited the remaining matches.', _('%(player)s forfeited the remaining matches.')),
+     '%(player)s forfeited the remaining matches.', _('%(player)s forfeited the remaining matches.')),
     (_('Forfeits'),
-        '%(players)s and %(player)s forfeited the remaining matches.',
-        _('%(players)s and %(player)s forfeited the remaining matches.')),
+     '%(players)s and %(player)s forfeited the remaining matches.',
+     _('%(players)s and %(player)s forfeited the remaining matches.')),
     (_('Walkover'),
-        'In addition, %(player)s received a walkover against %(opponent)s.',
-        _('In addition, %(player)s received a walkover against %(opponent)s.')),
+     'In addition, %(player)s received a walkover against %(opponent)s.',
+     _('In addition, %(player)s received a walkover against %(opponent)s.')),
     (_('Forfeit'),
-        'In addition, %(player)s forfeited against %(opponent)s.',
-        _('In addition, %(player)s forfeited against %(opponent)s.')),
+     'In addition, %(player)s forfeited against %(opponent)s.',
+     _('In addition, %(player)s forfeited against %(opponent)s.')),
     (_('Unrated match'),
-        'In addition, %(player)s and %(opponent)s played an unrated match.',
-        _('In addition, %(player)s and %(opponent)s played an unrated match.')),
+     'In addition, %(player)s and %(opponent)s played an unrated match.',
+     _('In addition, %(player)s and %(opponent)s played an unrated match.')),
     (_('2v2'),
-        'In addition, %(playera)s and %(playerb)s won a 2v2 against %(playerc)s and %(playerd)s.',
-        _('In addition, %(playera)s and %(playerb)s won a 2v2 against %(playerc)s and %(playerd)s.')),
+     'In addition, %(playera)s and %(playerb)s won a 2v2 against %(playerc)s and %(playerd)s.',
+     _('In addition, %(playera)s and %(playerb)s won a 2v2 against %(playerc)s and %(playerd)s.')),
     (_('Race switch'),
-        '%(player)s played %(race)s in game %(num)s.', _('%(player)s played %(race)s in game %(num)s.')),
+     '%(player)s played %(race)s in game %(num)s.', _('%(player)s played %(race)s in game %(num)s.')),
     (_('Race switch'), '%(player)s played %(race)s.', _('%(player)s played %(race)s.')),
     (_('Race switch'),
-        '%(player)s switched to %(race)s after game %(num)s.',
-        _('%(player)s switched to %(race)s after game %(num)s.')),
+     '%(player)s switched to %(race)s after game %(num)s.',
+     _('%(player)s switched to %(race)s after game %(num)s.')),
     (_('Smurf'),
-        '%(player)s was smurfing for %(otherplayer)s.', _('%(player)s was smurfing for %(otherplayer)s.')),
-    (_('Smurf'), 
-        '%(player)s was smurfing as %(otherplayer)s.', _('%(player)s was smurfing as %(otherplayer)s.')),
+     '%(player)s was smurfing for %(otherplayer)s.', _('%(player)s was smurfing for %(otherplayer)s.')),
     (_('Smurf'),
-        '%(player)s was smurfing as %(otherplayer)s and was disqualified due to residency rules.',
-        _('%(player)s was smurfing as %(otherplayer)s and was disqualified due to residency rules.')),
+     '%(player)s was smurfing as %(otherplayer)s.', _('%(player)s was smurfing as %(otherplayer)s.')),
+    (_('Smurf'),
+     '%(player)s was smurfing as %(otherplayer)s and was disqualified due to residency rules.',
+     _('%(player)s was smurfing as %(otherplayer)s and was disqualified due to residency rules.')),
     (_('Forfeit'), '%(player)s was unable to attend.', _('%(player)s was unable to attend.')),
     (_('Race switch'),
-        'This match was split due to race-changing.', _('This match was split due to race-changing.')),
+     'This match was split due to race-changing.', _('This match was split due to race-changing.')),
     (_('Irregular match'),
-        'Coming from the loser\'s bracket, %(player)s had to win two Bo%(num)ss.',
-        _('Coming from the loser\'s bracket, %(player)s had to win two Bo%(num)ss.')),
+     'Coming from the loser\'s bracket, %(player)s had to win two Bo%(num)ss.',
+     _('Coming from the loser\'s bracket, %(player)s had to win two Bo%(num)ss.')),
     (_('Irregular match'),
-        'Coming from the winner\'s bracket, %(player)s started the match with a %(na)s-%(nb)s lead.',
-        _('Coming from the winner\'s bracket, %(player)s started the match with a %(na)s-%(nb)s lead.')),
+     'Coming from the winner\'s bracket, %(player)s started the match with a %(na)s-%(nb)s lead.',
+     _('Coming from the winner\'s bracket, %(player)s started the match with a %(na)s-%(nb)s lead.')),
     (_('Irregular match'),
-        '%(player)s started the match with a %(na)s–%(nb)s lead from a previous match.',
-        _('%(player)s started the match with a %(na)s–%(nb)s lead from a previous match.')),
+     '%(player)s started the match with a %(na)s–%(nb)s lead from a previous match.',
+     _('%(player)s started the match with a %(na)s–%(nb)s lead from a previous match.')),
     (_('Irregular match'),
-        '%(player)s started the match with a %(na)s–%(nb)s lead.',
-        _('%(player)s started the match with a %(na)s–%(nb)s lead.')),
+     '%(player)s started the match with a %(na)s–%(nb)s lead.',
+     _('%(player)s started the match with a %(na)s–%(nb)s lead.')),
     (_('Qualification'),
-        '%(player)s defeated %(opponent)s to qualify for %(event)s.',
-        _('%(player)s defeated %(opponent)s to qualify for %(event)s.')),
+     '%(player)s defeated %(opponent)s to qualify for %(event)s.',
+     _('%(player)s defeated %(opponent)s to qualify for %(event)s.')),
     (_('Qualification'),
-        '%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s.',
-        _('%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s.')),
+     '%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s.',
+     _('%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s.')),
     (_('Qualification'),
-        '%(player)s defeated %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.',
-        _('%(player)s defeated %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.')),
+     '%(player)s defeated %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.',
+     _('%(player)s defeated %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.')),
     (_('Qualification'),
-        '%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.',
-        _('%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.')),
+     '%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.',
+     _('%(player)s defeated %(opponents)s and %(opponent)s to qualify for %(event)s alongside %(otherplayer)s.')),
     (_('Forfeit and qualification'),
-        '%(player)s forfeited and was replaced by %(otherplayer)s who won a qualifier against %(opponent)s.',
-        _('%(player)s forfeited and was replaced by %(otherplayer)s who won a qualifier against %(opponent)s.')),
+     '%(player)s forfeited and was replaced by %(otherplayer)s who won a qualifier against %(opponent)s.',
+     _('%(player)s forfeited and was replaced by %(otherplayer)s who won a qualifier against %(opponent)s.')),
     (_('Qualification'),
-        'Qualification match to replace %(player)s.', _('Qualification match to replace %(player)s.')),
+     'Qualification match to replace %(player)s.', _('Qualification match to replace %(player)s.')),
     (_('Tiebreakers'),
-        '%(players)s and %(player)s played tiebreakers for the %(num)s spots.',
-        _('%(players)s and %(player)s played tiebreakers for the %(num)s spots.')),
+     '%(players)s and %(player)s played tiebreakers for the %(num)s spots.',
+     _('%(players)s and %(player)s played tiebreakers for the %(num)s spots.')),
     (_('Long game'),
-        'Game %(num)s lasted for %(h)s hours, %(m)s minutes and %(s)s seconds.',
-        _('Game %(num)s lasted for %(h)s hours, %(m)s minutes and %(s)s seconds.')),
+     'Game %(num)s lasted for %(h)s hours, %(m)s minutes and %(s)s seconds.',
+     _('Game %(num)s lasted for %(h)s hours, %(m)s minutes and %(s)s seconds.')),
     (_('Possible confusion'),
-        '%(player)s won %(num)s-X, assumed to be %(num)s-0.',
-        _('%(player)s won %(num)s-X, assumed to be %(num)s-0.')),
+     '%(player)s won %(num)s-X, assumed to be %(num)s-0.',
+     _('%(player)s won %(num)s-X, assumed to be %(num)s-0.')),
     (_('Tiebreakers'), 'Tiebreaker game.', _('Tiebreaker game.')),
     (_('Seed'), '%(player)s was seeded.', _('%(player)s was seededs.')),
     (_('Seeds'), '%(players)s and %(player)s were seeded.', _('%(players)s and %(player)s were seeded.')),
     (_('Draw'),
-        'Game %(num)s was a draw and had to be replayed.', 
-        _('Game %(num)s was a draw and had to be replayed.')),
+     'Game %(num)s was a draw and had to be replayed.',
+     _('Game %(num)s was a draw and had to be replayed.')),
 ]
 MESSAGES = list(map(lambda m: (m[1], m[2]), MESSAGES_SRC))
 MESSAGES_DICT = dict(MESSAGES)
@@ -253,14 +250,14 @@ MESSAGES_IDX = list(map(lambda m: m[1], MESSAGES))
 
 STORIES = [
     ('%(player)s wins %(event)s', _('%(player)s wins %(event)s')),
-    ('%(player)s defeats %(opponent)s and wins %(event)s', 
-        _('%(player)s defeats %(opponent)s and wins %(event)s')),
+    ('%(player)s defeats %(opponent)s and wins %(event)s',
+     _('%(player)s defeats %(opponent)s and wins %(event)s')),
     ('%(player)s wins %(event)s as a royal roader', _('%(player)s wins %(event)s as a royal roader')),
     ('%(player)s defeats %(opponent)s and wins %(event)s as a royal roader',
-        _('%(player)s defeats %(opponent)s and wins %(event)s as a royal roader')),
+     _('%(player)s defeats %(opponent)s and wins %(event)s as a royal roader')),
     ('%(player)s all-kills %(team)s', _('%(player)s all-kills %(team)s')),
     ('%(player)s all-kills %(team)s and wins %(event)s',
-        _('%(player)s all-kills %(team)s and wins %(event)s')),
+     _('%(player)s all-kills %(team)s and wins %(event)s')),
     ('%(player)s finishes second in %(event)s', _('%(player)s finishes second in %(event)s')),
     ('%(player)s finishes third in %(event)s', _('%(player)s finishes third in %(event)s')),
     ('%(player)s finishes fourth in %(event)s', _('%(player)s finishes fourth in %(event)s')),
@@ -270,19 +267,21 @@ STORIES = [
     ('%(player)s switches back to %(race)s', _('%(player)s switches back to %(race)s')),
     ('%(player)s switches from %(racea)s to %(raceb)s', _('%(player)s switches from %(racea)s to %(raceb)s')),
     ('%(player)s switches from %(racea)s back to %(raceb)s',
-        _('%(player)s switches from %(racea)s back to %(raceb)s')),
+     _('%(player)s switches from %(racea)s back to %(raceb)s')),
     ('%(player)s defeats %(opponent)s and starts a %(num)s-kill spree in %(event)s',
-        _('%(player)s defeats %(opponent)s and starts a %(num)s-kill spree in %(event)s')),
+     _('%(player)s defeats %(opponent)s and starts a %(num)s-kill spree in %(event)s')),
     ('%(player)s loses to %(opponent)s, ending a %(num)s-kill spree in %(event)s',
-        _('%(player)s loses to %(opponent)s, ending a %(num)s-kill spree in %(event)s')),
+     _('%(player)s loses to %(opponent)s, ending a %(num)s-kill spree in %(event)s')),
     ('%(player)s fails to qualify for %(event)s', _('%(player)s fails to qualify for %(event)s')),
     ('%(player)s fails to qualify for %(event)s after %(num)s appearances',
-        _('%(player)s fails to qualify for %(event)s after %(num)s appearances')),
+     _('%(player)s fails to qualify for %(event)s after %(num)s appearances')),
     ('%(player)s attends their first event as a caster',
-        _('%(player)s attends their first event as a caster'))
+     _('%(player)s attends their first event as a caster'))
 ]
 STORIES_DICT = dict(STORIES)
 STORIES_IDX = list(map(lambda m: m[0], STORIES))
+
+
 # }}}
 
 # {{{ Periods
@@ -328,17 +327,21 @@ class Period(models.Model):
         'Zerg OP value', null=True,
         help_text='Zerg OP value'
     )
+
     # }}}
 
     # {{{ String representation
     def __str__(self):
         return 'Period #' + str(self.id) + ': ' + str(self.start) + ' to ' + str(self.end)
+
     # }}}
 
     # {{{ is_preview: Checks whether this period is still a preview
     def is_preview(self):
         return self.end >= datetime.date.today()
     # }}}
+
+
 # }}}
 
 # {{{ Events
@@ -422,6 +425,7 @@ class Event(models.Model):
 
     wcs_year = models.IntegerField('WCS year', blank=True, null=True, choices=WCS_YEARS)
     wcs_tier = models.IntegerField('WCS tier', blank=True, null=True, choices=WCS_TIERS)
+
     # }}}
 
     # {{{ open_events: Not used... is this useful?
@@ -429,17 +433,19 @@ class Event(models.Model):
     def open_events():
         qset = (
             Event.objects.filter(closed=False)
-                .exclude(downlink__distance__gt=0)
-                .order_by('idx', 'fullname')
-                .values('id', 'fullname')
+            .exclude(downlink__distance__gt=0)
+            .order_by('idx', 'fullname')
+            .values('id', 'fullname')
         )
         for e in qset:
             yield (e['id'], e['fullname'])
+
     # }}}
 
     # {{{ String representation
     def __str__(self):
         return self.fullname
+
     # }}}
 
     # {{{ get_parent(): Returns the parent, or null
@@ -448,6 +454,7 @@ class Event(models.Model):
             return self.uplink.get(distance=1).parent
         except:
             return None
+
     # }}}
 
     # {{{ get_ancestors(id=False): Returns a queryset/list containing the
@@ -470,11 +477,13 @@ class Event(models.Model):
         ]
         results.sort(key=lambda link: -link.distance)
         return [link.parent for link in results]
+
     # }}}
 
     # {{{ get_ancestors_print: Returns a list containing the printable ancestors
     def get_ancestors_print(self, id=True):
         return [event for event in self.get_ancestors_list(id) if not event.noprint]
+
     # }}}
 
     # {{{ get_ancestors_event: Returns a list containing printable ancestors of type event or category
@@ -483,11 +492,13 @@ class Event(models.Model):
             x for x in self.get_ancestors_list(id=True)
             if x.type in (TYPE_CATEGORY, TYPE_EVENT)
         ]
+
     # }}}
 
     # {{{ get_root: Returns the farthest removed ancestor
     def get_root(self):
         return self.get_ancestors_list(id=True)[0]
+
     # }}}
 
     # {{{ get_children(types=[category,event,round], id=False): Returns a queryset containing the children
@@ -498,16 +509,19 @@ class Event(models.Model):
         else:
             qset = Event.objects.filter(uplink__parent=self)
         return qset.filter(type__in=types)
+
     # }}}
 
     # {{{ get_immediate_children: Returns a queryset of immediate children
     def get_immediate_children(self):
         return Event.objects.filter(uplink__parent=self, uplink__distance=1)
+
     # }}}
 
     # {{{ has_children: Returns true if this event has children, false if not
     def has_children(self):
         return self.downlink.filter(distance__gt=0).exists()
+
     # }}}
 
     # {{{ update_name: Refreshes the fullname field (must be called after changing name of ancestors)
@@ -519,19 +533,22 @@ class Event(models.Model):
         ancestors = self.get_ancestors_print()
         self.fullname = ' '.join([e.name for e in ancestors])
         self.save()
+
     # }}}
 
     # {{{ get_event_fullname: Returns the fullname of the nearest ancestor of type event or category
     # This is not cached and will query the DB!
     def get_event_fullname(self):
         return self.get_ancestors_event()[-1].fullname
+
     # }}}
 
     # {{{ get_event: Returns the nearest ancestor of type event or category
     def get_event_event(self):
         return self.get_ancestors_event()[-1]
+
     # }}}
-    
+
     # {{{ get_homepage: Returns the URL if one can be found, None otherwise
     # This is not cached and will query the DB!
     def get_homepage(self):
@@ -539,6 +556,7 @@ class Event(models.Model):
             return self.get_ancestors(id=True).filter(homepage__isnull=False).last().homepage
         except:
             return None
+
     # }}}
 
     # {{{ get_lp_name: Returns the Liquipedia title if one can be found, None otherwise
@@ -548,6 +566,7 @@ class Event(models.Model):
             return self.get_ancestors(id=True).filter(lp_name__isnull=False).last().lp_name
         except:
             return None
+
     # }}}
 
     # {{{ get_tl_thread: Returns the ID of the TL thread if one can be found, None otherwise
@@ -556,17 +575,20 @@ class Event(models.Model):
             return self.get_ancestors(id=True).filter(tl_thread__isnull=False).last().tl_thread
         except:
             return None
+
     # }}}
 
     # {{{ get_matchset: Returns a queryset of matches
     def get_matchset(self):
         return Match.objects.filter(eventobj__uplink__parent=self)
+
     # }}}
 
     # {{{ get_immediate_matchset: Returns a queryset of matches attached to this event only. (May be faster
     # leaves.)
     def get_immediate_matchset(self):
         return self.match_set.all()
+
     # }}}
 
     # {{{ update_dates: Updates the fields earliest and latest
@@ -575,6 +597,7 @@ class Event(models.Model):
         self.latest = res['date__max']
         self.earliest = res['date__min']
         self.save()
+
     # }}}
 
     # {{{ change_type(type): Modifies the type of this event, and possibly all ancestors and events
@@ -590,6 +613,7 @@ class Event(models.Model):
 
         self.type = tp
         self.save()
+
     # }}}
 
     # {{{ Standard setters
@@ -632,6 +656,7 @@ class Event(models.Model):
     def set_idx(self, idx):
         self.idx = idx
         self.save()
+
     # }}}
 
     # {{{ add_child(name, type, noprint=False, closed=False): Adds a new child to the right of all existing
@@ -643,7 +668,7 @@ class Event(models.Model):
         new.save()
 
         links = [
-            EventAdjacency(parent_id=l.parent_id, child=new, distance=l.distance+1) 
+            EventAdjacency(parent_id=l.parent_id, child=new, distance=l.distance + 1)
             for l in self.uplink.all()
         ]
         EventAdjacency.objects.bulk_create(links)
@@ -653,6 +678,7 @@ class Event(models.Model):
         new.change_type(type)
 
         return new
+
     # }}}
 
     # {{{ add_root(name, type, big=False, noprint=False): Adds a new root node
@@ -669,16 +695,19 @@ class Event(models.Model):
         new.change_type(type)
 
         return new
+
     # }}}
 
     # {{{ close: Closes this event and all children
     def close(self):
         self.get_children(id=True).update(closed=True)
+
     # }}}
 
     # {{{ open: Opens this event and all ancestors
     def open(self):
         self.get_ancestors(id=True).update(closed=False)
+
     # }}}
 
     # {{{ delete_earnings(ranked=True): Deletes earnings objects associated to this event fulfilling the
@@ -688,6 +717,7 @@ class Event(models.Model):
             Earnings.objects.filter(event=self).exclude(placement__exact=0).delete()
         else:
             Earnings.objects.filter(event=self, placement__exact=0).delete()
+
     # }}}
 
     # {{{ move_earnings(new_event): Moves earnings from this event to the new event
@@ -697,12 +727,15 @@ class Event(models.Model):
         self.set_prizepool(None)
         new_event.set_prizepool(True)
         new_event.change_type(Event.EVENT)
+
     # }}}
 
     # {{{ delete_points: Deletes WCS points objects associated with this event
     def delete_points(self):
         WCSPoints.objects.filter(event=self).delete()
     # }}}
+
+
 # }}}
 
 # {{{ EventAdjacencies
@@ -718,6 +751,8 @@ class EventAdjacency(models.Model):
     def __str__(self):
         return str(self.parent) + ' -> ' + str(self.child) + ' (' + str(self.distance) + ')'
     # }}}
+
+
 # }}}
 
 # {{{ Players
@@ -798,6 +833,7 @@ class Player(models.Model):
         Period, blank=True, null=True, related_name='player_dom_end',
         help_text='End of domination period', on_delete=models.CASCADE,
     )
+
     # }}}
 
     # {{{ String representation
@@ -806,6 +842,7 @@ class Player(models.Model):
             return self.tag + ' (' + self.race + ', ' + self.country + ')'
         else:
             return self.tag + ' (' + self.race + ')'
+
     # }}}
 
     # {{{ Standard setters
@@ -816,11 +853,11 @@ class Player(models.Model):
     def set_race(self, race):
         self.race = race
         self.save()
-    
+
     def set_country(self, country):
         self.country = country
         self.save()
-    
+
     def set_name(self, name):
         self.name = None if name == '' else name
         self.save()
@@ -828,7 +865,7 @@ class Player(models.Model):
     def set_romanized_name(self, name):
         self.romanized_name = None if name == '' else name
         self.save()
-    
+
     def set_birthday(self, birthday):
         self.birthday = None if birthday == '' else birthday
         self.save()
@@ -848,6 +885,7 @@ class Player(models.Model):
     def set_lp_name(self, lp_name):
         self.lp_name = None if lp_name == '' else lp_name
         self.save()
+
     # }}}
 
     # {{{ Adding and removing TLPD databases
@@ -862,6 +900,7 @@ class Player(models.Model):
     def set_tlpd_db(self, tlpd_db):
         self.tlpd_db = tlpd_db
         self.save()
+
     # }}}
 
     # {{{ set_aliases: Set aliases
@@ -893,11 +932,13 @@ class Player(models.Model):
                 old.delete()
                 return True
             return False
+
     # }}}
 
     # {{{ get_aliases: Returns all aliases as a list
     def get_aliases(self):
         return [a.name for a in self.alias_set.all()]
+
     # }}}
 
     # {{{ get_current_teammembership: Gets the current team membership object of this player, if any.
@@ -907,6 +948,7 @@ class Player(models.Model):
             return next(x for x in groups if x.group.is_team and x.current)
         except:
             return None
+
     # }}}
 
     # {{{ get_current_team: Gets the current team object of this player, if any.
@@ -914,12 +956,13 @@ class Player(models.Model):
         try:
             return (
                 self.groupmembership_set
-                    .filter(current=True, group__is_team=True)
-                    .select_related('group')
-                    .first().group
+                .filter(current=True, group__is_team=True)
+                .select_related('group')
+                .first().group
             )
         except:
             return None
+
     # }}}
 
     # {{{ get_current_rating: Gets the current rating, if any.
@@ -927,11 +970,12 @@ class Player(models.Model):
         try:
             return (
                 self.rating_set
-                    .filter(period__computed=True)
-                    .latest('period')
+                .filter(period__computed=True)
+                .latest('period')
             )
         except:
             return None
+
     # }}}
 
     # {{{ get_latest_rating_update: Gets the latest rating of this player with decay zero, or None.
@@ -940,11 +984,13 @@ class Player(models.Model):
             return self.rating_set.filter(decay=0).latest('period')
         except:
             return None
+
     # }}}
 
     # {{{ has_earnings: Checks whether the player has any earnings.
     def has_earnings(self):
         return self.earnings_set.exists()
+
     # }}}
 
     # {{{ get_matchset: Returns a queryset of all this player's matches.
@@ -956,6 +1002,7 @@ class Player(models.Model):
         qset = qset.prefetch_related('message_set')
 
         return qset.order_by('-date', '-id')
+
     # }}}
 
     # {{{ get_rank: Calculates the rank for the player with country as filter
@@ -967,9 +1014,9 @@ class Player(models.Model):
 
         q = Rating.objects.filter(period=self.current_rating.period,
                                   rating__gt=self.current_rating.rating,
-                                  decay__lt=INACTIVE_THRESHOLD)\
-                          .exclude(player=self)
-        
+                                  decay__lt=INACTIVE_THRESHOLD) \
+            .exclude(player=self)
+
         if country == "foreigners":
             q = q.exclude(player__country='KR')
         elif country != '':
@@ -1008,7 +1055,6 @@ class Player(models.Model):
         return self.rank_page('foreigner_rank')
 
     # }}}
-
 
     # {{{ rivalries
     @property
@@ -1062,53 +1108,61 @@ class Player(models.Model):
 
     # }}}
 
+
 PLAYER_RIVAL_QUERY = """
-SELECT "player"."id", "player"."country", "player"."tag", "player"."race", Count(T2."plid") AS "matches" 
-FROM player 
-JOIN (
-     SELECT "player"."id" AS "plid", "match"."id" AS "mid" 
-     FROM player JOIN match ON 
-         ("player"."id" = "match"."pla_id" OR "player"."id" = "match"."plb_id") 
-     WHERE ("match"."pla_id" = %(id)s OR "match"."plb_id" = %(id)s) AND "player"."id" != %(id)s 
-     ) T2 
-ON "player"."id" = T2."plid" 
-GROUP BY "player"."id", "player"."country", "player"."tag", "player"."race"
-ORDER BY "matches" DESC
-LIMIT 5;"""
+                     SELECT "player"."id",
+                            "player"."country",
+                            "player"."tag",
+                            "player"."race",
+                            Count(T2."plid") AS "matches"
+                     FROM player
+                              JOIN (SELECT "player"."id" AS "plid", "match"."id" AS "mid"
+                                    FROM player
+                                             JOIN match ON
+                                        ("player"."id" = "match"."pla_id" OR "player"."id" = "match"."plb_id")
+                                    WHERE ("match"."pla_id" = %(id)s OR "match"."plb_id" = %(id)s)
+                                      AND "player"."id" != %(id)s) T2
+                                   ON "player"."id" = T2."plid"
+                     GROUP BY "player"."id", "player"."country", "player"."tag", "player"."race"
+                     ORDER BY "matches" DESC LIMIT 5;"""
 
 PLAYER_PM_QUERY = """
-SELECT "player"."id", "player"."country", "player"."tag", "player"."race", 
-       Sum(T2."for") - Sum(T2."against") AS "pm"
-FROM player JOIN (
-     SELECT 
-     	    "player"."id" AS "plid", 
-	    "match"."id" AS "mid", 
-	    (CASE 
-	    	  WHEN "player"."id" = "match"."pla_id" THEN 
-		       "match"."scb"
-		  ELSE
-		       "match"."sca"
-		  END
-            ) AS "for", 
-	    (CASE 
-	    	  WHEN "player"."id" = "match"."pla_id" THEN 
-		       "match"."sca"
-		  ELSE
-		       "match"."scb"
-		  END
-            ) AS "against", 
-	    "match"."sca" AS "sca",
-	    "match"."scb" AS "scb",
-	    "match"."pla_id",
-	    "match"."plb_id"
-     FROM player JOIN match ON 
-     ("player"."id" = "match"."pla_id" OR "player"."id" = "match"."plb_id") 
-     WHERE ("match"."pla_id" = %(id)s OR "match"."plb_id" = %(id)s) AND "player"."id" != %(id)s
-     ) T2 
-     ON "player"."id" = T2."plid" 
-GROUP BY "player"."id", "player"."country", "player"."tag", "player"."race"
-ORDER BY "pm" DESC;
-"""
+                  SELECT "player"."id",
+                         "player"."country",
+                         "player"."tag",
+                         "player"."race",
+                         Sum(T2."for") - Sum(T2."against") AS "pm"
+                  FROM player
+                           JOIN (SELECT "player"."id" AS "plid",
+                                        "match"."id"  AS "mid",
+                                        (CASE
+                                             WHEN "player"."id" = "match"."pla_id" THEN
+                                                 "match"."scb"
+                                             ELSE
+                                                 "match"."sca"
+                                            END
+                                            )         AS "for",
+                                        (CASE
+                                             WHEN "player"."id" = "match"."pla_id" THEN
+                                                 "match"."sca"
+                                             ELSE
+                                                 "match"."scb"
+                                            END
+                                            )         AS "against",
+                                        "match"."sca" AS "sca",
+                                        "match"."scb" AS "scb",
+                                        "match"."pla_id",
+                                        "match"."plb_id"
+                                 FROM player
+                                          JOIN match ON
+                                     ("player"."id" = "match"."pla_id" OR "player"."id" = "match"."plb_id")
+                                 WHERE ("match"."pla_id" = %(id)s OR "match"."plb_id" = %(id)s)
+                                   AND "player"."id" != %(id)s) T2
+                                ON "player"."id" = T2."plid"
+                  GROUP BY "player"."id", "player"."country", "player"."tag", "player"."race"
+                  ORDER BY "pm" DESC; \
+                  """
+
 
 # }}}
 
@@ -1156,6 +1210,8 @@ class Story(models.Model):
             return True
         except:
             return False
+
+
 # }}}
 
 # {{{ Groups
@@ -1208,18 +1264,20 @@ class Group(models.Model):
 
     is_team = models.BooleanField('Team', null=False, default=True, db_index=True)
     is_manual = models.BooleanField('Manual entry', null=False, default=True)
+
     # }}}
 
     # {{{ String representation
     def __str__(self):
         return self.name
+
     # }}}
 
     # {{{ Standard setters
     def set_name(self, name):
         self.name = name
         self.save()
-    
+
     def set_shortname(self, shortname):
         self.shortname = None if shortname == '' else shortname
         self.save()
@@ -1227,12 +1285,12 @@ class Group(models.Model):
     def set_homepage(self, homepage):
         self.homepage = None if homepage == '' else homepage
         self.save()
-    
+
     def set_lp_name(self, lp_name):
         self.lp_name = None if lp_name == '' else lp_name
-        self.save()    
-    # }}}
-    
+        self.save()
+        # }}}
+
     # {{{ set_aliases: Set aliases
     # Input: An array of string aliases, which are compared to existing aliases.
     # New ones are added, existing superfluous ones are removed.
@@ -1253,11 +1311,13 @@ class Group(models.Model):
 
         else:
             Alias.objects.filter(group=self).delete()
+
     # }}}
 
     # {{{ get_aliases: Returns all aliases as a list
     def get_aliases(self):
         return [a.name for a in self.alias_set.all()]
+
     # }}}
 
     # {{{ get_rank: Calculates the rank for the team given a metric
@@ -1270,21 +1330,21 @@ class Group(models.Model):
             return self._ranks[rank_type]
 
         if getattr(self, rank_type) is None or \
-           getattr(self, rank_type) in {-10, 0} or \
-           not self.active or \
-           self.disbanded is not None:
+                getattr(self, rank_type) in {-10, 0} or \
+                not self.active or \
+                self.disbanded is not None:
             self._ranks[rank_type] = None
             return None
 
         filters = {
-            rank_type+"__isnull": False,
-            rank_type+"__gt": getattr(self, rank_type),
+            rank_type + "__isnull": False,
+            rank_type + "__gt": getattr(self, rank_type),
             "active": True,
             "is_team": True
         }
-        q = Group.objects.filter(**filters)\
-                         .exclude(id=self.id)\
-
+        q = Group.objects.filter(**filters) \
+            .exclude(id=self.id) \
+ \
         c = q.count()
         self._ranks[rank_type] = c + 1
         return self._ranks[rank_type]
@@ -1316,6 +1376,7 @@ class Group(models.Model):
 
     # }}}
 
+
 # }}}
 
 # {{{ GroupMemberships
@@ -1330,14 +1391,16 @@ class GroupMembership(models.Model):
     end = models.DateField('Date left', blank=True, null=True)
     current = models.BooleanField('Current', default=True, null=False, db_index=True)
     playing = models.BooleanField('Playing', default=True, null=False, db_index=True)
-    
+
     # {{{ String representation
     def __str__(self):
         return (
-            'Player: %s Group: %s (%s - %s)' % 
-            (self.player.tag, self.group.name, str(self.start), str(self.end))
+                'Player: %s Group: %s (%s - %s)' %
+                (self.player.tag, self.group.name, str(self.start), str(self.end))
         )
     # }}}
+
+
 # }}}
 
 # {{{ Aliases
@@ -1353,6 +1416,7 @@ class Alias(models.Model):
     # {{{ String representation
     def __str__(self):
         return self.name
+
     # }}}
 
     def save(self, *args, **kwargs):
@@ -1370,6 +1434,8 @@ class Alias(models.Model):
         new = Alias(group=group, name=name)
         new.save()
     # }}}
+
+
 # }}}
 
 # {{{ Matches
@@ -1389,6 +1455,7 @@ class MatchManager(models.Manager):
         q = Q(*args, **kwargs)
         swapped = swap_q_object(q)
         return super().filter(q | swapped)
+
 
 class Match(models.Model):
     class Meta:
@@ -1464,63 +1531,69 @@ class Match(models.Model):
         'Rating', related_name='rtb', verbose_name='Rating B', null=True, on_delete=models.CASCADE,
         help_text='Rating for player B at the time the match was played'
     )
+
     # }}}
 
     # {{{ populate_orig: Populates the original data fields, to check later if anything changed.
     def populate_orig(self):
         if self.pk:
             try:
-                self.orig_pla    = self.pla_id
-                self.orig_plb    = self.plb_id
-                self.orig_rca    = self.rca
-                self.orig_rcb    = self.rcb
-                self.orig_sca    = self.sca
-                self.orig_scb    = self.scb
-                self.orig_date   = self.date
+                self.orig_pla = self.pla_id
+                self.orig_plb = self.plb_id
+                self.orig_rca = self.rca
+                self.orig_rcb = self.rcb
+                self.orig_sca = self.sca
+                self.orig_scb = self.scb
+                self.orig_date = self.date
                 self.orig_period = self.period_id
             except:
-                self.orig_pla    = None
-                self.orig_plb    = None
-                self.orig_rca    = None
-                self.orig_rcb    = None
-                self.orig_sca    = None
-                self.orig_scb    = None
-                self.orig_date   = None
+                self.orig_pla = None
+                self.orig_plb = None
+                self.orig_rca = None
+                self.orig_rcb = None
+                self.orig_sca = None
+                self.orig_scb = None
+                self.orig_date = None
                 self.orig_period = None
         else:
-            self.orig_pla    = None
-            self.orig_plb    = None
-            self.orig_rca    = None
-            self.orig_rcb    = None
-            self.orig_sca    = None
-            self.orig_scb    = None
-            self.orig_date   = None
+            self.orig_pla = None
+            self.orig_plb = None
+            self.orig_rca = None
+            self.orig_rcb = None
+            self.orig_sca = None
+            self.orig_scb = None
+            self.orig_date = None
             self.orig_period = None
+
     # }}}
 
     # {{{ changed_effect: Returns true if an effective change (requiring recomputation) has been made.
     def changed_effect(self):
         return (
-              self.orig_pla != self.pla_id or self.orig_plb != self.plb_id
-            or self.orig_rca != self.rca    or self.orig_rcb != self.rcb
-            or self.orig_sca != self.sca    or self.orig_scb != self.scb
+                self.orig_pla != self.pla_id or self.orig_plb != self.plb_id
+                or self.orig_rca != self.rca or self.orig_rcb != self.rcb
+                or self.orig_sca != self.sca or self.orig_scb != self.scb
         )
+
     # }}}
 
     # {{{ changed_date: Returns true if the date has been changed.
     def changed_date(self):
         return self.orig_date != self.date
+
     # }}}
 
     # {{{ changed_period: Returns true if the period has been changed.
     def changed_period(self):
         return self.orig_period != self.period_id
+
     # }}}
 
     # {{{ __init__: Has been overloaded to call populate_orig.
     def __init__(self, *args, **kwargs):
         super(Match, self).__init__(*args, **kwargs)
         self.populate_orig()
+
     # }}}
 
     # {{{ save: Has been overloaded to check for effective changes, flagging a period as needing recomputation
@@ -1562,11 +1635,12 @@ class Match(models.Model):
                     event.set_earliest(self.date)
                 if event.latest is None or self.date > event.latest:
                     event.set_latest(self.date)
+
     # }}}
 
     # {{{ delete: Has been overloaded to check for effective changes, flagging a period as needing
     # recomputation if necessary.
-    def delete(self,  *args, **kwargs):
+    def delete(self, *args, **kwargs):
         self.period.needs_recompute = True
         self.period.save()
 
@@ -1577,31 +1651,35 @@ class Match(models.Model):
         if eventobj:
             for event in self.eventobj.get_ancestors(id=True):
                 event.update_dates()
+
     # }}}
 
     # {{{ set_period: Sets the correct period for this match depending on the date.
     def set_period(self):
         pers = Period.objects.filter(start__lte=self.date).filter(end__gte=self.date)
         self.period = pers[0]
+
     # }}}
 
     # {{{ set_ratings: Sets the ratings of the players if they exist.
     def set_ratings(self):
         try:
-            self.rta = Rating.objects.get(player=self.pla, period_id=self.period_id-1)
+            self.rta = Rating.objects.get(player=self.pla, period_id=self.period_id - 1)
         except:
             self.rta = None
 
         try:
-            self.rtb = Rating.objects.get(player=self.plb, period_id=self.period_id-1)
+            self.rtb = Rating.objects.get(player=self.plb, period_id=self.period_id - 1)
         except:
             self.rtb = None
+
     # }}}
 
     # {{{ set_date(date): Exactly what it says on the tin.
     def set_date(self, date):
         self.date = date
         self.save()
+
     # }}}
 
     # {{{ set_event(event): Updates the earliest and latest fields for both new and old event.
@@ -1620,11 +1698,13 @@ class Match(models.Model):
         if oldevent:
             for event in oldevent.get_ancestors(id=True):
                 event.update_dates()
+
     # }}}
 
     # {{{ String representation 
     def __str__(self):
         return '%s %s %s - %s %s' % (str(self.date), self.pla.tag, self.sca, self.scb, self.plb.tag)
+
     # }}}
 
     # {{{ get_winner: Returns the winner of this match, or None if tie.
@@ -1634,6 +1714,7 @@ class Match(models.Model):
         elif self.scb > self.sca:
             return self.plb
         return None
+
     # }}}
 
     # {{{ get_winner_id
@@ -1643,22 +1724,26 @@ class Match(models.Model):
         elif self.scb > self.sca:
             return self.plb_id
         return None
+
     # }}}
 
     # {{{ get_winner_score: Returns the score of the winner.
     def get_winner_score(self):
         return max(self.sca, self.scb)
+
     # }}}
 
     # {{{ get_loser_score: Returns the score of the loser.
     def get_loser_score(self):
         return min(self.sca, self.scb)
+
     # }}}
 
     # {{{ event_fullpath: Returns the full event name, taken from event object if available, or event text if
     # not. Can be None.
     def event_fullpath(self):
         return self.event if self.eventobj is None else self.eventobj.fullname
+
     # }}}
 
     # {{{ event_partpath: Returns the partial event name (up to the nearest non-ROUND ancestor), taken from
@@ -1666,6 +1751,8 @@ class Match(models.Model):
     def event_partpath(self):
         return self.event if self.eventobj is None else self.eventobj.get_event_fullname()
     # }}}
+
+
 # }}}
 
 # {{{ Messages
@@ -1719,6 +1806,8 @@ class Message(models.Model):
             return True
         except:
             return False
+
+
 # }}}
 
 # {{{ WCS points
@@ -1738,6 +1827,7 @@ class WCSPoints(models.Model):
     )
     points = models.IntegerField('Points', null=False, help_text='Number of points awarded')
     placement = models.IntegerField('Place', help_text='Placement')
+
     # }}}
 
     # {{{ set_points(event, entries): Sets WCS points for a given event
@@ -1758,6 +1848,8 @@ class WCSPoints(models.Model):
             )
             new.save()
     # }}}
+
+
 # }}}
 
 # {{{ Earnings
@@ -1782,8 +1874,8 @@ class Earnings(models.Model):
     origearnings = models.DecimalField(
         'Earnings (original currency)',
         help_text='Prize money in original currency',
-        decimal_places=8, # Bitcoin uses 8 places
-        max_digits=12+8
+        decimal_places=8,  # Bitcoin uses 8 places
+        max_digits=12 + 8
     )
     currency = models.CharField(
         'Original currency', max_length=30,
@@ -1793,6 +1885,7 @@ class Earnings(models.Model):
         'Place',
         help_text='Placement'
     )
+
     # }}}
 
     # {{{ set_earnings(event, payouts, currency): Sets earnings for a given event.
@@ -1808,7 +1901,7 @@ class Earnings(models.Model):
             new = Earnings(
                 event=event,
                 player=payout['player'],
-                placement=payout['placement']+1,
+                placement=payout['placement'] + 1,
                 origearnings=payout['prize'],
                 currency=currency,
             )
@@ -1817,6 +1910,7 @@ class Earnings(models.Model):
         Earnings.convert_earnings(event)
 
         event.set_prizepool(True)
+
     # }}}
 
     # {{{ convert_earnings(event): Performs currency conversion for all earnings associated to an event.
@@ -1833,12 +1927,15 @@ class Earnings(models.Model):
                 exchangerates = ExchangeRates(date)
                 earning.earnings = round(exchangerates.convert(earning.origearnings, earning.currency))
             earning.save()
+
     # }}}
 
     # {{{ String representation
     def __str__(self):
         return '#%i at %s: %s $%s' % (self.placement, self.event.fullname, self.player.tag, self.earnings)
     # }}}
+
+
 # }}}
 
 # {{{ PreMatchGroups
@@ -1861,6 +1958,8 @@ class PreMatchGroup(models.Model):
     def __str__(self):
         return str(self.date) + ' ' + self.event
     # }}}
+
+
 # }}}
 
 # {{{ PreMatches
@@ -1892,6 +1991,7 @@ class PreMatch(models.Model):
         ret += ' %i-%i ' % (self.sca, self.scb)
         ret += self.plb.tag if self.plb else self.plb_string
         return ret
+
     # }}}
 
     # {{{ event_fullpath and event_partpath: For compatibility with Match objects, where needed
@@ -1900,12 +2000,15 @@ class PreMatch(models.Model):
 
     def event_partpath(self):
         return self.group.event
+
     # }}}
 
     # {{{ is_valid: Checks if this can be turned into a Match.
     def is_valid(self):
         return self.pla is not None and self.plb is not None
     # }}}
+
+
 # }}}
 
 # {{{ Ratings
@@ -2046,11 +2149,13 @@ class Rating(models.Model):
         null=True, blank=True,
         help_text='Difference from number 7 on rating list'
     )
+
     # }}}
 
     # {{{ String representation
     def __str__(self):
         return self.player.tag + ' P' + str(self.period.id)
+
     # }}}
 
     # {{{ get_next: Get next rating object for the same palyer
@@ -2066,16 +2171,19 @@ class Rating(models.Model):
             return self.next
         except:
             return None
+
     # }}}
 
     # {{{ get_ratings: Return all rating information in a list
     def ratings(self):
         return [self.rating, self.rating_vp, self.rating_vt, self.rating_vz]
+
     # }}}
 
     # {{{ get_devs: Return all RD information in a list
     def get_devs(self):
         return [self.dev, self.dev_vp, self.dev_vt, self.dev_vz]
+
     # }}}
 
     # {{{ rating_diff(_vx): Differences in rating between this and previous period
@@ -2093,6 +2201,7 @@ class Rating(models.Model):
 
     def rating_diff_vz(self):
         return self.rating_diff('Z')
+
     # }}}
 
     # {{{ get_rating(race=None): Return rating delta by race
@@ -2104,6 +2213,7 @@ class Rating(models.Model):
         elif race == 'Z':
             return self.rating_vz
         return self.rating
+
     # }}}
 
     # {{{ get_dev(race=None): Return RD by race
@@ -2115,11 +2225,12 @@ class Rating(models.Model):
         elif race == 'Z':
             return self.dev_vz
         return self.dev
+
     # }}}
 
     # {{{ get_totalrating(race): Return total rating by race
     def get_totalrating(self, race):
-        if race in ['P','T','Z']:
+        if race in ['P', 'T', 'Z']:
             return self.rating + self.get_rating(race)
         else:
             return self.rating
@@ -2132,17 +2243,19 @@ class Rating(models.Model):
 
     def get_totalrating_vz(self):
         return self.get_totalrating('Z')
+
     # }}}
 
     # {{{ get_totaldev(race): Return total RD by race (expected total RD if None)
     def get_totaldev(self, race):
-        if race in ['P','T','Z']:
-            return sqrt(self.get_dev(None)**2 + self.get_dev(race)**2)
+        if race in ['P', 'T', 'Z']:
+            return sqrt(self.get_dev(None) ** 2 + self.get_dev(race) ** 2)
         else:
-            d = self.get_dev(None)**2
-            for r in ['P','T','Z']:
-                d += self.get_dev(r)**2/9
+            d = self.get_dev(None) ** 2
+            for r in ['P', 'T', 'Z']:
+                d += self.get_dev(r) ** 2 / 9
             return sqrt(d)
+
     # }}}
 
     # {{{ set_rating(d, write_bf=False): Sets rating numbers as given by the dict d with keys MPTZ, writes
@@ -2158,6 +2271,7 @@ class Rating(models.Model):
             self.bf_rating_vp = self.rating_vp
             self.bf_rating_vt = self.rating_vt
             self.bf_rating_vz = self.rating_vz
+
     # }}}
 
     # {{{ set_dev(d, write_bf=False): Sets RD as given by the dict d with keys MPTZ, writes to bf if write_bf
@@ -2173,6 +2287,7 @@ class Rating(models.Model):
             self.bf_dev_vp = self.dev_vp
             self.bf_dev_vt = self.dev_vt
             self.bf_dev_vz = self.dev_vz
+
     # }}}
 
     # {{{ set_comp_rating(d): Sets performance ratings as given by the dict d with keys MPTZ
@@ -2181,6 +2296,7 @@ class Rating(models.Model):
         self.comp_rat_vp = d['P']
         self.comp_rat_vt = d['T']
         self.comp_rat_vz = d['Z']
+
     # }}}
 
     # {{{ set_comp_dev(d): Sets performance RD as given by the dict d with keys MPTZ
@@ -2190,6 +2306,8 @@ class Rating(models.Model):
         self.comp_dev_vt = d['T']
         self.comp_dev_vz = d['Z']
     # }}}
+
+
 # }}}
 
 # {{{ BalanceEntries
@@ -2207,6 +2325,8 @@ class BalanceEntry(models.Model):
     p_gains = models.FloatField('P gains', null=False)
     t_gains = models.FloatField('T gains', null=False)
     z_gains = models.FloatField('Z gains', null=False)
+
+
 # }}}
 
 # {{{ API access keys
