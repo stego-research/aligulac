@@ -1,25 +1,24 @@
 # {{{ Imports
 from os.path import normpath, dirname, join
 
+import django.views.static
+from django.conf.urls import url
+from django.contrib import admin
+from django.urls import path, re_path, include
 from tastypie.api import Api
 
-from django.urls import path, re_path, include
-from django.conf.urls import url
-import django.views.static
-
 import aligulac.views
-import ratings.team_views
-import ratings.ranking_views
+import blog.views
+import faq.views
+import ratings.misc_views
 import ratings.player_views
-import ratings.results_views
+import ratings.ranking_views
 import ratings.records_views
 import ratings.reports_views
+import ratings.results_views
 import ratings.staff_views
-import ratings.misc_views
-import faq.views
-import blog.views
+import ratings.team_views
 from aligulac import settings
-
 from ratings.api.resources import (
     ActiveRatingResource,
     EarningResource,
@@ -36,7 +35,6 @@ from ratings.api.resources import (
     PredictPLResource,
 )
 
-from django.contrib import admin
 admin.autodiscover()
 # }}}
 

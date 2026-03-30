@@ -5,11 +5,14 @@ from formats.composite import Composite
 from formats.rrgroup import RRGroup
 from formats.sebracket import SEBracket
 
+
 class Round:
     pass
 
+
 class SchemaTally:
     pass
+
 
 class Combination(Composite):
 
@@ -43,13 +46,13 @@ class Combination(Composite):
             tally = SchemaTally()
             tally.sch_in = []
             tally.sch_out = []
-            for k in range(0,dups):
+            for k in range(0, dups):
                 tally.sch_in.append(list(rnd.single_schema_in))
                 tally.sch_out.append(list(rnd.single_schema_out))
 
             if len(rnd.feed) != len(rnd.single_schema_out):
-                print('Round \'' + rnd_name + '\': expected ' +\
-                      str(len(rnd.single_schema_out)) + ' feed rules, but found '\
+                print('Round \'' + rnd_name + '\': expected ' + \
+                      str(len(rnd.single_schema_out)) + ' feed rules, but found ' \
                       + str(len(rnd.feed)))
                 return False
 
@@ -69,16 +72,16 @@ class Combination(Composite):
             dups = 1
 
         if spec['type'] == 'rrgroup':
-            for i in range(0,dups):
+            for i in range(0, dups):
                 rnd.blobs.append(RRGroup(spec['players'], spec['num'], spec['tie']))
         elif spec['type'] == 'sebracket':
-            for i in range(0,dups):
+            for i in range(0, dups):
                 rnd.blobs.append(SEBracket(spec['num']))
 
         rnd.single_schema_in = rnd.blobs[0].schema_in()
-        rnd.schema_in = [dups*s for s in rnd.blobs[0].schema_in()]
+        rnd.schema_in = [dups * s for s in rnd.blobs[0].schema_in()]
         rnd.single_schema_out = rnd.blobs[0].schema_out()
-        rnd.schema_out = [dups*s for s in rnd.blobs[0].schema_out()]
+        rnd.schema_out = [dups * s for s in rnd.blobs[0].schema_out()]
 
         rnd.feed = spec['feed']
 

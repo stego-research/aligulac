@@ -16,7 +16,8 @@ class Tally:
         return iter(self.finishes)
 
     def scale(self, scale):
-        self.finishes = [f/scale for f in self.finishes]
+        self.finishes = [f / scale for f in self.finishes]
+
 
 class Format:
 
@@ -78,7 +79,7 @@ class Format:
     def get_player(self, key):
         if type(key) == int:
             return self._players[key]
-        
+
         else:
             fits = lambda p: p.name.lower() == key.lower()
             gen = (p for p in self._players if fits(p))

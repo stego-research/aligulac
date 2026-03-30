@@ -11,7 +11,6 @@ from django.shortcuts import (
     render_to_response,
     get_object_or_404,
 )
-from django.views.decorators.csrf import csrf_protect
 from django.utils.translation import ugettext_lazy as _
 
 from aligulac.cache import cache_page
@@ -23,14 +22,12 @@ from aligulac.tools import (
     Message,
     StrippedCharField,
 )
-
 from ratings.models import (
     Earnings,
     Group,
     GroupMembership,
     Match,
     P,
-    Player,
     Rating,
     T,
     Z,
@@ -40,15 +37,17 @@ from ratings.tools import (
     filter_inactive,
     total_ratings,
 )
+
+
 # }}}
 
 # {{{ TeamModForm: Form for modifying a team.
 class TeamModForm(forms.Form):
-    name      = StrippedCharField(max_length=100, required=True, label=_('Name'))
-    akas      = forms.CharField(max_length=200, required=False, label=_('AKAs'))
+    name = StrippedCharField(max_length=100, required=True, label=_('Name'))
+    akas = forms.CharField(max_length=200, required=False, label=_('AKAs'))
     shortname = StrippedCharField(max_length=100, required=False, label=_('Name'))
-    homepage  = StrippedCharField(max_length=200, required=False, label=_('Homepage'))
-    lp_name   = StrippedCharField(max_length=200, required=False, label=_('Liquipedia title'))
+    homepage = StrippedCharField(max_length=200, required=False, label=_('Homepage'))
+    lp_name = StrippedCharField(max_length=200, required=False, label=_('Liquipedia title'))
 
     # {{{ Constructor
     def __init__(self, request=None, team=None):
@@ -56,14 +55,15 @@ class TeamModForm(forms.Form):
             super(TeamModForm, self).__init__(request.POST)
         else:
             super(TeamModForm, self).__init__(initial={
-                'name':       team.name,
-                'akas':       ', '.join(team.get_aliases()),
-                'shortname':  team.shortname,
-                'homepage':   team.homepage,
-                'lp_name':    team.lp_name,
+                'name': team.name,
+                'akas': ', '.join(team.get_aliases()),
+                'shortname': team.shortname,
+                'homepage': team.homepage,
+                'lp_name': team.lp_name,
             })
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ update_player: Pushes updates to player, responds with messages
@@ -82,17 +82,19 @@ class TeamModForm(forms.Form):
                 getattr(team, setter)(value)
                 ret.append(Message(_('Changed %s.') % label, type=Message.SUCCESS))
 
-        update(self.cleaned_data['name'],       'name',       'set_name',       _('name'))
-        update(self.cleaned_data['lp_name'],    'lp_name',    'set_lp_name',    _('Liquipedia title'))
-        update(self.cleaned_data['shortname'],  'shortname',  'set_shortname',  _('short name'))
-        update(self.cleaned_data['homepage'],   'homepage',   'set_homepage',   _('homepage'))
+        update(self.cleaned_data['name'], 'name', 'set_name', _('name'))
+        update(self.cleaned_data['lp_name'], 'lp_name', 'set_lp_name', _('Liquipedia title'))
+        update(self.cleaned_data['shortname'], 'shortname', 'set_shortname', _('short name'))
+        update(self.cleaned_data['homepage'], 'homepage', 'set_homepage', _('homepage'))
 
         if team.set_aliases(self.cleaned_data['akas'].split(',')):
             ret.append(Message(_('Changed aliases.'), type=Message.SUCCESS))
 
         return ret
     # }}}
-# }}} 
+
+
+# }}}
 
 # {{{ teams view
 @cache_page
@@ -102,7 +104,7 @@ def teams(request):
     all_teams = Group.objects.filter(is_team=True).prefetch_related('groupmembership_set')
     active = all_teams.filter(active=True)
 
-    sort = get_param_choice(request, 'sort', ['ak','pl','rt','np'], 'ak')
+    sort = get_param_choice(request, 'sort', ['ak', 'pl', 'rt', 'np'], 'ak')
     if sort == 'pl':
         active = active.order_by('-scorepl', 'name')
     elif sort == 'ak':
@@ -126,6 +128,8 @@ def teams(request):
     })
 
     return render_to_response('teams.djhtml', base)
+
+
 # }}}
 
 # {{{ team view
@@ -154,15 +158,15 @@ def team(request, team_id):
     matches = Match.objects.filter(Q(pla__in=player_ids) | Q(plb__in=player_ids))
 
     base.update({
-        'nplayers':  players.count(),
-        'nprotoss':  players.filter(player__race=P).count(),
-        'nterran':   players.filter(player__race=T).count(),
-        'nzerg':     players.filter(player__race=Z).count(),
-        'earnings':  (
+        'nplayers': players.count(),
+        'nprotoss': players.filter(player__race=P).count(),
+        'nterran': players.filter(player__race=T).count(),
+        'nzerg': players.filter(player__race=Z).count(),
+        'earnings': (
             Earnings.objects.filter(player__in=player_ids).aggregate(Sum('earnings'))['earnings__sum']
         ),
-        'nmatches':  matches.count(),
-        'noffline':  matches.filter(offline=True).count(),
+        'nmatches': matches.count(),
+        'noffline': matches.filter(offline=True).count(),
     })
     # }}}
 
@@ -179,21 +183,23 @@ def team(request, team_id):
     )
 
     base.update({
-        'active':      filter_active(all_members),
-        'inactive':    filter_inactive(all_members),
-        'nonplaying':  (
+        'active': filter_active(all_members),
+        'inactive': filter_inactive(all_members),
+        'nonplaying': (
             team.groupmembership_set.filter(current=True, playing=False)
-                .select_related('player').order_by('player__tag')
+            .select_related('player').order_by('player__tag')
         ),
-        'past':        (
+        'past': (
             team.groupmembership_set.filter(current=False)
-                .annotate(null_end=Count('end'))
-                .select_related('player').order_by('-null_end', '-end', 'player__tag')
+            .annotate(null_end=Count('end'))
+            .select_related('player').order_by('-null_end', '-end', 'player__tag')
         ),
     })
     # }}}
 
     return render_to_response('team.djhtml', base)
+
+
 # }}}
 
 # {{{ transfers view
@@ -204,19 +210,19 @@ def transfers(request):
     # {{{ Get relevant groupmembership objects
     trades = (
         GroupMembership.objects
-            .exclude(start__isnull=True, end__isnull=True)
-            .filter(group__is_team=True)
-            .select_related('player', 'group')
-            .extra(select={
-                'cdate': (
-                    'CASE '
-                        'WHEN start IS NULL THEN "end" '
-                        'WHEN "end" IS NULL THEN start '
-                        'WHEN start > "end" THEN start '
-                        'ELSE "end" '
-                    'END'
+        .exclude(start__isnull=True, end__isnull=True)
+        .filter(group__is_team=True)
+        .select_related('player', 'group')
+        .extra(select={
+            'cdate': (
+                'CASE '
+                'WHEN start IS NULL THEN "end" '
+                'WHEN "end" IS NULL THEN start '
+                'WHEN start > "end" THEN start '
+                'ELSE "end" '
+                'END'
             )})
-            .order_by('-cdate', 'player__tag')[0:50]
+        .order_by('-cdate', 'player__tag')[0:50]
     )
     # }}}
 
@@ -234,10 +240,10 @@ def transfers(request):
     # {{{ Combine joins and leaves for the same player on the same date
     ind = 0
     while ind < len(pretrades) - 1:
-        if pretrades[ind]['player'] == pretrades[ind+1]['player'] and\
-           pretrades[ind]['date'] == pretrades[ind+1]['date']:
-            pretrades[ind].update(pretrades[ind+1])
-            del pretrades[ind+1]
+        if pretrades[ind]['player'] == pretrades[ind + 1]['player'] and \
+                pretrades[ind]['date'] == pretrades[ind + 1]['date']:
+            pretrades[ind].update(pretrades[ind + 1])
+            del pretrades[ind + 1]
         ind += 1
     # }}}
 

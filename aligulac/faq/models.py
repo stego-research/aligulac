@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Post(models.Model):
     class Meta:
         ordering = ['index']

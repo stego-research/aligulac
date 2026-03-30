@@ -5,10 +5,8 @@ from aligulac.settings import (
     start_rating,
 )
 from aligulac.tools import etn
-
 from ratings.models import (
     Player,
-    Rating, 
 )
 from ratings.tools import (
     cdf,
@@ -16,6 +14,7 @@ from ratings.tools import (
 )
 
 debug = False
+
 
 def make_player(player):
     if player is None:
@@ -42,6 +41,7 @@ def make_player(player):
     pl.dbpl = player
 
     return pl
+
 
 class Player:
 
@@ -75,16 +75,16 @@ class Player:
 
     def dev_vs_opponent(self, opponent):
         if opponent.race in 'PTZ':
-            return self.dev**2 + self.dev_race[opponent.race]**2
+            return self.dev ** 2 + self.dev_race[opponent.race] ** 2
         else:
-            return self.dev**2 + sum([d**2 for d in self.dev_race.values()])/9
+            return self.dev ** 2 + sum([d ** 2 for d in self.dev_race.values()]) / 9
 
     def prob_of_winning(self, opponent):
         my_elo = self.elo_vs_opponent(opponent)
         op_elo = opponent.elo_vs_opponent(self)
         my_dev = self.dev_vs_opponent(opponent)
         op_dev = opponent.dev_vs_opponent(self)
-        return cdf(my_elo - op_elo, scale=sqrt(1+my_dev+op_dev))
+        return cdf(my_elo - op_elo, scale=sqrt(1 + my_dev + op_dev))
 
     def copy(self):
         return Player(copy=self)

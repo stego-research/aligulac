@@ -3,6 +3,7 @@ This is where the rating magic happens. Imported by period.py.
 '''
 
 from numpy import *
+from scipy.optimize import minimize_scalar
 
 from aligulac.settings import (
     INIT_DEV,
@@ -15,12 +16,12 @@ from ratings.tools import (
     pdf,
     cdf,
 )
-from scipy.optimize import minimize_scalar
 
 LOG_CAP = 1e-10
 TOL = 1e-3 / 2
 
 seterr(invalid='ignore')
+
 
 def maximize(L, DL, D2L, x, disp=False):
     """Main function to perform numerical optimization. L, DL and D2L are the objective function and its
@@ -69,19 +70,19 @@ def fix_ww(myr, mys, oppr, opps, oppc, W, L):
     M = len(W)
 
     # Count wins and losses against each category
-    for j in range(0,M):
+    for j in range(0, M):
         wins[played_cats.index(oppc[j])] += W[j]
         losses[played_cats.index(oppc[j])] += L[j]
 
     # Find the categories where the record is 0-N or N-0 with N>0
-    pi = nonzero(wins*losses == 0)[0]
+    pi = nonzero(wins * losses == 0)[0]
 
     # Add fake games for each of the relevant categories
     for c in pi:
         W = append(W, 1)
         L = append(L, 1)
-        oppr = append(oppr, myr[0] + myr[1+played_cats[c]])
-        opps = append(opps, sqrt(mys[0]**2 + mys[1+played_cats[c]]**2))
+        oppr = append(oppr, myr[0] + myr[1 + played_cats[c]])
+        opps = append(opps, sqrt(mys[0] ** 2 + mys[1 + played_cats[c]] ** 2))
         oppc = append(oppc, played_cats[c])
 
     # Return the new arrays
@@ -97,56 +98,56 @@ def performance(oppr, opps, oppc, W, L, text='', pr=False):
     if pr:
         print('Now performance for %s' % text)
 
-    for cat in range(0,3):
+    for cat in range(0, 3):
         spopp = [o for o in opp if o[2] == cat]
         sW = sum([o[3] for o in spopp])
         sL = sum([o[4] for o in spopp])
 
         if sW == 0 and sL == 0:
-            ret[cat+1] = PRF_NA
+            ret[cat + 1] = PRF_NA
             meanok = False
         elif sW == 0:
-            ret[cat+1] = PRF_MININF
+            ret[cat + 1] = PRF_MININF
             meanok = False
         elif sL == 0:
-            ret[cat+1] = PRF_INF
+            ret[cat + 1] = PRF_INF
             meanok = False
         else:
-            gen_phi = lambda p, x: pdf(x, loc=p[0], scale=sqrt(1+p[1]**2))
-            gen_Phi = lambda p, x: max(min(cdf(x, loc=p[0], scale=sqrt(1+p[1]**2)), 1-LOG_CAP), LOG_CAP)
+            gen_phi = lambda p, x: pdf(x, loc=p[0], scale=sqrt(1 + p[1] ** 2))
+            gen_Phi = lambda p, x: max(min(cdf(x, loc=p[0], scale=sqrt(1 + p[1] ** 2)), 1 - LOG_CAP), LOG_CAP)
 
             def logL(x):
                 ret = 0.0
                 for p in spopp:
-                    gP = gen_Phi(p,x)
-                    ret += p[3] * log(gP) + p[4] * log(1-gP)
+                    gP = gen_Phi(p, x)
+                    ret += p[3] * log(gP) + p[4] * log(1 - gP)
                 return ret
 
             def DlogL(x):
                 ret = 0.0
                 for p in spopp:
-                    gp = gen_phi(p,x)
-                    gP = gen_Phi(p,x)
-                    ret += (float(p[3])/gP - float(p[4])/(1-gP)) * gp
+                    gp = gen_phi(p, x)
+                    gP = gen_Phi(p, x)
+                    ret += (float(p[3]) / gP - float(p[4]) / (1 - gP)) * gp
                 return ret
 
             def D2logL(x):
                 ret = 0.0
                 for p in spopp:
-                    gp = gen_phi(p,x)
-                    gP = gen_Phi(p,x)
-                    alpha = gp/gP
-                    beta = gp/(1-gP)
-                    sb = sqrt(1+p[1]**2)
-                    Mv = pi/sqrt(3)/sb * tanh(pi/2/sqrt(3)*(x-p[0])/sb)
-                    ret -= p[3]*alpha*(alpha+Mv) + p[4]*beta*(beta-Mv)
+                    gp = gen_phi(p, x)
+                    gP = gen_Phi(p, x)
+                    alpha = gp / gP
+                    beta = gp / (1 - gP)
+                    sb = sqrt(1 + p[1] ** 2)
+                    Mv = pi / sqrt(3) / sb * tanh(pi / 2 / sqrt(3) * (x - p[0]) / sb)
+                    ret -= p[3] * alpha * (alpha + Mv) + p[4] * beta * (beta - Mv)
                 return ret
 
             perf, init = None, 1.0
             while perf is None and init >= -3.0:
                 perf = maximize_1d(logL, DlogL, D2logL, init)
                 init -= 0.1
-            ret[cat+1] = perf if perf is not None else 1.0
+            ret[cat + 1] = perf if perf is not None else 1.0
 
     if meanok:
         ret[0] = sum(ret[1:]) / 3
@@ -155,12 +156,13 @@ def performance(oppr, opps, oppc, W, L, text='', pr=False):
 
     return ret
 
+
 def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
     """This function updates the rating of a player according to the ratings of the opponents and the games
     against them."""
-    
+
     if len(W) == 0:
-        return(myr, mys)
+        return (myr, mys)
 
     if pr:
         print(text)
@@ -170,12 +172,12 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
         print(W, len(W))
         print(L, len(L))
 
-    played_cats = sorted(unique(oppc))          # The categories against which the player played
-    played_cats_p1 = [p+1 for p in played_cats]
-    tot = sum(myr[array(played_cats)+1])        # The sum relative rating against those categories
-                                                # (will be kept constant)
-    M = len(W)                                  # Number of opponents
-    C = len(played_cats)                        # Number of different categories played
+    played_cats = sorted(unique(oppc))  # The categories against which the player played
+    played_cats_p1 = [p + 1 for p in played_cats]
+    tot = sum(myr[array(played_cats) + 1])  # The sum relative rating against those categories
+    # (will be kept constant)
+    M = len(W)  # Number of opponents
+    C = len(played_cats)  # Number of different categories played
 
     # Convert global categories to local
     def loc(x):
@@ -188,7 +190,7 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
     # Extends a M-vector to an M+1-vector according to the restriction given
     # (that the sum of relative ratings against the played categories is constant)
     def extend(x):
-        return hstack((x, tot-sum(x[1:])))
+        return hstack((x, tot - sum(x[1:])))
 
     # Ensure that arrays are 1-dimensional
     def dim(x):
@@ -198,81 +200,83 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
 
     # Prepare some vectors and other numbers that are needed to form objective functions, derivatives and
     # Hessians
-    DM = zeros((M,C))
-    DMex = zeros((M,C+1))
-    DM[:,0] = 1
-    DMex[:,0] = 1
-    for j in range(0,M):
+    DM = zeros((M, C))
+    DMex = zeros((M, C + 1))
+    DM[:, 0] = 1
+    DMex[:, 0] = 1
+    for j in range(0, M):
         lc = loc([oppc[j]])[0]
-        if lc < C-1:
-            DM[j,lc+1] = 1
+        if lc < C - 1:
+            DM[j, lc + 1] = 1
         else:
-            DM[j,1:] = -1
-        DMex[j,lc+1] = 1
+            DM[j, 1:] = -1
+        DMex[j, lc + 1] = 1
 
     mbar = oppr
-    sbar = sqrt(opps**2 + 1)
+    sbar = sqrt(opps ** 2 + 1)
     gen_phi = lambda j, x: pdf(x, loc=mbar[j], scale=sbar[j])
-    gen_Phi = lambda j, x: max(min(cdf(x, loc=mbar[j], scale=sbar[j]), 1-LOG_CAP), LOG_CAP)
+    gen_Phi = lambda j, x: max(min(cdf(x, loc=mbar[j], scale=sbar[j]), 1 - LOG_CAP), LOG_CAP)
 
-    alpha = pi/2/sqrt(3)
-    myrc = myr[[0]+played_cats_p1]
-    mysc = mys[[0]+played_cats_p1]
+    alpha = pi / 2 / sqrt(3)
+    myrc = myr[[0] + played_cats_p1]
+    mysc = mys[[0] + played_cats_p1]
 
     # {{{ Objective function
     def logL(x):
-        Mv = x[0] + extend(x)[loc(oppc)+1]
-        Phi = array([gen_Phi(i,Mv[i]) for i in range(0,M)])
+        Mv = x[0] + extend(x)[loc(oppc) + 1]
+        Phi = array([gen_Phi(i, Mv[i]) for i in range(0, M)])
         if pr:
             print(':::', x, Mv, Phi)
-        return sum(W*log(Phi) + L*log(1-Phi))
+        return sum(W * log(Phi) + L * log(1 - Phi))
 
     def logE(x):
-        return sum(log(1 - tanh(alpha*(extend(x)-myrc)/mysc)**2))
+        return sum(log(1 - tanh(alpha * (extend(x) - myrc) / mysc) ** 2))
 
     logF = lambda x: logL(x) + logE(x)
+
     # }}}
 
     # {{{ Derivative
     def DlogL(x):
-        Mv = x[0] + extend(x)[loc(oppc)+1]
-        phi = array([gen_phi(i,Mv[i]) for i in range(0,M)])
-        Phi = array([gen_Phi(i,Mv[i]) for i in range(0,M)])
-        vec = (W/Phi - L/(1-Phi)) * phi
+        Mv = x[0] + extend(x)[loc(oppc) + 1]
+        phi = array([gen_phi(i, Mv[i]) for i in range(0, M)])
+        Phi = array([gen_Phi(i, Mv[i]) for i in range(0, M)])
+        vec = (W / Phi - L / (1 - Phi)) * phi
         return array(vec * matrix(DM))[0]
 
     def DlogE(x):
-        ret = -2*alpha*tanh(alpha*(extend(x)-myrc)/mysc)/mysc
+        ret = -2 * alpha * tanh(alpha * (extend(x) - myrc) / mysc) / mysc
         ret = ret[0:-1] - ret[-1]
         return ret
 
     DlogF = lambda x: DlogL(x) + DlogE(x)
+
     # }}}
 
     # {{{ Hessian
     def D2logL(x, DM, C):
-        Mv = x[0] + extend(x)[loc(oppc)+1]
-        phi = array([gen_phi(i,Mv[i]) for i in range(0,M)])
-        Phi = array([gen_Phi(i,Mv[i]) for i in range(0,M)])
-        alpha = phi/Phi
-        beta = phi/(1-Phi)
-        Mvbar = pi/sqrt(3)/sbar * tanh(pi/2/sqrt(3)*(Mv-mbar)/sbar)
-        coeff = - W*alpha*(alpha+Mvbar) - L*beta*(beta-Mvbar)
-        ret = zeros((C,C))
-        for j in range(0,M):
-            ret += coeff[j] * outer(DM[j,:], DM[j,:])
+        Mv = x[0] + extend(x)[loc(oppc) + 1]
+        phi = array([gen_phi(i, Mv[i]) for i in range(0, M)])
+        Phi = array([gen_Phi(i, Mv[i]) for i in range(0, M)])
+        alpha = phi / Phi
+        beta = phi / (1 - Phi)
+        Mvbar = pi / sqrt(3) / sbar * tanh(pi / 2 / sqrt(3) * (Mv - mbar) / sbar)
+        coeff = - W * alpha * (alpha + Mvbar) - L * beta * (beta - Mvbar)
+        ret = zeros((C, C))
+        for j in range(0, M):
+            ret += coeff[j] * outer(DM[j, :], DM[j, :])
         return ret
 
     def D2logE(x):
-        diags = -2*alpha**2*(1 - tanh(alpha*(extend(x)-myrc)/mysc)**2)/mysc**2
+        diags = -2 * alpha ** 2 * (1 - tanh(alpha * (extend(x) - myrc) / mysc) ** 2) / mysc ** 2
         diags, final = diags[0:-1], diags[-1]
         return diag(diags) + final
 
     def D2logEx(x):
-        diags = -2*alpha**2*(1 - tanh(alpha*(extend(x)-myrc)/mysc)**2)/mysc**2
+        diags = -2 * alpha ** 2 * (1 - tanh(alpha * (extend(x) - myrc) / mysc) ** 2) / mysc ** 2
         return diag(diags)
 
-    D2logF = lambda x: D2logL(x,DM,C) + D2logE(x)
+    D2logF = lambda x: D2logL(x, DM, C) + D2logE(x)
     # }}}
 
     # Prepare initial guess in unrestricted format and maximize
@@ -283,11 +287,11 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
     # If maximization failed, return the current rating and print an error message
     if x is None:
         print('Failed to converge for %s' % text)
-        return (myr, mys, [None]*(Ncats+1), [None]*(Ncats+1))
+        return (myr, mys, [None] * (Ncats + 1), [None] * (Ncats + 1))
 
     # Extend to restricted format
-    D2 = D2logL(x, DMex, C+1) + D2logEx(x)
-    devs = sqrt(-1/diag(D2))
+    D2 = D2logL(x, DMex, C + 1) + D2logEx(x)
+    devs = sqrt(-1 / diag(D2))
     rats = extend(x)
 
     if pr:
@@ -298,7 +302,7 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
     news = zeros(len(myr))
     newr = zeros(len(myr))
 
-    ind = [0] + [f+1 for f in played_cats]
+    ind = [0] + [f + 1 for f in played_cats]
     news[ind] = devs
     newr[ind] = rats
 
@@ -308,7 +312,7 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
 
     # Enforce the restriction of sum relative rating against played categories should be constant
     ind = ind[1:]
-    m = (sum(newr[ind]) - tot)/len(ind)
+    m = (sum(newr[ind]) - tot) / len(ind)
     newr[ind] -= m
     newr[0] += m
 
@@ -316,7 +320,7 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
         print(newr)
 
     # Ratings against non-played categories should be kept as before.
-    ind = setdiff1d(range(0,len(myr)), [0] + ind)
+    ind = setdiff1d(range(0, len(myr)), [0] + ind)
     news[ind] = mys[ind]
     newr[ind] = myr[ind]
 

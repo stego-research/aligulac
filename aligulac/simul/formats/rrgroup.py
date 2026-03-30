@@ -2,8 +2,9 @@ import itertools
 from operator import attrgetter
 
 from simul.formats.composite import Composite
-from simul.formats.match import Match
 from simul.formats.format import Tally as ParentTally
+from simul.formats.match import Match
+
 
 def get_ending(s):
     if (s[-1] == '1') and (s[0] != '1' or len(s) == 1):
@@ -15,6 +16,7 @@ def get_ending(s):
     else:
         return 'th'
 
+
 class Tally(ParentTally):
 
     def __init__(self, nplayers, num):
@@ -23,8 +25,8 @@ class Tally(ParentTally):
         self._num = num
 
         self.mwins = [0] * nplayers
-        self.sscore = [0] * (2*(nplayers-1)*num + 1)
-        self.swins = [0] * ((nplayers-1) * num + 1)
+        self.sscore = [0] * (2 * (nplayers - 1) * num + 1)
+        self.swins = [0] * ((nplayers - 1) * num + 1)
 
     def save_tally(self):
         self._saved_tally = self._tally
@@ -37,21 +39,22 @@ class Tally(ParentTally):
 
     def exp_mscore(self):
         exp = 0
-        for i in range(0,len(self.mwins)):
+        for i in range(0, len(self.mwins)):
             exp += i * self.mwins[i]
 
-        return (exp, self._nplayers-1-exp)
+        return (exp, self._nplayers - 1 - exp)
 
     def exp_sscore(self):
         scr = 0
-        for i in range(0,len(self.sscore)):
-            scr += (i-(self._nplayers-1)*self._num) * self.sscore[i]
-        
+        for i in range(0, len(self.sscore)):
+            scr += (i - (self._nplayers - 1) * self._num) * self.sscore[i]
+
         wins = 0
-        for i in range(0,len(self.swins)):
+        for i in range(0, len(self.swins)):
             wins += i * self.swins[i]
 
         return (wins, wins - scr)
+
 
 class RRGroup(Composite):
 
@@ -85,7 +88,7 @@ class RRGroup(Composite):
         i = min(pa.num, pb.num)
         j = max(pa.num, pb.num)
 
-        return int(round(i*(len(self._schema_out) - float(i+3)/2))) + j - 1
+        return int(round(i * (len(self._schema_out) - float(i + 3) / 2))) + j - 1
 
     def get_match(self, key):
         key = int(key)
@@ -93,31 +96,31 @@ class RRGroup(Composite):
 
         return self._matches[key]
 
-        #key = key.lower().split(' ')
-        #if len(key) < 2:
-            #raise Exception(ex)
+        # key = key.lower().split(' ')
+        # if len(key) < 2:
+        # raise Exception(ex)
 
-        #fits_a = lambda m: (m.get_player(0).name.lower() == key[0] and\
-                            #m.get_player(1).name.lower() == key[1])
-        #fits_b = lambda m: (m.get_player(1).name.lower() == key[0] and\
-                            #m.get_player(0).name.lower() == key[1])
-        #fits = lambda m: fits_a(m) or fits_b(m)
-        #gen = (m for m in self._matches if fits(m))
+        # fits_a = lambda m: (m.get_player(0).name.lower() == key[0] and\
+        # m.get_player(1).name.lower() == key[1])
+        # fits_b = lambda m: (m.get_player(1).name.lower() == key[0] and\
+        # m.get_player(0).name.lower() == key[1])
+        # fits = lambda m: fits_a(m) or fits_b(m)
+        # gen = (m for m in self._matches if fits(m))
 
-        #try:
-            #return next(gen)
-        #except:
-            #raise Exception(ex)
-    
+        # try:
+        # return next(gen)
+        # except:
+        # raise Exception(ex)
+
     def should_use_mc(self):
         np = len(self._schema_out)
-        return (2*self._num)**(np*(np-1)/2) > 2e5
+        return (2 * self._num) ** (np * (np - 1) / 2) > 2e5
 
     def tally_maker(self):
         return Tally(len(self._schema_out), self._num)
 
     def fill(self):
-        for i in range(0,len(self._players)):
+        for i in range(0, len(self._players)):
             if self._players[i].flag == -1:
                 self._players[i].flag = 1 << i
             self._players[i].num = i
@@ -132,10 +135,10 @@ class RRGroup(Composite):
             m.compute()
 
         total = 0
-        for i in range(0,N):
+        for i in range(0, N):
             instances = [m.random_instance_detail(new=True) for m in self._matches]
-            if self.compute_instances(instances, float(1)/N):
-                total += float(1)/N
+            if self.compute_instances(instances, float(1) / N):
+                total += float(1) / N
 
         for t in self._tally.values():
             t.scale(total)
@@ -160,10 +163,10 @@ class RRGroup(Composite):
         table = self.compute_table(instances, base)
         if table != False:
             self.table = table
-            for i in range(0,len(table)):
+            for i in range(0, len(table)):
                 tally = self._tally[table[i]]
                 for (shift, prob) in table[i].temp_spread:
-                    tally[len(table)-i-1-shift] += prob * base
+                    tally[len(table) - i - 1 - shift] += prob * base
 
         for p in self._players:
             self._tally[p].mwins[p.temp_mscore] += base
@@ -180,7 +183,7 @@ class RRGroup(Composite):
             p.temp_mscore = 0
             p.temp_sscore = 0
             p.temp_swins = 0
-            p.temp_spread = [(0,1)]
+            p.temp_spread = [(0, 1)]
 
         for inst in instances:
             if inst[3] == None:
@@ -210,8 +213,8 @@ class RRGroup(Composite):
                 inst[3].temp_iswins += inst[5]
                 inst[4].temp_iswins += inst[6]
 
-        if tie[0] == 'mscore' or tie[0] == 'sscore' or tie[0] == 'swins'\
-        or tie[0] == 'imscore' or tie[0] == 'isscore' or tie[0] == 'iswins':
+        if tie[0] == 'mscore' or tie[0] == 'sscore' or tie[0] == 'swins' \
+                or tie[0] == 'imscore' or tie[0] == 'isscore' or tie[0] == 'iswins':
             key = attrgetter('temp_' + tie[0])
             table = sorted(table, key=key, reverse=True)
 
@@ -250,8 +253,8 @@ class RRGroup(Composite):
                     newplayers = []
                     for p in table:
                         newplayers.append(p.copy())
-                    subgroup = RRGroup(len(table), self._num, self._tie,\
-                                      subgroups=self._subgroups)
+                    subgroup = RRGroup(len(table), self._num, self._tie, \
+                                       subgroups=self._subgroups)
                     self._subgroups[subgroup_id] = subgroup
                     subgroup.set_players(newplayers)
                     subgroup.force_ex = self.force_ex
@@ -268,8 +271,8 @@ class RRGroup(Composite):
                     reftally = subgroup.get_tally()[ref]
                 else:
                     reftally = self._saved_tally[p]
-                for f in range(0,len(reftally)):
-                    p.temp_spread.append((root+f, reftally[f]))
+                for f in range(0, len(reftally)):
+                    p.temp_spread.append((root + f, reftally[f]))
                 root -= 1
 
         return table
@@ -293,7 +296,7 @@ class RRGroup(Composite):
             out += '\n' + strings['ptablename'].format(player=p.name)
             for i in tally[p]:
                 if i > 1e-10:
-                    out += strings['ptableentry'].format(prob=100*i)
+                    out += strings['ptableentry'].format(prob=100 * i)
                 else:
                     out += strings['ptableempty']
 
@@ -302,8 +305,8 @@ class RRGroup(Composite):
         out += strings['ptabletitle'].format(title='Match score')
         out += strings['ptableheader']
         for h in range(0, nplayers):
-            out += strings['ptableheading'].format(heading=str(h) + '-' +\
-                                                  str(nplayers-h-1))
+            out += strings['ptableheading'].format(heading=str(h) + '-' + \
+                                                           str(nplayers - h - 1))
 
         for p in self._players:
             if p.name == 'BYE':
@@ -311,7 +314,7 @@ class RRGroup(Composite):
             out += '\n' + strings['ptablename'].format(player=p.name)
             for i in tally[p].mwins:
                 if i > 1e-10:
-                    out += strings['ptableentry'].format(prob=100*i)
+                    out += strings['ptableentry'].format(prob=100 * i)
                 else:
                     out += strings['ptableempty']
 
@@ -319,7 +322,7 @@ class RRGroup(Composite):
 
         out += strings['ptabletitle'].format(title='Set score')
         out += strings['ptableheader']
-        for h in range(-(nplayers-1)*self._num, (nplayers-1)*self._num+1):
+        for h in range(-(nplayers - 1) * self._num, (nplayers - 1) * self._num + 1):
             out += strings['ptableheading'].format(heading=str(h))
 
         for p in self._players:
@@ -328,7 +331,7 @@ class RRGroup(Composite):
             out += '\n' + strings['ptablename'].format(player=p.name)
             for i in tally[p].sscore:
                 if i > 1e-10:
-                    out += strings['ptableentry'].format(prob=100*i)
+                    out += strings['ptableentry'].format(prob=100 * i)
                 else:
                     out += strings['ptableempty']
 
@@ -342,8 +345,8 @@ class RRGroup(Composite):
         out = strings['header'].format(title=title)
 
         nm = len(self._schema_out) - 1
-        players = sorted(self._players, key=lambda p:\
-                         sum(self._tally[p][-self._threshold:])*100, reverse=True)
+        players = sorted(self._players, key=lambda p: \
+            sum(self._tally[p][-self._threshold:]) * 100, reverse=True)
 
         for p in players:
             if p.name == 'BYE':
@@ -356,16 +359,16 @@ class RRGroup(Composite):
             out += strings['gpexpscore'].format(mw=mw, ml=ml, sw=sw, sl=sl)
 
             if self._threshold == 1:
-                out += strings['gpprobwin'].format(prob=t.finishes[-1]*100)
+                out += strings['gpprobwin'].format(prob=t.finishes[-1] * 100)
             else:
-                out += strings['gpprobthr'].format(prob=sum(\
-                        t.finishes[-self._threshold:])*100,\
-                        thr=self._threshold)
+                out += strings['gpprobthr'].format(prob=sum( \
+                    t.finishes[-self._threshold:]) * 100, \
+                                                   thr=self._threshold)
 
-            place = str(len(self._schema_out)-t.finishes.index(max(t.finishes)))
+            place = str(len(self._schema_out) - t.finishes.index(max(t.finishes)))
             place += get_ending(place)
-            out += strings['gpmlplace'].format(place=place,\
-                    prob=max(t.finishes)*100)
+            out += strings['gpmlplace'].format(place=place, \
+                                               prob=max(t.finishes) * 100)
 
         out += strings['nomimage']
         out += strings['footer'].format(title=title)

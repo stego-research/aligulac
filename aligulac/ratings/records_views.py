@@ -1,21 +1,13 @@
 # {{{ Imports
-from django.db.models import (
-    Q,
-    Max,
-    Count,
-)
-from django.http import HttpResponse
 from django.shortcuts import render_to_response
-from django.utils.translation import ugettext_lazy as _
 
+from aligulac.cache import cache_page
 from aligulac.tools import (
     base_ctx,
     get_param,
     get_param_choice,
 )
-
-from aligulac.cache import cache_page
-
+from countries import data
 from ratings.models import (
     Player,
     Rating,
@@ -28,7 +20,7 @@ from ratings.tools import (
     total_ratings,
 )
 
-from countries import data
+
 # }}}
 
 # {{{ history view
@@ -38,11 +30,12 @@ def history(request):
 
     # {{{ Filtering (appears faster with custom SQL)
     nplayers = int(get_param(request, 'nplayers', '5'))
-    race = get_param_choice(request, 'race', ['ptzrs','p','t','z','ptrs','tzrs','pzrs'], 'ptzrs')
-    nats = get_param_choice(request, 'nats', ['all','foreigners'] + list(data.ccn_to_cca2.values()), 'all')
+    race = get_param_choice(request, 'race', ['ptzrs', 'p', 't', 'z', 'ptrs', 'tzrs', 'pzrs'], 'ptzrs')
+    nats = get_param_choice(request, 'nats', ['all', 'foreigners'] + list(data.ccn_to_cca2.values()), 'all')
 
     query = '''SELECT player.id, player.tag, player.race, player.country, MAX(rating.rating) AS high
-               FROM player JOIN rating ON player.id=rating.player_id'''
+               FROM player
+                        JOIN rating ON player.id = rating.player_id'''
     if race != 'ptzrs' or nats != 'all':
         query += ' WHERE '
         ands = []
@@ -69,6 +62,8 @@ def history(request):
     })
 
     return render_to_response('history.djhtml', base)
+
+
 # }}}
 
 # {{{ hof view
@@ -82,11 +77,15 @@ def hof(request):
     )
 
     return render_to_response('hof.djhtml', base)
+
+
 # }}}
 
 # {{{ filter stolen from templatetags/ratings_extras.py
 def racefull(value):
     return dict(RACES)[value]
+
+
 # }}}
 
 # {{{ race view
@@ -95,7 +94,7 @@ def race(request):
     race = get_param(request, 'race', 'all')
     if race not in 'PTZ':
         race = 'all'
-    sub = ['All','Protoss','Terran','Zerg'][['all','P','T','Z'].index(race)]
+    sub = ['All', 'Protoss', 'Terran', 'Zerg'][['all', 'P', 'T', 'Z'].index(race)]
 
     base = base_ctx('Records', sub, request)
 
@@ -111,18 +110,18 @@ def race(request):
 
     high = (
         filter_active(total_ratings(Rating.objects.all()))
-            .filter(period__id__gt=16).select_related('player', 'period')
+        .filter(period__id__gt=16).select_related('player', 'period')
     )
-    
+
     if race != 'all':
         high = high.filter(player__race=race)
 
     base.update({
         'hightot': sift(high.order_by('-rating')[:200]),
-        'highp':   sift(high.order_by('-tot_vp')[:200]),
-        'hight':   sift(high.order_by('-tot_vt')[:200]),
-        'highz':   sift(high.order_by('-tot_vz')[:200]),
-        'race':    race if race != 'all' else '',
+        'highp': sift(high.order_by('-tot_vp')[:200]),
+        'hight': sift(high.order_by('-tot_vt')[:200]),
+        'highz': sift(high.order_by('-tot_vz')[:200]),
+        'race': race if race != 'all' else '',
     })
 
     return render_to_response('records.djhtml', base)

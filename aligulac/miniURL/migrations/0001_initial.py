@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
 from django.conf import settings
+from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -19,7 +18,9 @@ class Migration(migrations.Migration):
                 ('longURL', models.URLField(unique=True, verbose_name='URL')),
                 ('date', models.DateTimeField(auto_now_add=True, verbose_name='Date')),
                 ('nb_access', models.PositiveIntegerField(default=0, verbose_name='# accessed')),
-                ('submitter', models.ForeignKey(blank=True, verbose_name='Submitter', to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('submitter',
+                 models.ForeignKey(blank=True, verbose_name='Submitter', to=settings.AUTH_USER_MODEL, null=True,
+                                   on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Mini URLs',

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
 import os
 import subprocess
+from datetime import datetime
 from subprocess import Popen
-import shutil
 
 from aligulac.settings import (
     DATABASES,
@@ -26,11 +25,12 @@ public_tables = [
     'story',
 ]
 
+
 def info(string):
     print("[{}]: {}".format(datetime.now(), string), flush=True)
 
-dt = datetime.now()
 
+dt = datetime.now()
 
 # {{{ Backup and private dump
 
@@ -65,6 +65,7 @@ pub_pg_dump.append(pg_dump[-1])
 with open(public_path, 'w') as f:
     subprocess.call(pub_pg_dump, stdout=f)
 
+
 # }}}
 
 # {{{ Compress/decompress files
@@ -74,6 +75,7 @@ def compress_file(source):
     with open(source, "r") as src:
         with open(source + ".gz", "w") as dst:
             subprocess.call(["gzip"], stdin=src, stdout=dst)
+
 
 def decompress_file(source):
     info("Decompressing {}".format(source))

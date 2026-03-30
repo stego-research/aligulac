@@ -1,30 +1,22 @@
 # {{{ Imports
-from numpy import (
-    arctanh,
-    tanh,
-    pi,
-)
-from math import sqrt
+import shlex
 from datetime import date
 from decimal import Decimal
-import shlex
+from math import sqrt
 
+import ccy
 from django.db.models import (
     Sum,
     Q
 )
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
-
-from pyparsing import *
-
-import ccy
-from countries import data
-from countries.transformations import (
-    cca3_to_ccn,
-    ccn_to_cca2,
-    cn_to_ccn,
+from numpy import (
+    arctanh,
+    tanh,
+    pi,
 )
+from pyparsing import *
 
 import aligulac
 from aligulac.settings import (
@@ -32,33 +24,38 @@ from aligulac.settings import (
     INIT_DEV,
     start_rating,
 )
-
+from countries import data
+from countries.transformations import (
+    cca3_to_ccn,
+    ccn_to_cca2,
+    cn_to_ccn,
+)
 from ratings.models import (
     Match,
     Period,
     Player,
-    Rating,
 )
+
 # }}}
 
 # {{{ Patchlist
 PATCHES = [
     (date(year=2010, month=10, day=14), '1.1.2'),
-    (date(year=2011, month=3,  day=22), '1.3.0'),
-    (date(year=2011, month=9,  day=20), '1.4.0'),
-    (date(year=2012, month=2,  day=21), '1.4.3'),
-    (date(year=2013, month=3,  day=12), 'HotS'),
-    (date(year=2013, month=7,  day=11), '2.0.9 BU'),
-    (date(year=2013, month=11,  day=11), '2.0.12 BU'),
-    (date(year=2014, month=2,  day=3), '2.1 BU'),
-    (date(year=2014, month=3,  day=1), '2.1 BU2'),
-    (date(year=2014, month=5,  day=23), '2.1.2 BU'),
-    (date(year=2014, month=7,  day=25), '2.1.3 BU'),
-    (date(year=2015, month=4,  day=9), '2.1.9 BU'),
-    (date(year=2015, month=11,  day=10), 'LotV'),
-    (date(year=2016, month=1,  day=29), '3.1.1 BU'),
-    (date(year=2016, month=5,  day=23), '3.3.0 BU'),
-    (date(year=2016, month=7,  day=6), '3.3.2 BU'),
+    (date(year=2011, month=3, day=22), '1.3.0'),
+    (date(year=2011, month=9, day=20), '1.4.0'),
+    (date(year=2012, month=2, day=21), '1.4.3'),
+    (date(year=2013, month=3, day=12), 'HotS'),
+    (date(year=2013, month=7, day=11), '2.0.9 BU'),
+    (date(year=2013, month=11, day=11), '2.0.12 BU'),
+    (date(year=2014, month=2, day=3), '2.1 BU'),
+    (date(year=2014, month=3, day=1), '2.1 BU2'),
+    (date(year=2014, month=5, day=23), '2.1.2 BU'),
+    (date(year=2014, month=7, day=25), '2.1.3 BU'),
+    (date(year=2015, month=4, day=9), '2.1.9 BU'),
+    (date(year=2015, month=11, day=10), 'LotV'),
+    (date(year=2016, month=1, day=29), '3.1.1 BU'),
+    (date(year=2016, month=5, day=23), '3.3.0 BU'),
+    (date(year=2016, month=7, day=6), '3.3.2 BU'),
     (date(year=2016, month=11, day=21), '3.8.0'),
     (date(year=2016, month=12, day=8), '3.8.0 BU'),
     (date(year=2017, month=2, day=1), '3.10.1'),
@@ -129,6 +126,8 @@ CURRENCIES = {
     'XBT': _('Bitcoin'),
     'BGN': _('Bulgarian Lev'),
 }
+
+
 # }}}
 
 # {{{ find_player: Magic!
@@ -177,10 +176,10 @@ def find_player(query=None, lst=None, make=False, soft=False, strict=False):
         romanized_name_filter = format_filter(romanized_name__MATCHES=s)
 
         q = (
-            Q(**tag_filter) |
-            Q(**alias_filter) |
-            Q(**full_name_filter) |
-            Q(**romanized_name_filter)
+                Q(**tag_filter) |
+                Q(**alias_filter) |
+                Q(**full_name_filter) |
+                Q(**romanized_name_filter)
         )
         if not strict or len(lst) > 1:
             group_name_filter = format_filter(
@@ -238,6 +237,8 @@ def find_player(query=None, lst=None, make=False, soft=False, strict=False):
     # }}}
 
     return queryset.distinct()
+
+
 # }}}
 
 # Submit match parser
@@ -265,8 +266,8 @@ def find_player(query=None, lst=None, make=False, soft=False, strict=False):
 def parse_match(line, allow_archon=False):
     quote = Literal('"').suppress()
     slash = Literal('/').suppress()
-    dash  = Literal('-').suppress()
-    excl  = Literal('!').suppress()
+    dash = Literal('-').suppress()
+    excl = Literal('!').suppress()
 
     quotedWord = QuotedString('"', escChar='\\', unquoteResults=True)
     string = CharsNotIn('-/"\' ')
@@ -277,8 +278,8 @@ def parse_match(line, allow_archon=False):
     score = sca + dash + scb
 
     flag = Combine(excl + (
-        Literal("MAKE") |
-        Literal("DUP")
+            Literal("MAKE") |
+            Literal("DUP")
     ))
     flags = ZeroOrMore(flag)("flags")
 
@@ -323,25 +324,32 @@ def parse_match(line, allow_archon=False):
         result_dict['plb'] = list(result_dict['plb'])
 
     if 'flags' in result_dict:
-         result_dict['flags'] = set(list(result_dict['flags']))
+        result_dict['flags'] = set(list(result_dict['flags']))
     else:
-         result_dict['flags'] = set()
+        result_dict['flags'] = set()
 
     return result_dict
 
+
 # {{{ cdf: Cumulative distribution function
 def cdf(x, loc=0.0, scale=1.0):
-    return 0.5 + 0.5 * tanh(pi/2/sqrt(3) * (x-loc)/scale)
+    return 0.5 + 0.5 * tanh(pi / 2 / sqrt(3) * (x - loc) / scale)
+
+
 # }}}
 
 # {{{ pdf: Probability distribution function
 def pdf(x, loc=0.0, scale=1.0):
-    return pi/4/sqrt(3)/scale * (1 - tanh(pi/2/sqrt(3)*(x-loc)/scale)**2)
+    return pi / 4 / sqrt(3) / scale * (1 - tanh(pi / 2 / sqrt(3) * (x - loc) / scale) ** 2)
+
+
 # }}}
 
 # {{{ icdf: Inverse cumulative distribution function
 def icdf(c, loc=0.0, scale=1.0):
-    return loc + scale * 2*sqrt(3)/pi * arctanh(2*c - 1)
+    return loc + scale * 2 * sqrt(3) / pi * arctanh(2 * c - 1)
+
+
 # }}}
 
 # {{{ get_latest_period: Returns the latest computed period, or None.
@@ -350,22 +358,30 @@ def get_latest_period():
         return Period.objects.filter(computed=True).latest('start')
     except:
         return None
+
+
 # }}}
 
 # {{{ filter_active: Filters a rating queryset by removing inactive ratings.
 def filter_active(queryset):
     return queryset.filter(decay__lt=INACTIVE_THRESHOLD)
 
+
 def filter_active_players(queryset):
     return queryset.filter(current_rating__decay__lt=INACTIVE_THRESHOLD)
+
+
 # }}}
 
 # {{{ filter_inactive: Filters a rating queryset by removing active ratings.
 def filter_inactive(queryset):
     return queryset.exclude(decay__lt=INACTIVE_THRESHOLD)
 
+
 def filter_inactive_players(queryset):
     return queryset.exclude(current_rating__decay__lt=INACTIVE_THRESHOLD)
+
+
 # }}}
 
 # {{{ total_ratings: Annotates a rating queryset by adding tot_vp, tot_vt and tot_vz.
@@ -375,6 +391,8 @@ def total_ratings(queryset):
         'tot_vt': 'rating+rating_vt',
         'tot_vz': 'rating+rating_vz',
     })
+
+
 # }}}
 
 # {{{ populate_teams: Adds team information to rows in a queryset (ratings or players) by populating the
@@ -403,6 +421,8 @@ def populate_teams(queryset, player_set=False):
             e.teamid = membership.group.id
 
     return q
+
+
 # }}}
 
 # {{{ country_list: Creates a list of countries in the given queryset (of Players).
@@ -412,6 +432,8 @@ def country_list(queryset):
     country_dict = [{'cc': c, 'name': _(data.ccn_to_cn[data.cca2_to_ccn[c]])} for c in country_codes]
     country_dict.sort(key=lambda a: a['name'])
     return country_dict
+
+
 # }}}
 
 # {{{ currency_list: Creates a list of currencies in the given queryset (of Earnings).
@@ -422,6 +444,8 @@ def currency_list(queryset):
         'code': ccy.currency(c['currency']).code
     } for c in currencies]
     return currency_dict
+
+
 # }}}
 
 
@@ -432,12 +456,14 @@ def currency_strip(value):
     """
     if isinstance(value, str):
         return value.rstrip('0').rstrip('.')
-        
+
     if isinstance(value, Decimal):
         return currency_strip(str(value))
 
     if isinstance(value, int):
         return str(value)
+
+
 # }}}
 
 # {{{ filter_flags: Splits an integer representing bitwise or into a list of each flag.
@@ -451,11 +477,15 @@ def filter_flags(flags):
         flags //= 2
         power *= 2
     return ret
+
+
 # }}}
 
 # {{{ split_matchset: Splits a match queryset into two, where player is A and B respectively
 def split_matchset(queryset, player):
     return queryset.filter(pla=player), queryset.filter(plb=player)
+
+
 # }}}
 
 # {{{ get_placements: Returns a dict mapping prizemoney to tuple (min,max) placements for a given event.
@@ -470,44 +500,58 @@ def get_placements(event):
         except:
             ret[earning.earnings] = (earning.placement, earning.placement)
     return ret
+
+
 # }}}
 
 # {{{ ntz: Helper function with aggregation, sending None to 0, so that the sum of an empty list is 0.
 # AS IT FUCKING SHOULD BE.
 ntz = lambda k: k if k is not None else 0
+
+
 # }}}
 
 # {{{ count_winloss_games: Counts wins and losses over a queryset relative to player A.
 def count_winloss_games(queryset):
     agg = queryset.aggregate(Sum('sca'), Sum('scb'))
     return ntz(agg['sca__sum']), ntz(agg['scb__sum'])
+
+
 # }}}
 
 # {{{ count_winloss_player(queryset, player): Counts wins and losses over a queryset for a given player.
 def count_winloss_player(queryset, player):
     wa, la = count_winloss_games(queryset.filter(pla=player))
     lb, wb = count_winloss_games(queryset.filter(plb=player))
-    return wa+wb, la+lb
+    return wa + wb, la + lb
+
+
 # }}}
 
 # {{{ count_matchup_games: Gets the matchup W-L data for a queryset.
 def count_matchup_games(queryset, rca, rcb):
     wa, la = count_winloss_games(queryset.filter(rca=rca, rcb=rcb))
     lb, wb = count_winloss_games(queryset.filter(rca=rcb, rcb=rca))
-    return wa+wb, la+lb
+    return wa + wb, la + lb
+
+
 # }}}
 
 # {{{ count_matchup_player: Gets the matcup W-L data for a queryset for a given player.
 def count_matchup_player(queryset, player, race):
     wa, la = count_winloss_games(queryset.filter(pla=player, rcb=race))
     lb, wb = count_winloss_games(queryset.filter(plb=player, rca=race))
-    return wa+wb, la+lb
+    return wa + wb, la + lb
+
+
 # }}}
 
 # {{{ count_mirror_games: Gets the number of mirror games for a queryset.
 def count_mirror_games(queryset, race):
     w, l = count_winloss_games(queryset.filter(rca=race, rcb=race))
     return w + l
+
+
 # }}}
 
 # {{{ add_counts: Add match and game counts to a rating queryset (should have prefetched prev__rt(a,b)).
@@ -527,6 +571,8 @@ def add_counts(queryset):
             r.ngames = ntz(initial['sca__sum']) + ntz(initial['scb__sum'])
             r.nmatches = r.player.get_matchset().filter(period_id=r.period_id).count()
     return queryset
+
+
 # }}}
 
 # {{{ display_matches: Prepare a match queryset for display. Works for both Match and PreMatch objects.
@@ -544,11 +590,11 @@ def display_matches(matches, date=True, fix_left=None, ratings=False, messages=T
     for idx, m in enumerate(matches):
         # {{{ Basic stuff
         r = {
-            'match':        m,
-            'match_id':     m.id,
-            'game':         m.game if isinstance(m, Match) else m.group.game,
-            'offline':      m.offline if isinstance(m, Match) else m.group.offline,
-            'treated':      isinstance(m, Match) and m.treated,
+            'match': m,
+            'match_id': m.id,
+            'game': m.game if isinstance(m, Match) else m.group.game,
+            'offline': m.offline if isinstance(m, Match) else m.group.offline,
+            'treated': isinstance(m, Match) and m.treated,
             'pla': {
                 'id': m.pla_id,
                 'tag': m.pla.tag if m.pla is not None else m.pla_string,
@@ -589,15 +635,15 @@ def display_matches(matches, date=True, fix_left=None, ratings=False, messages=T
         # {{{ Check ratings if needed
         if ratings and isinstance(m, Match):
             r['pla'].update({
-                'rating':  m.rta.get_totalrating(m.rcb) if m.rta
-                           else start_rating(r['pla']['country'], m.period_id),
-                'dev':     m.rta.get_totaldev(m.rcb) if m.rta else sqrt(2)*INIT_DEV,
+                'rating': m.rta.get_totalrating(m.rcb) if m.rta
+                else start_rating(r['pla']['country'], m.period_id),
+                'dev': m.rta.get_totaldev(m.rcb) if m.rta else sqrt(2) * INIT_DEV,
             })
 
             r['plb'].update({
-                'rating':  m.rtb.get_totalrating(m.rca) if m.rtb
-                           else start_rating(r['plb']['country'], m.period_id),
-                'dev':     m.rtb.get_totaldev(m.rca) if m.rtb else sqrt(2)*INIT_DEV,
+                'rating': m.rtb.get_totalrating(m.rca) if m.rtb
+                else start_rating(r['plb']['country'], m.period_id),
+                'dev': m.rtb.get_totaldev(m.rca) if m.rtb else sqrt(2) * INIT_DEV,
             })
         # }}}
 

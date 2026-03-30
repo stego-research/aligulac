@@ -1,10 +1,10 @@
 import itertools
 
-from formats.composite import Composite
-from formats.match import Match
-from formats.format import Tally as ParentTally
-
 import progressbar
+from formats.composite import Composite
+from formats.format import Tally as ParentTally
+from formats.match import Match
+
 
 class Tally(ParentTally):
 
@@ -16,18 +16,19 @@ class Tally(ParentTally):
             self.eliminators[p] = 0
             self.bumpers[p] = 0
 
+
 class DEBracket(Composite):
 
     def __init__(self, num, rounds):
         self._num = num
         self._rounds = rounds
 
-        schema_in = [1] * 2**rounds
+        schema_in = [1] * 2 ** rounds
         schema_out = []
         r = rounds - 2
         while r >= 0:
-            schema_out.append(2**r)
-            schema_out.append(2**r)
+            schema_out.append(2 ** r)
+            schema_out.append(2 ** r)
             r -= 1
         schema_out += [1, 1]
         Composite.__init__(self, schema_in, schema_out)
@@ -39,50 +40,50 @@ class DEBracket(Composite):
         self._final = []
 
         prev_round = None
-        L = 2**(self._rounds-1)
-        for r in range(0,self._rounds):
+        L = 2 ** (self._rounds - 1)
+        for r in range(0, self._rounds):
             rnd = []
-            for i in range(0,L):
+            for i in range(0, L):
                 m = Match(self._num)
                 rnd.append(m)
 
                 m.add_parent(self)
                 if prev_round != None:
-                    prev_round[2*i].add_winner_link(m, 0)
-                    prev_round[2*i+1].add_winner_link(m, 1)
+                    prev_round[2 * i].add_winner_link(m, 0)
+                    prev_round[2 * i + 1].add_winner_link(m, 1)
 
-            self._matches['Winner Round ' + str(r+1)] = rnd
+            self._matches['Winner Round ' + str(r + 1)] = rnd
             self._winners.append(rnd)
             prev_round = rnd
 
-            L = L//2
+            L = L // 2
 
         prev_round = None
-        L = 2**(self._rounds-2)
-        for r in range(0,2*(self._rounds-1)):
+        L = 2 ** (self._rounds - 2)
+        for r in range(0, 2 * (self._rounds - 1)):
             rnd = []
-            for i in range(0,L):
+            for i in range(0, L):
                 m = Match(self._num)
                 rnd.append(m)
-                
+
                 m.add_parent(self)
                 if r == 0:
-                    self._winners[0][2*i].add_loser_link(m, 0)
-                    self._winners[0][2*i+1].add_loser_link(m, 1)
+                    self._winners[0][2 * i].add_loser_link(m, 0)
+                    self._winners[0][2 * i + 1].add_loser_link(m, 1)
                 elif r % 2 == 1:
                     par = i if (i % 4 == 3) else L - i - 1
-                    self._winners[(r+1)//2][par].add_loser_link(m, 0)
+                    self._winners[(r + 1) // 2][par].add_loser_link(m, 0)
                     prev_round[i].add_winner_link(m, 1)
                 else:
-                    prev_round[2*i].add_winner_link(m, 0)
-                    prev_round[2*i+1].add_winner_link(m, 1)
+                    prev_round[2 * i].add_winner_link(m, 0)
+                    prev_round[2 * i + 1].add_winner_link(m, 1)
 
-            self._matches['Loser Round ' + str(r+1)] = rnd
+            self._matches['Loser Round ' + str(r + 1)] = rnd
             self._losers.append(rnd)
             prev_round = rnd
 
             if r % 2 == 1:
-                L = L//2
+                L = L // 2
 
         f1 = Match(self._num)
         f2 = Match(self._num)
@@ -110,7 +111,7 @@ class DEBracket(Composite):
                 raise Exception(ex)
 
             try:
-                return bracket[int(key[0])-1][int(key[1])-1]
+                return bracket[int(key[0]) - 1][int(key[1]) - 1]
             except:
                 raise Exception(ex)
 
@@ -118,8 +119,8 @@ class DEBracket(Composite):
         return self._rounds > 3
 
     def fill(self):
-        for i in range(0,len(self._players)):
-            self._winners[0][i//2].set_player(i % 2, self._players[i])
+        for i in range(0, len(self._players)):
+            self._winners[0][i // 2].set_player(i % 2, self._players[i])
 
     def tally_maker(self):
         return Tally(len(self._schema_out), self._players)
@@ -130,8 +131,8 @@ class DEBracket(Composite):
 
         progress = progressbar.ProgressBar(N, exp='Monte Carlo')
 
-        for i in range(0,N):
-            self.compute_mc_round(0, base=1/N)
+        for i in range(0, N):
+            self.compute_mc_round(0, base=1 / N)
 
             if i % 500 == 0:
                 progress.update_time(i)
@@ -204,9 +205,9 @@ class DEBracket(Composite):
         self.compute_instances(instances, master, rnd, r, base)
 
         if r < len(mas) - 1 and master < 2:
-            self.compute_mc_round(r+1, master, base)
+            self.compute_mc_round(r + 1, master, base)
         elif r == len(mas) - 1 and master < 2:
-            self.compute_mc_round(0, master+1, base)
+            self.compute_mc_round(0, master + 1, base)
 
     def compute_round(self, r, master=0, base=1):
         (mas, rnd) = self.fetch_round(r, master)
@@ -222,9 +223,9 @@ class DEBracket(Composite):
             self.compute_instances(instances, master, rnd, r, prob)
 
             if r < len(mas) - 1 and master < 2:
-                self.compute_round(r+1, master, prob)
+                self.compute_round(r + 1, master, prob)
             elif r == len(mas) - 1 and master < 2:
-                self.compute_round(0, master+1, prob)
+                self.compute_round(0, master + 1, prob)
 
     def detail(self, strings):
         tally = self._tally
@@ -235,8 +236,8 @@ class DEBracket(Composite):
         out += strings['ptableheader']
         for h in range(0, len(self._schema_out)):
             if h < len(self._schema_out) - 1:
-                out += strings['ptableheading'].format(heading='Top ' +\
-                           str(sum(self._schema_out[h:])))
+                out += strings['ptableheading'].format(heading='Top ' + \
+                                                               str(sum(self._schema_out[h:])))
             else:
                 out += strings['ptableheading'].format(heading='Win')
 
@@ -246,7 +247,7 @@ class DEBracket(Composite):
             out += '\n' + strings['ptablename'].format(player=p.name)
             for i in tally[p]:
                 if i > 1e-10:
-                    out += strings['ptableentry'].format(prob=100*i)
+                    out += strings['ptableentry'].format(prob=100 * i)
                 else:
                     out += strings['ptableempty']
 
@@ -257,27 +258,27 @@ class DEBracket(Composite):
             if p.name == 'BYE':
                 continue
             out += '\n' + strings['ptablename'].format(player=p.name)
-            elims = sorted(self._players, key=lambda a: tally[p].eliminators[a],\
+            elims = sorted(self._players, key=lambda a: tally[p].eliminators[a], \
                            reverse=True)
             for elim in elims[:3]:
                 if tally[p].eliminators[elim] > 1e-10:
-                    out += strings['ptabletextnum'].format(text=elim.name,\
-                               prob=100*tally[p].eliminators[elim])
+                    out += strings['ptabletextnum'].format(text=elim.name, \
+                                                           prob=100 * tally[p].eliminators[elim])
 
         out += strings['ptablebetween']
 
-        out += strings['ptabletitle'].format(title='Most likely to be sent to' +\
-                                             ' the losers\' bracket by...')
+        out += strings['ptabletitle'].format(title='Most likely to be sent to' + \
+                                                   ' the losers\' bracket by...')
         for p in self._players:
             if p.name == 'BYE':
                 continue
             out += '\n' + strings['ptablename'].format(player=p.name)
-            elims = sorted(self._players, key=lambda a: tally[p].bumpers[a],\
+            elims = sorted(self._players, key=lambda a: tally[p].bumpers[a], \
                            reverse=True)
             for elim in elims[:3]:
                 if tally[p].bumpers[elim] > 1e-10:
-                    out += strings['ptabletextnum'].format(text=elim.name,\
-                               prob=100*tally[p].bumpers[elim])
+                    out += strings['ptabletextnum'].format(text=elim.name, \
+                                                           prob=100 * tally[p].bumpers[elim])
 
         out += strings['detailfooter']
 
@@ -287,25 +288,25 @@ class DEBracket(Composite):
         tally = self._tally
 
         if title == None:
-            title = str(2**self._rounds) + '-man double elimination bracket'
+            title = str(2 ** self._rounds) + '-man double elimination bracket'
         out = strings['header'].format(title=title)
 
-        players = sorted(self._players, key=lambda a: tally[a][-1],\
+        players = sorted(self._players, key=lambda a: tally[a][-1], \
                          reverse=True)
 
         out += strings['mlwinnerlist']
         for p in players[0:16]:
             if tally[p][-1] > 1e-10 and p.name != 'BYE':
-                out += strings['mlwinneri'].format(player=p.name,\
-                                                   prob=100*tally[p][-1])
+                out += strings['mlwinneri'].format(player=p.name, \
+                                                   prob=100 * tally[p][-1])
 
         def exp_rounds(k):
             ret = 0
-            for i in range(0,len(k)):
-                ret += i*k[i]
+            for i in range(0, len(k)):
+                ret += i * k[i]
             return ret
 
-        players = sorted(self._players, key=lambda a: exp_rounds(tally[a]), 
+        players = sorted(self._players, key=lambda a: exp_rounds(tally[a]),
                          reverse=True)
 
         out += strings['exroundslist']
@@ -316,7 +317,7 @@ class DEBracket(Composite):
             rounded = round(exp)
             expl = 'top ' + str(sum(self._schema_out[rounded:]))
 
-            out += strings['exroundsi'].format(player=p.name, rounds=exp,\
+            out += strings['exroundsi'].format(player=p.name, rounds=exp, \
                                                expl=expl)
 
         out += strings['nomimage']

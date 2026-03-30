@@ -1,52 +1,40 @@
 # {{{ Imports
 import re
-
-from countries.data import cca2_to_ccn
-from collections import Counter, namedtuple
+from collections import namedtuple
 from datetime import datetime
-
-from django import forms
-from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import F, Q, Sum
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render_to_response, redirect
-from django.utils.translation import ugettext_lazy as _
-
-from itertools import zip_longest
-
 from urllib.parse import quote
 
-from ratings.comparisons import (
-    Comparison,
-    EarningsComparison,
-    FormComparison,
-    MatchComparison,
-    MetaComparison,
-    PercentageComparison,
-    PredictionComparison,
-    RatingComparison,
-    SimpleComparison
-)
-from ratings.models import (
-    Event,
-    Group,
-    GroupMembership,
-    Match,
-    Player,
-)
-from ratings.templatetags.ratings_extras import player_url
+from django import forms
+from django.core.exceptions import ValidationError
+from django.db.models import F, Q
+from django.shortcuts import render_to_response, redirect
+from django.utils.translation import ugettext_lazy as _
+
 from aligulac.cache import cache_page
 from aligulac.tools import (
     base_ctx,
     Message,
     NotUniquePlayerMessage
 )
-from ratings.tools import display_matches, find_player, ntz
-from ratings.templatetags.ratings_extras import (
-    add_sep_and_cur,
-    ratscale,
-    ratscalediff,
+from countries.data import cca2_to_ccn
+from ratings.comparisons import (
+    EarningsComparison,
+    FormComparison,
+    MatchComparison,
+    MetaComparison,
+    PredictionComparison,
+    RatingComparison
 )
+from ratings.models import (
+    Event,
+    Group,
+    Match,
+    Player,
+)
+from ratings.templatetags.ratings_extras import player_url
+from ratings.tools import display_matches, find_player
+
+
 # }}}
 
 @cache_page
@@ -54,21 +42,22 @@ def home(request):
     ctx = base_ctx('Misc', request=request)
 
     ctx["miscpages"] = (
-        { "url": "/misc/balance/",
-          "title": _("Balance Report"),
-          "desc": _("Charts showing balance in StarCraft II over time.")
-        },
-        { "url": "/misc/days/",
-          "title": _("Number of days since..."),
-          "desc": _("Page showing the most recent time some things happened.")
-        },
-        { "url": "/misc/compare/",
-          "title": _("Compare"),
-          "desc": _("Tool for comparing players.")
-        }
+        {"url": "/misc/balance/",
+         "title": _("Balance Report"),
+         "desc": _("Charts showing balance in StarCraft II over time.")
+         },
+        {"url": "/misc/days/",
+         "title": _("Number of days since..."),
+         "desc": _("Page showing the most recent time some things happened.")
+         },
+        {"url": "/misc/compare/",
+         "title": _("Compare"),
+         "desc": _("Tool for comparing players.")
+         }
     )
 
     return render_to_response("misc.djhtml", ctx)
+
 
 # {{{ Clocks
 # Format (description, hover_description, queryset, type)
@@ -141,7 +130,7 @@ CLOCKS = [
         _("A CIS player won a major event"),
         _("Player from BY, RU, UA or KZ with 1st place prize money >= $2000"),
         Event.objects.filter(earnings__placement=1,
-                             earnings__player__country__in=["BY","RU","UA","KZ"],
+                             earnings__player__country__in=["BY", "RU", "UA", "KZ"],
                              earnings__earnings__gte=2000)
         .order_by("-latest"),
         "event_winner"
@@ -248,6 +237,7 @@ CLOCKS = [
     )
 ]
 
+
 @cache_page
 def clocks(request):
     ctx = base_ctx('Misc', 'Days Since…', request)
@@ -295,6 +285,8 @@ def clocks(request):
     ctx["clocks"].sort(key=lambda c: c.date, reverse=True)
 
     return render_to_response("clocks.djhtml", ctx)
+
+
 # }}}
 
 
@@ -314,6 +306,7 @@ class CompareForm(forms.Form):
         else:
             super().__init__()
         self.messages = []
+
     # }}}
 
     # Copied from inference_views.PredictForm
@@ -343,7 +336,6 @@ class CompareForm(forms.Form):
         if not ok:
             raise ValidationError(_('One or more errors found in player list.'))
 
-
         if len(players) < 2:
             raise ValidationError(_('Enter at least two players.'))
         if len(players) > 6:
@@ -363,6 +355,7 @@ class CompareForm(forms.Form):
             return self.messages + ret
 
         return self.messages
+
     # }}}
 
     # {{{ generate_url: Returns an URL to continue to (assumes validation has passed)
@@ -378,7 +371,6 @@ class CompareForm(forms.Form):
 
 @cache_page
 def compare_search(request):
-
     base = base_ctx('Misc', 'Compare', request)
 
     if "op" in request.GET:
@@ -407,6 +399,7 @@ def compare_search(request):
 
     return redirect(form.generate_url())
 
+
 @cache_page
 def compare(request, players):
     base = base_ctx('Misc', 'Compare', request)
@@ -425,17 +418,17 @@ def compare(request, players):
     except:
         return redirect('/misc/compare/')
 
-    fail_url =  (
-        "/misc/compare/?op=edit&players=" +
-        quote('\n'.join(str(x) for x in players))
+    fail_url = (
+            "/misc/compare/?op=edit&players=" +
+            quote('\n'.join(str(x) for x in players))
     )
 
     if len(players) < 2 or len(players) > 6:
         return redirect(fail_url)
     # }}}
 
-    q = Player.objects.filter(id__in=players)\
-                      .prefetch_related('current_rating')
+    q = Player.objects.filter(id__in=players) \
+        .prefetch_related('current_rating')
 
     # Make sure that they're in the right order
     clean_players = list(players)
@@ -443,16 +436,15 @@ def compare(request, players):
         idx = players.index(p.id)
         clean_players[idx] = p
 
-
     def fmt_url_player(x):
         if isinstance(x, int):
             return str(x)
         else:
             return x.tag + " " + str(x.id)
 
-    edit_url =  (
-        "/misc/compare/?op=edit&players=" +
-        quote('\n').join(quote(fmt_url_player(x)) for x in clean_players)
+    edit_url = (
+            "/misc/compare/?op=edit&players=" +
+            quote('\n').join(quote(fmt_url_player(x)) for x in clean_players)
     )
 
     # If a player couldn't be found
@@ -554,6 +546,7 @@ def compare(request, players):
 
     return render_to_response('compare.djhtml', base)
 
+
 # (property chain, label)
 RATING_COMPARISONS = (
     (('current_rating', 'rating'), _("General")),
@@ -563,4 +556,3 @@ RATING_COMPARISONS = (
 )
 
 # }}}
-

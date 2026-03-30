@@ -6,8 +6,8 @@ from aligulac.tools import (
     base_ctx,
     Message,
 )
-
 from faq.models import Post
+
 
 @cache_page
 def faq(request):

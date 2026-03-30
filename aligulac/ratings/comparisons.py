@@ -1,6 +1,8 @@
 from collections import Counter
-from django.db.models import Sum
 from itertools import groupby
+
+from django.db.models import Sum
+
 from ratings.inference_views import (
     DualPredictionResult,
     MatchPredictionResult,
@@ -11,6 +13,7 @@ from ratings.templatetags.ratings_extras import (
     add_sep_and_cur,
     ratscale
 )
+
 
 # {{{ Metaclass magic! This is not really necessary, but fun!
 def cached_properties(cls_name, cls_parents, cls_attrs):
@@ -27,6 +30,7 @@ def cached_properties(cls_name, cls_parents, cls_attrs):
             new_attrs[k] = v
 
     old_init = new_attrs["__init__"]
+
     def __init__(self, *args, **kwargs):
         old_init(self, *args, **kwargs)
         for k in cached:
@@ -36,6 +40,7 @@ def cached_properties(cls_name, cls_parents, cls_attrs):
 
     return type(cls_name, cls_parents, new_attrs)
 
+
 class Cached():
     def get_property(self, name):
         @property
@@ -43,7 +48,10 @@ class Cached():
             if getattr(self, "_" + name) is None:
                 self.compute()
             return getattr(self, "_" + name)
+
         return wrapper
+
+
 # }}}
 
 class Comparison(metaclass=cached_properties):
@@ -80,7 +88,7 @@ class Comparison(metaclass=cached_properties):
     def compute(self):
         self._sorted = list(self.players)
         f = 1 if self.ascending else -1
-        self._sorted.sort(key=lambda x: f*self.get_value(x))
+        self._sorted.sort(key=lambda x: f * self.get_value(x))
 
         self._groups = [
             list(g)
@@ -93,6 +101,7 @@ class Comparison(metaclass=cached_properties):
     def entries(self):
         return [ComparisonEntry(p, self) for p in self.players]
 
+
 class ComparisonEntry():
     def __init__(self, player, comp):
         self.comp = comp
@@ -102,8 +111,9 @@ class ComparisonEntry():
         self.is_best = player in comp.best and \
                        len(comp.best) < len(comp.players)
         self.is_worst = player in comp.worst and \
-                       len(comp.worst) < len(comp.players)
+                        len(comp.worst) < len(comp.players)
         self.index = comp.get_position(player)
+
 
 def iterable(a):
     try:
@@ -111,6 +121,7 @@ def iterable(a):
         return True
     except TypeError:
         return False
+
 
 class SimpleComparison(Comparison):
     def __init__(self, players, name, properties, ascending):
@@ -142,6 +153,7 @@ class SimpleComparison(Comparison):
         value = self.get_value(player)
         return value
 
+
 class RatingComparison(SimpleComparison):
     def __init__(self, players, name, properties):
         super().__init__(players, name, properties, ascending=False)
@@ -149,6 +161,7 @@ class RatingComparison(SimpleComparison):
     def _print(self, player):
         value = self.get_value(player)
         return ratscale(value)
+
 
 class EarningsComparison(Comparison):
     def __init__(self, players, name):
@@ -168,6 +181,7 @@ class EarningsComparison(Comparison):
         value = self.get_value(player)
         return add_sep_and_cur(value, "USD")
 
+
 class PercentageComparison(SimpleComparison):
     def __init__(self, players, name, properties=None):
         super().__init__(players, name, properties, ascending=False)
@@ -176,8 +190,8 @@ class PercentageComparison(SimpleComparison):
         value = self.get_value(player)
         return "{}%".format(round(value * 100, 2))
 
-class MatchComparison(Comparison, metaclass=cached_properties):
 
+class MatchComparison(Comparison, metaclass=cached_properties):
     appearances = Cached()
     winner_counter = Cached()
     loser_counter = Cached()
@@ -206,7 +220,7 @@ class MatchComparison(Comparison, metaclass=cached_properties):
     def compute(self):
         if self._needs_compute:
             if self.kind == "matches":
-                self._appearances = Counter(x.pla_id for x in self.matches) +\
+                self._appearances = Counter(x.pla_id for x in self.matches) + \
                                     Counter(x.plb_id for x in self.matches)
                 self._winner_counter = Counter(
                     x.get_winner_id() for x in self.matches
@@ -229,7 +243,7 @@ class MatchComparison(Comparison, metaclass=cached_properties):
                     self._gamelose_counter += Counter(losses)
 
                 self._game_counter = (
-                    self._gamewin_counter + self._gamelose_counter
+                        self._gamewin_counter + self._gamelose_counter
                 )
                 self._gamepm_counter = +self._gamewin_counter
                 self._gamepm_counter.subtract(self._gamelose_counter)
@@ -252,7 +266,7 @@ class MatchComparison(Comparison, metaclass=cached_properties):
             if self.game_counter[player.id] == 0:
                 return 0
             return (
-                self.gamewin_counter[player.id] / self.game_counter[player.id]
+                    self.gamewin_counter[player.id] / self.game_counter[player.id]
             )
         elif self.kind == "games":
             return self.gamewin_counter[player.id]
@@ -264,6 +278,7 @@ class MatchComparison(Comparison, metaclass=cached_properties):
         else:
             p = "+" if self.pm and v > 0 else ""
             return p + str(v)
+
 
 class FormComparison(Comparison):
 
@@ -283,8 +298,8 @@ class FormComparison(Comparison):
 
     def _get_value(self, player):
         if player.id not in self.forms:
-            matches = Match.objects.symmetric_filter(pla=player)\
-                                   .order_by('-date')
+            matches = Match.objects.symmetric_filter(pla=player) \
+                .order_by('-date')
             recent_matches = matches[:min(5, len(matches))]
             self.forms[player.id] = [
                 self.winner_to_char(player, m) for m in recent_matches
@@ -293,6 +308,7 @@ class FormComparison(Comparison):
 
     def _print(self, player):
         return ' '.join(self.forms[player.id])
+
 
 class PredictionComparison(PercentageComparison, metaclass=cached_properties):
     prediction = Cached()
@@ -334,6 +350,7 @@ class PredictionComparison(PercentageComparison, metaclass=cached_properties):
                 x["player"]["id"] for x in self.prediction.table
             ].index(p.id)
             return self.prediction.table[index]["probs"][0]
+
 
 class MetaComparison(Comparison, metaclass=cached_properties):
     sums = Cached()

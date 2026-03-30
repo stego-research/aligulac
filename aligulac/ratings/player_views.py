@@ -1,44 +1,39 @@
 # {{{ Imports
 import shlex
-
-from datetime import datetime, date, timedelta
-from dateutil.relativedelta import relativedelta
-from functools import partial
+from datetime import datetime, date
 from itertools import zip_longest
 from math import sqrt
 from urllib.parse import urlencode
 
+from dateutil.relativedelta import relativedelta
 from django import forms
-from django.db.models import Sum, Q, Count
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_protect
+from django.db.models import Sum, Q
 from django.shortcuts import render_to_response, get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from aligulac.cache import cache_page
+from aligulac.settings import INACTIVE_THRESHOLD
 from aligulac.tools import (
     base_ctx,
     cache_login_protect,
     etn,
     generate_messages,
     get_param,
-    get_param_date,
     Message,
     ntz,
     StrippedCharField,
 )
-from aligulac.settings import INACTIVE_THRESHOLD
-
+from countries import (
+    data,
+    transformations,
+)
 from ratings.models import (
     GAMES,
-    Match,
     P,
     Period,
     Player,
     RACES,
     Rating,
-    STORIES,
-    Story,
     T,
     TLPD_DBS,
     WCS_TIERS,
@@ -54,21 +49,17 @@ from ratings.tools import (
     filter_flags,
     get_placements,
     PATCHES,
-    split_matchset,
     total_ratings,
 )
 
-from countries import (
-    data,
-    transformations,
-)
 # }}}
 
 msg_inactive = _(
     'Due to %s\'s lack of recent games, they have been marked as <em>inactive</em> and '
     'removed from the current rating list. Once they play a rated game they will be reinstated.'
 )
-msg_nochart  = _('%s has no rating chart on account of having played matches in fewer than two periods.')
+msg_nochart = _('%s has no rating chart on account of having played matches in fewer than two periods.')
+
 
 # {{{ meandate: Rudimentary function for sorting objects with a start and end date.
 def meandate(tm):
@@ -80,6 +71,8 @@ def meandate(tm):
         return tm.end.toordinal()
     else:
         return 1000000
+
+
 # }}}
 
 # {{{ interp_rating: Takes a date and a rating list, and interpolates linearly.
@@ -88,29 +81,31 @@ def interp_rating(date, ratings):
         if (r.period.end - date).days >= 0:
             try:
                 right = (r.period.end - date).days
-                left = (date - ratings[ind-1].period.end).days
-                return (left*r.bf_rating + right*ratings[ind-1].bf_rating) / (left+right)
+                left = (date - ratings[ind - 1].period.end).days
+                return (left * r.bf_rating + right * ratings[ind - 1].bf_rating) / (left + right)
             except:
                 return r.bf_rating
     return ratings[-1].bf_rating
+
+
 # }}}
 
 # {{{ PlayerModForm: Form for modifying a player.
 class PlayerModForm(forms.Form):
-    tag            = StrippedCharField(max_length=30, required=True, label=_('Tag'))
-    race           = forms.ChoiceField(choices=RACES, required=True, label=_('Race'))
-    name           = StrippedCharField(max_length=100, required=False, label=_('Name'))
+    tag = StrippedCharField(max_length=30, required=True, label=_('Tag'))
+    race = forms.ChoiceField(choices=RACES, required=True, label=_('Race'))
+    name = StrippedCharField(max_length=100, required=False, label=_('Name'))
     romanized_name = StrippedCharField(max_length=100, required=False, label=_('Romanized Name'))
-    akas           = forms.CharField(max_length=200, required=False, label=_('AKAs'))
-    birthday       = forms.DateField(required=False, label=_('Birthday'))
+    akas = forms.CharField(max_length=200, required=False, label=_('AKAs'))
+    birthday = forms.DateField(required=False, label=_('Birthday'))
 
-    tlpd_id        = forms.IntegerField(required=False, label=_('TLPD ID'))
-    tlpd_db        = forms.MultipleChoiceField(
+    tlpd_id = forms.IntegerField(required=False, label=_('TLPD ID'))
+    tlpd_db = forms.MultipleChoiceField(
         required=False, choices=TLPD_DBS, label=_('TLPD DB'), widget=forms.CheckboxSelectMultiple)
-    lp_name        = StrippedCharField(max_length=200, required=False, label=_('Liquipedia title'))
-    sc2e_id        = forms.IntegerField(required=False, label=_('SC2Earnings.com ID'))
+    lp_name = StrippedCharField(max_length=200, required=False, label=_('Liquipedia title'))
+    sc2e_id = forms.IntegerField(required=False, label=_('SC2Earnings.com ID'))
 
-    country       = forms.ChoiceField(choices=data.countries, required=False, label=_('Country'))
+    country = forms.ChoiceField(choices=data.countries, required=False, label=_('Country'))
 
     # {{{ Constructor
     def __init__(self, request=None, player=None):
@@ -118,20 +113,21 @@ class PlayerModForm(forms.Form):
             super(PlayerModForm, self).__init__(request.POST)
         else:
             super(PlayerModForm, self).__init__(initial={
-                'tag':       player.tag,
-                'race':      player.race,
-                'country':   player.country,
-                'name':      player.name,
+                'tag': player.tag,
+                'race': player.race,
+                'country': player.country,
+                'name': player.name,
                 'romanized_name': player.romanized_name,
-                'akas':      ', '.join(player.get_aliases()),
-                'birthday':  player.birthday,
-                'sc2e_id':   player.sc2e_id,
-                'lp_name':   player.lp_name,
-                'tlpd_id':   player.tlpd_id,
-                'tlpd_db':   filter_flags(player.tlpd_db if player.tlpd_db else 0),
+                'akas': ', '.join(player.get_aliases()),
+                'birthday': player.birthday,
+                'sc2e_id': player.sc2e_id,
+                'lp_name': player.lp_name,
+                'tlpd_id': player.tlpd_id,
+                'tlpd_db': filter_flags(player.tlpd_db if player.tlpd_db else 0),
             })
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ update_player: Pushes updates to player, responds with messages
@@ -151,15 +147,15 @@ class PlayerModForm(forms.Form):
                 # Translators: Changed something (a noun).
                 ret.append(Message(_('Changed %s.') % label, type=Message.SUCCESS))
 
-        update(self.cleaned_data['tag'],       'tag',       'set_tag',       _('tag'))
-        update(self.cleaned_data['race'],      'race',      'set_race',      _('race'))
-        update(self.cleaned_data['country'],   'country',   'set_country',   _('country'))
-        update(self.cleaned_data['name'],      'name',      'set_name',      _('name'))
+        update(self.cleaned_data['tag'], 'tag', 'set_tag', _('tag'))
+        update(self.cleaned_data['race'], 'race', 'set_race', _('race'))
+        update(self.cleaned_data['country'], 'country', 'set_country', _('country'))
+        update(self.cleaned_data['name'], 'name', 'set_name', _('name'))
         update(self.cleaned_data['romanized_name'], 'romanized_name', 'set_romanized_name', _('romanized name'))
-        update(self.cleaned_data['birthday'],  'birthday',  'set_birthday',  _('birthday'))
-        update(self.cleaned_data['tlpd_id'],   'tlpd_id',   'set_tlpd_id',   _('TLPD ID'))
-        update(self.cleaned_data['lp_name'],   'lp_name',   'set_lp_name',   _('Liquipedia title'))
-        update(self.cleaned_data['sc2e_id'],   'sc2e_id',   'set_sc2e_id',   _('SC2Earnings.com ID'))
+        update(self.cleaned_data['birthday'], 'birthday', 'set_birthday', _('birthday'))
+        update(self.cleaned_data['tlpd_id'], 'tlpd_id', 'set_tlpd_id', _('TLPD ID'))
+        update(self.cleaned_data['lp_name'], 'lp_name', 'set_lp_name', _('Liquipedia title'))
+        update(self.cleaned_data['sc2e_id'], 'sc2e_id', 'set_sc2e_id', _('SC2Earnings.com ID'))
         update(sum([int(a) for a in self.cleaned_data['tlpd_db']]), 'tlpd_db', 'set_tlpd_db', _('TLPD DBs'))
 
         if player.set_aliases([x for x in self.cleaned_data['akas'].split(',') if x.strip() != '']):
@@ -167,71 +163,74 @@ class PlayerModForm(forms.Form):
 
         return ret
     # }}}
-# }}} 
+
+
+# }}}
 
 # {{{ ResultsFilterForm: Form for filtering results.
 class ResultsFilterForm(forms.Form):
-    after  = forms.DateField(required=False, label=_('After'))
+    after = forms.DateField(required=False, label=_('After'))
     before = forms.DateField(required=False, label=_('Before'))
     event = forms.CharField(required=False, label=_('Event'))
-    race   = forms.ChoiceField(
+    race = forms.ChoiceField(
         choices=[
-            ('ptzr',  _('All')),
-            ('p',     _('Protoss')),
-            ('t',     _('Terran')),
-            ('z',     _('Zerg')),
-            ('tzr',   _('No Protoss')),
-            ('pzr',   _('No Terran')),
-            ('ptr',   _('No Zerg')),
+            ('ptzr', _('All')),
+            ('p', _('Protoss')),
+            ('t', _('Terran')),
+            ('z', _('Zerg')),
+            ('tzr', _('No Protoss')),
+            ('pzr', _('No Terran')),
+            ('ptr', _('No Zerg')),
         ],
         required=False, label=_('Opponent race'), initial='ptzr'
     )
     country = forms.ChoiceField(
-        choices=[('all',_('All')),('KR',_('South Korea')),('foreigners',_('Non-Koreans')),('','')] + 
+        choices=[('all', _('All')), ('KR', _('South Korea')), ('foreigners', _('Non-Koreans')), ('', '')] +
                 sorted(data.countries, key=lambda a: a[1]),
         required=False, label=_('Country'), initial='all'
     )
     bestof = forms.ChoiceField(
         choices=[
-            ('all',  _('All')),
-            ('3',    _('Best of 3+')),
-            ('5',    _('Best of 5+')),
+            ('all', _('All')),
+            ('3', _('Best of 3+')),
+            ('5', _('Best of 5+')),
         ],
         required=False, label=_('Match format'), initial='all'
     )
     offline = forms.ChoiceField(
         choices=[
-            ('both',     _('Both')),
-            ('offline',  _('Offline')),
-            ('online',   _('Online')),
+            ('both', _('Both')),
+            ('offline', _('Offline')),
+            ('online', _('Online')),
         ],
         required=False, label=_('On/offline'), initial='both',
     )
     wcs_season = forms.ChoiceField(
         choices=[
-            ('',     _('All events')),
-            ('all',  _('All seasons')),
-        ]+WCS_YEARS,
+                    ('', _('All events')),
+                    ('all', _('All seasons')),
+                ] + WCS_YEARS,
         required=False, label=_('WCS Season'), initial='',
     )
     _all_tiers = ''.join(map(lambda t: str(t[0]), WCS_TIERS))
     wcs_tier = forms.ChoiceField(
         choices=[
-            ('',         _('All events')),
-            (_all_tiers, _('All tiers')),
-        ] + WCS_TIERS + [
-            (''.join(map(lambda t: str(t[0]), WCS_TIERS[1:])),  _('Non-native'))
-        ],
+                    ('', _('All events')),
+                    (_all_tiers, _('All tiers')),
+                ] + WCS_TIERS + [
+                    (''.join(map(lambda t: str(t[0]), WCS_TIERS[1:])), _('Non-native'))
+                ],
         required=False, label=_('WCS Tier'), initial='',
     )
     game = forms.ChoiceField(
-        choices=[('all','All')]+GAMES, required=False, label=_('Game version'), initial='all')
+        choices=[('all', 'All')] + GAMES, required=False, label=_('Game version'), initial='all')
 
     # {{{ Constructor
     def __init__(self, *args, **kwargs):
         super(ResultsFilterForm, self).__init__(*args, **kwargs)
 
         self.label_suffix = ''
+
     # }}}
 
     # {{{ Cleaning with default values
@@ -240,14 +239,16 @@ class ResultsFilterForm(forms.Form):
             return self.fields[field].initial
         return self.cleaned_data[field]
 
-    clean_race       = lambda s: s.clean_default('race')
-    clean_country    = lambda s: s.clean_default('country')
-    clean_bestof     = lambda s: s.clean_default('bestof')
-    clean_offline    = lambda s: s.clean_default('offline')
+    clean_race = lambda s: s.clean_default('race')
+    clean_country = lambda s: s.clean_default('country')
+    clean_bestof = lambda s: s.clean_default('bestof')
+    clean_offline = lambda s: s.clean_default('offline')
     clean_wcs_season = lambda s: s.clean_default('wcs_season')
-    clean_wcs_tier   = lambda s: s.clean_default('wcs_tier')
-    clean_game       = lambda s: s.clean_default('game')
+    clean_wcs_tier = lambda s: s.clean_default('wcs_tier')
+    clean_game = lambda s: s.clean_default('game')
     # }}}
+
+
 # }}}
 
 # {{{ player view
@@ -271,23 +272,23 @@ def player(request, player_id):
     recent = matches.filter(date__gte=(date.today() - relativedelta(months=2)))
 
     base.update({
-        'player':           player,
-        'modform':          modform,
-        'first':            etn(lambda: matches.earliest('date')),
-        'last':             etn(lambda: matches.latest('date')),
-        'totalmatches':     matches.count(),
-        'offlinematches':   matches.filter(offline=True).count(),
-        'aliases':          player.alias_set.all(),
-        'earnings':         ntz(player.earnings_set.aggregate(Sum('earnings'))['earnings__sum']),
-        'team':             player.get_current_team(),
-        'total':            count_winloss_player(matches, player),
-        'vp':               count_matchup_player(matches, player, P),
-        'vt':               count_matchup_player(matches, player, T),
-        'vz':               count_matchup_player(matches, player, Z),
-        'totalf':           count_winloss_player(recent, player),
-        'vpf':              count_matchup_player(recent, player, P),
-        'vtf':              count_matchup_player(recent, player, T),
-        'vzf':              count_matchup_player(recent, player, Z),
+        'player': player,
+        'modform': modform,
+        'first': etn(lambda: matches.earliest('date')),
+        'last': etn(lambda: matches.latest('date')),
+        'totalmatches': matches.count(),
+        'offlinematches': matches.filter(offline=True).count(),
+        'aliases': player.alias_set.all(),
+        'earnings': ntz(player.earnings_set.aggregate(Sum('earnings'))['earnings__sum']),
+        'team': player.get_current_team(),
+        'total': count_winloss_player(matches, player),
+        'vp': count_matchup_player(matches, player, P),
+        'vt': count_matchup_player(matches, player, T),
+        'vz': count_matchup_player(matches, player, Z),
+        'totalf': count_winloss_player(recent, player),
+        'vpf': count_matchup_player(recent, player, P),
+        'vtf': count_matchup_player(recent, player, T),
+        'vzf': count_matchup_player(recent, player, Z),
     })
 
     base['riv_nem_vic'] = zip_longest(
@@ -301,7 +302,7 @@ def player(request, player_id):
     # }}}
 
     # {{{ Recent matches
-    matches = player.get_matchset(related=['rta','rtb','pla','plb','eventobj'])[0:10]
+    matches = player.get_matchset(related=['rta', 'rtb', 'pla', 'plb', 'eventobj'])[0:10]
     if matches.exists():
         base['matches'] = display_matches(matches, fix_left=player, ratings=True)
     # }}}
@@ -324,9 +325,9 @@ def player(request, player_id):
                 ratings.latest('tot_vt'),
                 ratings.latest('tot_vz'),
             ),
-            'recentchange':  player.get_latest_rating_update(),
-            'firstrating':   ratings.earliest('period'),
-            'rating':        player.current_rating,
+            'recentchange': player.get_latest_rating_update(),
+            'firstrating': ratings.earliest('period'),
+            'rating': player.current_rating,
         })
 
         if player.current_rating.decay >= INACTIVE_THRESHOLD:
@@ -342,9 +343,9 @@ def player(request, player_id):
     if base['charts']:
         ratings = (
             total_ratings(player.rating_set.filter(period_id__lte=base['recentchange'].period_id))
-                .select_related('period')
-                .prefetch_related('prev__rta', 'prev__rtb')
-                .order_by('period')
+            .select_related('period')
+            .prefetch_related('prev__rta', 'prev__rtb')
+            .order_by('period')
         )
 
         # {{{ Add stories and other extra information
@@ -356,24 +357,24 @@ def player(request, player_id):
         for mem in base['teammems']:
             if mem.start and earliest.period.end < mem.start < latest.period.end:
                 teampoints.append({
-                    'date':    mem.start,
-                    'rating':  interp_rating(mem.start, ratings),
-                    'data':    [{'date': mem.start, 'team': mem.group, 'jol': _('joins')}],
+                    'date': mem.start,
+                    'rating': interp_rating(mem.start, ratings),
+                    'data': [{'date': mem.start, 'team': mem.group, 'jol': _('joins')}],
                 })
             if mem.end and earliest.period.end < mem.end < latest.period.end:
                 teampoints.append({
-                    'date':    mem.end,
-                    'rating':  interp_rating(mem.end, ratings),
-                    'data':    [{'date': mem.end, 'team': mem.group, 'jol': _('leaves')}],
+                    'date': mem.end,
+                    'rating': interp_rating(mem.end, ratings),
+                    'data': [{'date': mem.end, 'team': mem.group, 'jol': _('leaves')}],
                 })
         teampoints.sort(key=lambda p: p['date'])
 
         # Condense if team changes happened within 14 days
         cur = 0
         while cur < len(teampoints) - 1:
-            if (teampoints[cur+1]['date'] - teampoints[cur]['date']).days <= 14:
-                teampoints[cur]['data'].append(teampoints[cur+1]['data'][0])
-                del teampoints[cur+1]
+            if (teampoints[cur + 1]['date'] - teampoints[cur]['date']).days <= 14:
+                teampoints[cur]['data'].append(teampoints[cur + 1]['data'][0])
+                del teampoints[cur + 1]
             else:
                 cur += 1
 
@@ -392,16 +393,18 @@ def player(request, player_id):
         # }}}
 
         base.update({
-            'ratings':     add_counts(ratings),
-            'patches':     PATCHES,
-            'stories':     stories,
-            'teampoints':  teampoints,
+            'ratings': add_counts(ratings),
+            'patches': PATCHES,
+            'stories': stories,
+            'teampoints': teampoints,
         })
     else:
         base['messages'].append(Message(msg_nochart % player.tag, type=Message.INFO))
     # }}}
 
     return render_to_response('player.djhtml', base)
+
+
 # }}}
 
 # {{{ adjustment view
@@ -414,16 +417,16 @@ def adjustment(request, player_id, period_id):
     base = base_ctx('Ranking', 'Adjustments', request, context=player)
 
     base.update({
-        'period':    period,
-        'player':    player,
-        'rating':    rating,
-        'prevlink':  etn(lambda: player.rating_set.filter(period__lt=period, decay=0).latest('period')),
-        'nextlink':  etn(lambda: player.rating_set.filter(period__gt=period, decay=0).earliest('period')),
+        'period': period,
+        'player': player,
+        'rating': rating,
+        'prevlink': etn(lambda: player.rating_set.filter(period__lt=period, decay=0).latest('period')),
+        'nextlink': etn(lambda: player.rating_set.filter(period__gt=period, decay=0).earliest('period')),
     })
     # }}}
 
     # {{{ Matches
-    matches = player.get_matchset(related=['rta','rtb','pla','plb','eventobj']).filter(period=period)
+    matches = player.get_matchset(related=['rta', 'rtb', 'pla', 'plb', 'eventobj']).filter(period=period)
 
     # If there are no matches, we don't need to continue
     if not matches.exists():
@@ -438,9 +441,9 @@ def adjustment(request, player_id, period_id):
 
     # {{{ Perform calculations
     tot_rating = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
-    ngames     = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
-    expwins    = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
-    nwins      = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
+    ngames = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
+    expwins = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
+    nwins = {'M': 0.0, 'P': 0.0, 'T': 0.0, 'Z': 0.0}
 
     for m in base['matches']:
         if not m['match'].treated:
@@ -450,35 +453,37 @@ def adjustment(request, player_id, period_id):
 
         total_score = m['pla']['score'] + m['plb']['score']
 
-        scale = sqrt(1 + m['pla']['dev']**2 + m['plb']['dev']**2)
+        scale = sqrt(1 + m['pla']['dev'] ** 2 + m['plb']['dev'] ** 2)
         expected = total_score * cdf(m['pla']['rating'] - m['plb']['rating'], scale=scale)
 
-        ngames['M']     += total_score
+        ngames['M'] += total_score
         tot_rating['M'] += m['plb']['rating'] * total_score
-        expwins['M']    += expected
-        nwins['M']      += m['pla']['score']
+        expwins['M'] += expected
+        nwins['M'] += m['pla']['score']
 
         vs_races = [m['plb']['race']] if m['plb']['race'] in 'PTZ' else 'PTZ'
-        weight = 1/len(vs_races)
+        weight = 1 / len(vs_races)
         for r in vs_races:
-            ngames[r]     += weight * total_score
+            ngames[r] += weight * total_score
             tot_rating[r] += weight * m['plb']['rating'] * total_score
-            expwins[r]    += weight * expected
-            nwins[r]      += weight * m['pla']['score']
+            expwins[r] += weight * expected
+            nwins[r] += weight * m['pla']['score']
 
     for r in 'MPTZ':
         if ngames[r] > 0:
             tot_rating[r] /= ngames[r]
 
     base.update({
-        'ngames':      ngames,
-        'tot_rating':  tot_rating,
-        'expwins':     expwins,
-        'nwins':       nwins,
+        'ngames': ngames,
+        'tot_rating': tot_rating,
+        'expwins': expwins,
+        'nwins': nwins,
     })
     # }}}
 
     return render_to_response('ratingdetails.djhtml', base)
+
+
 # }}}
 
 # {{{ results view
@@ -492,7 +497,7 @@ def results(request, player_id):
     # }}}
 
     # {{{ Filtering
-    matches = player.get_matchset(related=['pla','plb','eventobj'])
+    matches = player.get_matchset(related=['pla', 'plb', 'eventobj'])
 
     form = ResultsFilterForm(request.GET)
     base['form'] = form
@@ -508,16 +513,16 @@ def results(request, player_id):
         matches = matches.exclude(Q(pla=player, plb__country='KR') | Q(plb=player, pla__country='KR'))
     elif form.cleaned_data['country'] != 'all':
         matches = matches.filter(
-              Q(pla=player, plb__country=form.cleaned_data['country'])
+            Q(pla=player, plb__country=form.cleaned_data['country'])
             | Q(plb=player, pla__country=form.cleaned_data['country'])
         )
 
     if form.cleaned_data['bestof'] != 'all':
-        sc = int(form.cleaned_data['bestof'])//2 + 1
+        sc = int(form.cleaned_data['bestof']) // 2 + 1
         matches = matches.filter(Q(sca__gte=sc) | Q(scb__gte=sc))
 
     if form.cleaned_data['offline'] != 'both':
-        matches = matches.filter(offline=(form.cleaned_data['offline']=='offline'))
+        matches = matches.filter(offline=(form.cleaned_data['offline'] == 'offline'))
 
     if form.cleaned_data['game'] != 'all':
         matches = matches.filter(game=form.cleaned_data['game'])
@@ -563,8 +568,8 @@ def results(request, player_id):
     disp_matches = display_matches(matches, fix_left=player)
     base['matches'] = disp_matches
     base.update({
-        'sc_my':  sum(m['pla']['score'] for m in base['matches']),
-        'sc_op':  sum(m['plb']['score'] for m in base['matches']),
+        'sc_my': sum(m['pla']['score'] for m in base['matches']),
+        'sc_op': sum(m['plb']['score'] for m in base['matches']),
         'msc_my': sum(1 for m in base['matches'] if m['pla']['score'] > m['plb']['score']),
         'msc_op': sum(1 for m in base['matches'] if m['plb']['score'] > m['pla']['score']),
     })
@@ -583,15 +588,15 @@ def results(request, player_id):
     # }}}
 
     # {{{ TL Postable
-    
+
     has_after = form.cleaned_data['after'] is not None
     has_before = form.cleaned_data['before'] is not None
-    
+
     if not has_after and not has_before:
         match_date = ""
-    elif not has_after: # and has_before
+    elif not has_after:  # and has_before
         match_date = _(" before {}").format(form.cleaned_data['before'])
-    elif not has_before: # and has_after
+    elif not has_before:  # and has_after
         match_date = _(" after {}").format(form.cleaned_data['after'])
     else:
         match_date = _(" between {} and {}").format(form.cleaned_data['after'],
@@ -687,10 +692,10 @@ def results(request, player_id):
     })
 
     def calc_percent(s):
-        f, a = float(int(tl_params[s+"_my"])), int(tl_params[s+"_op"])
+        f, a = float(int(tl_params[s + "_my"])), int(tl_params[s + "_op"])
         if f + a == 0:
             return "  NaN"
-        return round(100 * f / (f+a), 2)
+        return round(100 * f / (f + a), 2)
 
     tl_params.update({
         "sc_percent": calc_percent("sc"),
@@ -764,10 +769,12 @@ def results(request, player_id):
         # so do it twice.
         "postable_tl": TL_HISTORY_TEMPLATE.format(**tl_params).format(**tl_params)
     })
-    
+
     # }}}
 
     return render_to_response('player_results.djhtml', base)
+
+
 # }}}
 
 # {{{ historical view
@@ -779,9 +786,9 @@ def historical(request, player_id):
     latest = player.rating_set.filter(period__computed=True, decay=0).latest('period')
     historical = (
         player.rating_set.filter(period_id__lte=latest.period_id)
-            .prefetch_related('prev__rta', 'prev__rtb')
-            .select_related('period', 'prev')
-            .order_by('-period')
+        .prefetch_related('prev__rta', 'prev__rtb')
+        .select_related('period', 'prev')
+        .order_by('-period')
     )
 
     historical = add_counts(historical)
@@ -792,6 +799,8 @@ def historical(request, player_id):
     })
 
     return render_to_response('historical.djhtml', base)
+
+
 # }}}
 
 # {{{ earnings view
@@ -810,8 +819,10 @@ def earnings(request, player_id):
     totalearnings = earnings.aggregate(Sum('earnings'))['earnings__sum']
 
     years = range(2010, datetime.now().year + 1)
+
     def year_is_valid(y):
         return player.earnings_set.filter(event__latest__year=y).exists()
+
     valid_years = filter(year_is_valid, years)
 
     # Get placement range for each prize
@@ -839,32 +850,34 @@ def earnings(request, player_id):
     })
 
     return render_to_response('player_earnings.djhtml', base)
+
+
 # }}}
 
 
 # {{{ Postable templates
 TL_HISTORY_TEMPLATE = (
-    "{resfor} {player_country_formatted} :{player_race}: " +
-    "[url={url}/players/{pid}/]{player_tag}[/url]{date}.\n" +
-    "\n" +
-    "[b]{games}:[/b] {sc_percent:0<5}% ({sc_my}-{sc_op})\n" +
-    "[b]{matches}:[/b] {msc_percent:0<5}% ({msc_my}-{msc_op})\n" +
-    "\n" +
-    "[b][big]{curform}:[/big][/b]\n" +
-    "[indent]{form}\n" +
-    "[b][big]{recentmatches}:[/big][/b]\n" +
-    "{recent}\n" +
-    "\n\n" +
-    "{filters}:\n" +
-    "[spoiler][code]" +
-    "{opprace}{race}\n" +
-    "{oppcountry}{country}\n" +
-    "{matchformat}{bestof}\n" +
-    "{onoff}{offline}\n" +
-    "{version}{game}\n" +
-    "[/code][/spoiler]\n" +
-    "[small]{statslink}. " +
-    "[url={url}/players/{pid}/results/?{get}]{link}[/url].[/small]"
+        "{resfor} {player_country_formatted} :{player_race}: " +
+        "[url={url}/players/{pid}/]{player_tag}[/url]{date}.\n" +
+        "\n" +
+        "[b]{games}:[/b] {sc_percent:0<5}% ({sc_my}-{sc_op})\n" +
+        "[b]{matches}:[/b] {msc_percent:0<5}% ({msc_my}-{msc_op})\n" +
+        "\n" +
+        "[b][big]{curform}:[/big][/b]\n" +
+        "[indent]{form}\n" +
+        "[b][big]{recentmatches}:[/big][/b]\n" +
+        "{recent}\n" +
+        "\n\n" +
+        "{filters}:\n" +
+        "[spoiler][code]" +
+        "{opprace}{race}\n" +
+        "{oppcountry}{country}\n" +
+        "{matchformat}{bestof}\n" +
+        "{onoff}{offline}\n" +
+        "{version}{game}\n" +
+        "[/code][/spoiler]\n" +
+        "[small]{statslink}. " +
+        "[url={url}/players/{pid}/results/?{get}]{link}[/url].[/small]"
 )
 
 TL_HISTORY_MATCH_TEMPLATE = (

@@ -6,7 +6,7 @@
 # http://en.wikipedia.org/wiki/List_of_countries_by_continent_(data_file)
 
 import countries.data as data
-import types
+
 
 def ccn_to_ccn(code):
     """Normalize the numeric country code
@@ -20,6 +20,7 @@ def ccn_to_ccn(code):
         code = '0' + code
     return code
 
+
 def ccn_to_cca2(code):
     """Given an ISO 3166 numeric country code return the corresponding
     two letter country code.
@@ -28,8 +29,9 @@ def ccn_to_cca2(code):
     
     Raises KeyError if code does not exist.
     """
-    
+
     return data.ccn_to_cca2[ccn_to_ccn(code)]
+
 
 def ccn_to_cca3(code):
     """Given an ISO 3166 numeric country code return the corresponding
@@ -39,8 +41,9 @@ def ccn_to_cca3(code):
     
     Raises KeyError if code does not exist.
     """
-    
+
     return data.ccn_to_cca3[ccn_to_ccn(code)]
+
 
 def ccn_to_cn(code):
     """Given an ISO 3166 numeric country code return the corresponding
@@ -50,8 +53,9 @@ def ccn_to_cn(code):
     
     Raises KeyError if code does not exist.
     """
-    
+
     return data.ccn_to_cn[ccn_to_ccn(code)]
+
 
 def ccn_to_con(code):
     """Given an ISO 3166 numeric country code return the corresponding
@@ -61,8 +65,9 @@ def ccn_to_con(code):
     
     Raises KeyError if code does not exist.
     """
-    
+
     return data.ccn_to_con[ccn_to_ccn(code)]
+
 
 def cn_to_ccn(code):
     """Given the simple English name of the country return the
@@ -71,8 +76,9 @@ def cn_to_ccn(code):
     The code passed in can be of string or unicode type.
     
     Raises KeyError if code does not exist.
-    """    
+    """
     return data.cn_to_ccn[code]
+
 
 def cca2_to_ccn(code):
     """Given the ISO 3166 two letter country code of the country 
@@ -81,8 +87,9 @@ def cca2_to_ccn(code):
     The code passed in can be of string or unicode type.
     
     Raises KeyError if code does not exist.
-    """    
+    """
     return data.cca2_to_ccn[code.upper()]
+
 
 def cca3_to_ccn(code):
     """Given the ISO 3166 three letter country code of the country 
@@ -91,8 +98,9 @@ def cca3_to_ccn(code):
     The code passed in can be of string or unicode type.
     
     Raises KeyError if code does not exist.
-    """    
+    """
     return data.cca3_to_ccn[code.upper()]
+
 
 def ccn_to_ctca2(code):
     """Given an ISO 3166 numeric country code return the corresponding
@@ -106,6 +114,7 @@ def ccn_to_ctca2(code):
 
     return data.ccn_to_ctca2[ccn_to_ccn(code)]
 
+
 def ctca2_to_ccn(code):
     """Given a two letter continent code return the corresponding
     list of numeric country codes according to 
@@ -117,6 +126,7 @@ def ctca2_to_ccn(code):
     """
 
     return data.ctca2_to_ccn[code]
+
 
 # combined trafos
 
@@ -149,6 +159,7 @@ def cca_to_ccn(code):
     else:
         raise KeyError(code)
 
+
 def cca_to_cn(code):
     """Given the ISO 3166 two or three letter country code of the 
     country return the simple English name of the country.
@@ -158,6 +169,7 @@ def cca_to_cn(code):
     Raises KeyError if code does not exist.
     """
     return ccn_to_cn(cca_to_ccn(code))
+
 
 def cc_to_ccn(code):
     """Given the ISO 3166 numeric or two or three letter country code 
@@ -172,6 +184,7 @@ def cc_to_ccn(code):
     except (KeyError, TypeError):
         return ccn_to_ccn(code)
 
+
 def cc_to_cn(code):
     """Given the ISO 3166 numeric or two or three letter country code 
     of the country return the simple English name of the country.
@@ -182,6 +195,7 @@ def cc_to_cn(code):
     """
     return ccn_to_cn(cc_to_ccn(code))
 
+
 def cc_to_con(code):
     """Given the ISO 3166 numeric or two or three letter country code 
     of the country return the official English name of the country.
@@ -191,6 +205,7 @@ def cc_to_con(code):
     Raises KeyError if code does not exist.
     """
     return ccn_to_con(cc_to_ccn(code))
+
 
 def cca_to_con(code):
     """Given the ISO 3166 two or three letter country code of the 
@@ -213,6 +228,7 @@ def cca_to_ctn(code):
     """
     return ccn_to_ctn(cca_to_ccn(code))
 
+
 def cca_to_ctca2(code):
     """Given the ISO 3166 two or three letter country code of the 
     country return the corresponding two letter continent code
@@ -223,6 +239,7 @@ def cca_to_ctca2(code):
     """
     return ccn_to_ctca2(cca_to_ccn(code))
 
+
 def cn_to_ctca2(code):
     """Given the simple English name of a country return the 
     corresponding two letter continent code.
@@ -232,6 +249,7 @@ def cn_to_ctca2(code):
     Raises KeyError if code does not exist.
     """
     return ccn_to_ctca2(cn_to_ccn(code))
+
 
 def cn_to_ctn(code):
     """Given the simple English name of a country return the 

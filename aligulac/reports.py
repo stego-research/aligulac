@@ -5,18 +5,15 @@ import os
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aligulac.settings')
 import django
+
 django.setup()
 
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
-from django.db import connection
 from django.db.models import Sum
-from django.shortcuts import render_to_response
 
-from aligulac.cache import cache_page
 from aligulac.tools import (
-    base_ctx,
     ntz,
 )
 
@@ -28,30 +25,32 @@ from ratings.tools import (
     count_matchup_games,
     icdf,
     ntz,
-    PATCHES,
 )
+
+
 # }}}
 
 def info(string):
     print("[{}] {}".format(datetime.now(), string))
 
+
 # {{{ Balance reports
 def balance():
     first = date(year=2010, month=7, day=1)
-    last  = date.today().replace(day=1) - relativedelta(months=1)
+    last = date.today().replace(day=1) - relativedelta(months=1)
 
     # {{{ Auxiliary functions for updating
     def get_data_perf_single(matches, rca, rcb):
         res = (
             matches.filter(rca=rca, rcb=rcb)
-                .aggregate(
-                    rta_sum      = Sum('rta__rating'),
-                    rta_spec_sum = Sum('rta__rating_v%s' % rcb.lower()),
-                    rtb_sum      = Sum('rtb__rating'),
-                    rtb_spec_sum = Sum('rtb__rating_v%s' % rca.lower()),
-                    sca_sum      = Sum('sca'),
-                    scb_sum      = Sum('scb'),
-                )
+            .aggregate(
+                rta_sum=Sum('rta__rating'),
+                rta_spec_sum=Sum('rta__rating_v%s' % rcb.lower()),
+                rtb_sum=Sum('rtb__rating'),
+                rtb_spec_sum=Sum('rtb__rating_v%s' % rca.lower()),
+                sca_sum=Sum('sca'),
+                scb_sum=Sum('scb'),
+            )
         )
         return (
             ntz(res['rta_sum']) + ntz(res['rta_spec_sum']),
@@ -69,13 +68,14 @@ def balance():
             wb += scb1 + scb2
             diff += rta1 + rta2 - rtb1 - rtb2
 
-        perfdiff = icdf(wa/(wa+wb), loc=0.0, scale=1.0)
-        return perfdiff - diff/(wa+wb)
+        perfdiff = icdf(wa / (wa + wb), loc=0.0, scale=1.0)
+        return perfdiff - diff / (wa + wb)
+
     # }}}
 
     # {{{ Update data
     while first <= last:
-        matches = Match.objects.filter(date__gte=first, date__lt=(first+relativedelta(months=1)))
+        matches = Match.objects.filter(date__gte=first, date__lt=(first + relativedelta(months=1)))
         pvt_w, pvt_l = count_matchup_games(matches, 'P', 'T')
         pvz_w, pvz_l = count_matchup_games(matches, 'P', 'Z')
         tvz_w, tvz_l = count_matchup_games(matches, 'T', 'Z')
@@ -86,31 +86,33 @@ def balance():
         be, created = BalanceEntry.objects.get_or_create(
             date=first.replace(day=15),
             defaults={
-                'pvt_wins':    pvt_w,
-                'pvt_losses':  pvt_l,
-                'pvz_wins':    pvz_w,
-                'pvz_losses':  pvz_l,
-                'tvz_wins':    tvz_w,
-                'tvz_losses':  tvz_l,
-                'p_gains':     p_diff,
-                't_gains':     t_diff,
-                'z_gains':     z_diff,
+                'pvt_wins': pvt_w,
+                'pvt_losses': pvt_l,
+                'pvz_wins': pvz_w,
+                'pvz_losses': pvz_l,
+                'tvz_wins': tvz_w,
+                'tvz_losses': tvz_l,
+                'p_gains': p_diff,
+                't_gains': t_diff,
+                'z_gains': z_diff,
             }
         )
         if not created:
-            be.pvt_wins   = pvt_w
+            be.pvt_wins = pvt_w
             be.pvt_losses = pvt_l
-            be.pvz_wins   = pvz_w
+            be.pvz_wins = pvz_w
             be.pvz_losses = pvz_l
-            be.tvz_wins   = tvz_w
+            be.tvz_wins = tvz_w
             be.tvz_losses = tvz_l
-            be.p_gains    = p_diff
-            be.t_gains    = t_diff
-            be.z_gains    = z_diff
+            be.p_gains = p_diff
+            be.t_gains = t_diff
+            be.z_gains = z_diff
         be.save()
 
         first = first + relativedelta(months=1)
     # }}}
+
+
 # }}}
 
 if __name__ == '__main__':
