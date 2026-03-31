@@ -37,6 +37,7 @@ The application is configured via environment variables. These can be passed to 
 | :--- | :--- | :--- |
 | `SECRET_KEY` | A long, random string used for security. | `change-me` |
 | `DB_HOST` | Database server address (e.g., RDS endpoint). | `127.0.0.1` |
+| `DB_PORT` | Database server port. | `5432` |
 | `DB_NAME` | Name of the PostgreSQL database. | `aligulac` |
 | `DB_USER` | PostgreSQL username. | `postgres` |
 | `DB_PASSWORD` | PostgreSQL password. | `postgres` |
@@ -108,3 +109,18 @@ location / {
 Logs are written to `/var/log/aligulac/error.log` inside the container.
 - **Docker:** `docker logs aligulac-app`
 - **File:** `tail -f /var/log/aligulac/error.log`
+
+---
+
+## 5. Troubleshooting Connectivity
+
+If your container cannot reach a database running on the host:
+
+1. **Host Network (Simplest for Local):**
+   Run the container with `--network=host`. This allows it to bypass network isolation.
+   ```bash
+   podman run --network=host --env-file .env aligulac-app:latest
+   ```
+
+2. **Internal Bridge (Cleanest for Production):**
+   Use `DB_HOST=host.containers.internal` (Podman) or `DB_HOST=host.docker.internal` (Docker). Ensure your DB is listening on the bridge interface and `pg_hba.conf` allows the container's IP range.
