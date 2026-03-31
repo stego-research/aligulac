@@ -14,6 +14,7 @@ from django.template.defaultfilters import (
 )
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from django.templatetags.static import static as django_static
 
 from aligulac.settings import (
     PRF_NA,
@@ -292,34 +293,34 @@ def get_tlpd_list(value):
 
 # URL generation filters
 
-# css: Generates a CSS file URL
+# css: Generates a css file URL
 @register.filter
 @stringfilter
 def css(value):
     if not DEBUG:
         return 'http://css.aligulac.com/' + value + '.css'
     else:
-        return '/css/' + value + '.css'
+        return django_static('css/' + value + '.css')
 
 
-# js: Generates a JS file URL
-@register.filter
-@stringfilter
-def js(value):
-    if not DEBUG:
-        return 'http://js.aligulac.com/' + value + '.js'
-    else:
-        return '/js/' + value + '.js'
-
-
-# fonts: Generates a fonts file URL
+# fonts: Generates a font-file URL
 @register.filter
 @stringfilter
 def fonts(value):
     if not DEBUG:
         return 'http://fonts.aligulac.com/' + value
     else:
-        return '/fonts/' + value
+        return django_static('fonts/' + value)
+
+
+# js: Generates a javascript-file URL
+@register.filter
+@stringfilter
+def js(value):
+    if not DEBUG:
+        return 'http://js.aligulac.com/' + value + '.js'
+    else:
+        return django_static('js/' + value + '.js')
 
 
 # img: Generates a png-image file URL
@@ -333,14 +334,17 @@ def img(value, folder=None):
     if not DEBUG:
         return 'http://img.aligulac.com/' + img_file + '.png'
     else:
-        return '/img/' + img_file + '.png'
+        return django_static('img/' + img_file + '.png')
 
 
 # static: Generates URL for static files (must include extension)
 @register.filter
 @stringfilter
 def static(value):
-    return 'http://static.aligulac.com/' + value
+    if not DEBUG:
+        return 'http://static.aligulac.com/' + value
+    else:
+        return django_static(value)
 
 
 register.filter('static', static)
@@ -358,7 +362,9 @@ def imgdir(value):
     if not DEBUG:
         return 'http://img.aligulac.com' + value
     else:
-        return '/img' + value
+        # Strip leading slash because django_static adds it or STATIC_URL does
+        val = value[1:] if value.startswith('/') else value
+        return django_static('img/' + val)
 
 
 # urlfilter: Generates URL-safe strings for player, team and event names, etc.

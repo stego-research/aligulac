@@ -28,7 +28,7 @@ DB_USER = get_env('DB_USER', '')
 DB_PASSWORD = get_env('DB_PASSWORD', '')
 
 # Folder where the templates are stored
-TEMPLATE_DIRS = (get_env('TEMPLATE_DIRS', '/app/templates/'),)
+TEMPLATE_DIRS = (get_env('TEMPLATE_DIRS', '/app/aligulac/templates/'),)
 
 # Host names this server accepts connections to
 ALLOWED_HOSTS = get_env('ALLOWED_HOSTS', '.aligulac.com,localhost').split(',')
