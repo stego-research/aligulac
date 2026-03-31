@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.db.models import (
     Count,
 )
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import (
     redirect,
     render,
@@ -664,7 +664,7 @@ def h404(request, exception):
 @cache_page
 def h500(request):
     base = base_ctx(request=request)
-    return HttpResponseNotFound(render_to_string('500.djhtml', base))
+    return HttpResponseServerError(render_to_string('500.djhtml', base))
 # }}}
 
 def health_check(request):
