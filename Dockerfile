@@ -35,10 +35,10 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /app/.venv /app/.venv
 COPY . /app/
 
-# Create untracked directory for logs/cache
-RUN mkdir -p /app/untracked && \
-    touch /app/untracked/error.log && \
-    chmod -R 777 /app/untracked
+# Create untracked directory for cache and standard log directory
+RUN mkdir -p /app/untracked /var/log/aligulac && \
+    touch /var/log/aligulac/error.log && \
+    chmod -R 777 /app/untracked /var/log/aligulac
 
 # Set environment variables for the app
 ENV PATH="/app/.venv/bin:$PATH"
