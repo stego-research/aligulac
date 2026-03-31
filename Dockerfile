@@ -33,7 +33,12 @@ RUN apt-get update && apt-get install -y \
 
 # Copy virtualenv and app code from builder
 COPY --from=builder /app/.venv /app/.venv
-COPY . /app/
+# Copy only the contents of the aligulac folder to /app
+COPY aligulac/ /app/
+# Copy other necessary folders
+COPY locale/ /app/locale/
+COPY templates/ /app/templates/
+COPY resources/ /app/resources/
 
 # Create untracked directory for cache and standard log directory
 RUN mkdir -p /app/untracked /var/log/aligulac && \
@@ -42,8 +47,9 @@ RUN mkdir -p /app/untracked /var/log/aligulac && \
 
 # Set environment variables for the app
 ENV PATH="/app/.venv/bin:$PATH"
-ENV PYTHONPATH="/app/aligulac"
-ENV PYTHONUNBUFFERED=1
+# PYTHONPATH should point to /app so 'aligulac.settings' works
+ENV PYTHONPATH="/app"
+ENV PYTHON_UNBUFFERED=1
 
 # Use a non-root user for security
 RUN useradd -m aligulac && chown -R aligulac:aligulac /app
@@ -51,6 +57,6 @@ USER aligulac
 
 EXPOSE 8000
 
-# Start Gunicorn
-WORKDIR /app/aligulac
+# Start Gunicorn from the app root
+WORKDIR /app
 CMD ["gunicorn", "aligulac.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]
