@@ -158,6 +158,9 @@ DATABASES = {
         'PASSWORD': local.DB_PASSWORD,
         'HOST': local.DB_HOST,
         'PORT': local.DB_PORT,
+        'OPTIONS': {
+            'sslmode': getattr(local, 'DB_SSLMODE', 'prefer'),
+        }
     }
 }
 

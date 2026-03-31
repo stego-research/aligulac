@@ -141,6 +141,7 @@ urlpatterns = [
     # Tastypie
     path('api/', include(beta_api.urls)),
     path('api/', include(v1_api.urls)),
+    path('health/', aligulac.views.health_check),
 ]
 
 # {{{ If in debug mode (i.e. with the django server), we must serve CSS and JS ourselves.

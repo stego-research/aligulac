@@ -38,6 +38,7 @@ The application is configured via environment variables. These can be passed to 
 | `SECRET_KEY` | A long, random string used for security. | `change-me` |
 | `DB_HOST` | Database server address (e.g., RDS endpoint). | `127.0.0.1` |
 | `DB_PORT` | Database server port. | `5432` |
+| `DB_SSLMODE` | SSL mode for PostgreSQL (`prefer`, `require`, `disable`). | `prefer` |
 | `DB_NAME` | Name of the PostgreSQL database. | `aligulac` |
 | `DB_USER` | PostgreSQL username. | `postgres` |
 | `DB_PASSWORD` | PostgreSQL password. | `postgres` |
