@@ -668,4 +668,5 @@ def h500(request):
 # }}}
 
 def health_check(request):
-    return HttpResponse('OK', content_type='text/plain')
+    import django.http
+    return django.http.HttpResponse('OK', content_type='text/plain')
