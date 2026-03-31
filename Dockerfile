@@ -42,8 +42,8 @@ RUN mkdir -p /app/untracked /var/log/aligulac && \
 
 # Set environment variables for the app
 ENV PATH="/app/.venv/bin:$PATH"
-# Point PYTHONPATH to the folder containing the aligulac package
 ENV PYTHONPATH="/app/aligulac"
+ENV PYTHONUNBUFFERED=1
 
 # Use a non-root user for security
 RUN useradd -m aligulac && chown -R aligulac:aligulac /app
@@ -51,6 +51,6 @@ USER aligulac
 
 EXPOSE 8000
 
-# Start Gunicorn from the app root
+# Start Gunicorn
 WORKDIR /app/aligulac
-CMD ["gunicorn", "aligulac.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["gunicorn", "aligulac.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]
