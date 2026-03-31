@@ -1,70 +1,110 @@
-# Aligulac Deployment Guide (Amazon Linux)
+# Aligulac Deployment Guide
 
-This guide outlines how to deploy Aligulac on a clean Amazon Linux 2023 instance using Python 3.12 and Gunicorn.
+This guide outlines how to deploy Aligulac using two primary methods: **Docker/Podman** (recommended) or **Manual Setup** on Amazon Linux 2023.
 
-## 1. System Requirements
-- Amazon Linux 2023 (AL2023)
-- PostgreSQL (Local or RDS)
-- 2GB+ RAM (Recommended for building `numpy`/`scipy`)
+---
 
-## 2. Automated Setup
-Upload and run the provided `setup_amazon_linux.sh`:
+## 1. Container Deployment (Docker/Podman)
+
+The recommended way to deploy Aligulac is using the provided Docker image. This image is minimal, secure, and pre-configured for production.
+
+### Build the Image
 ```bash
-chmod +x setup_amazon_linux.sh
-./setup_amazon_linux.sh
-source ~/.bashrc
+make build-image
 ```
 
-## 3. Configuration
-Copy the template configuration if you haven't already:
+### Run the Container
 ```bash
-cp aligulac/aligulac/template.local.py aligulac/aligulac/local.py
-```
-**Important:** Edit `aligulac/aligulac/local.py` and set:
-- `DEBUG = False`
-- `ALLOWED_HOSTS = ['your-domain.com']`
-- `DB_USER`, `DB_PASSWORD`, etc.
-
-## 4. Database & Static Files
-```bash
-pipenv run python aligulac/manage.py migrate
-pipenv run python aligulac/manage.py collectstatic
+docker run -d \
+  -p 8000:8000 \
+  -e SECRET_KEY="your-secret-key" \
+  -e DB_HOST="your-db-host" \
+  -e DB_NAME="aligulac" \
+  -e DB_USER="postgres" \
+  -e DB_PASSWORD="your-password" \
+  --name aligulac-app \
+  aligulac-app:latest
 ```
 
-## 5. Running in Production
-We use **Gunicorn** managed by **systemd** to ensure the server stays online.
+---
 
-### Create Systemd Service
-Create a file at `/etc/systemd/system/aligulac.service`:
-```ini
-[Unit]
-Description=Gunicorn instance to serve Aligulac
-After=network.target
+## 2. Configuration (Environment Variables)
 
-[Service]
-User=ec2-user
-Group=ec2-user
-WorkingDirectory=/home/ec2-user/aligulac
-Environment="PATH=/home/ec2-user/aligulac/.venv/bin"
-ExecStart=/home/ec2-user/aligulac/.venv/bin/gunicorn \
-    --chdir aligulac \
-    --workers 3 \
-    --bind 0.0.0.0:8000 \
-    aligulac.wsgi:application
+The application is configured via environment variables. These can be passed to Docker or set in your shell for manual deployment.
 
-[Install]
-WantedBy=multi-user.target
+### **Required for Production**
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `SECRET_KEY` | A long, random string used for security. | `change-me` |
+| `DB_HOST` | Database server address (e.g., RDS endpoint). | `127.0.0.1` |
+| `DB_NAME` | Name of the PostgreSQL database. | `aligulac` |
+| `DB_USER` | PostgreSQL username. | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password. | `postgres` |
+| `ALLOWED_HOSTS` | Comma-separated list of domains/IPs (e.g. `aligulac.com,1.2.3.4`). | `*` |
+
+### **Optional Configuration**
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `DEBUG` | Enable/Disable Django debug mode (`True`/`False`). | `False` |
+| `DEBUG_TOOLBAR`| Enable/Disable the debug toolbar. | `False` |
+| `ERROR_LOG_FILE`| Path where application errors are logged. | `/var/log/aligulac/error.log` |
+| `CACHE_BACKEND` | Django cache backend. | `DummyCache` |
+| `EXCHANGE_ID` | API key for openexchangerates.org. | `""` |
+
+---
+
+## 3. Manual Deployment (Amazon Linux 2023)
+
+### System Setup
+1. **Install Dependencies:**
+   ```bash
+   sudo dnf update -y
+   sudo dnf install -y python3.12 python3.12-devel git gcc postgresql15-devel
+   ```
+2. **Install Pipenv:**
+   ```bash
+   python3.12 -m pip install --user pipenv
+   export PATH=$PATH:$HOME/.local/bin
+   ```
+
+### Application Setup
+1. **Install Python Packages:**
+   ```bash
+   pipenv install
+   ```
+2. **Prepare Logs:**
+   ```bash
+   sudo mkdir -p /var/log/aligulac
+   sudo chown $USER:$USER /var/log/aligulac
+   touch /var/log/aligulac/error.log
+   ```
+3. **Database Sync:**
+   ```bash
+   pipenv run python aligulac/manage.py migrate --fake-initial
+   pipenv run python aligulac/manage.py collectstatic
+   ```
+
+---
+
+## 4. Production Best Practices
+
+### **Reverse Proxy (Nginx)**
+Always run Aligulac behind a reverse proxy like Nginx to handle SSL (HTTPS) and serve static files efficiently.
+
+**Example Nginx Snippet:**
+```nginx
+location /static/ {
+    alias /app/static/;
+}
+
+location / {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
 ```
 
-### Start the Service
-```bash
-sudo systemctl start aligulac
-sudo systemctl enable aligulac
-```
-
-## 6. Nginx Reverse Proxy (Optional but Recommended)
-Install Nginx to handle SSL and serve static files directly:
-```bash
-sudo dnf install -y nginx
-```
-Configure Nginx to proxy requests to `127.0.0.1:8000`.
+### **Monitoring Logs**
+Logs are written to `/var/log/aligulac/error.log` inside the container.
+- **Docker:** `docker logs aligulac-app`
+- **File:** `tail -f /var/log/aligulac/error.log`
