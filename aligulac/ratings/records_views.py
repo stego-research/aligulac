@@ -36,19 +36,26 @@ def history(request):
     query = '''SELECT player.id, player.tag, player.race, player.country, MAX(rating.rating) AS high
                FROM player
                         JOIN rating ON player.id = rating.player_id'''
+    params = []
     if race != 'ptzrs' or nats != 'all':
         query += ' WHERE '
         ands = []
         if race != 'ptzrs':
-            ands.append('(' + ' OR '.join(["player.race='%s'" % r.upper() for r in race]) + ')')
+            race_filters = []
+            for r in race:
+                race_filters.append("player.race=%s")
+                params.append(r.upper())
+            ands.append('(' + ' OR '.join(race_filters) + ')')
         if nats == 'foreigners':
             ands.append("(player.country!='KR')")
         elif nats != 'all':
-            ands.append("(player.country='%s')" % nats)
+            ands.append("(player.country=%s)")
+            params.append(nats)
         query += ' AND '.join(ands)
-    query += ' GROUP BY player.id, player.tag, player.race, player.country ORDER BY high DESC LIMIT %i' % nplayers
+    query += ' GROUP BY player.id, player.tag, player.race, player.country ORDER BY high DESC LIMIT %s'
+    params.append(nplayers)
 
-    players = Player.objects.raw(query)
+    players = Player.objects.raw(query, params)
     # }}}
 
     base.update({

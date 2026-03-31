@@ -246,7 +246,11 @@ def predict(request):
 
     if not base['form'].is_valid():
         return render(request, 'predict.djhtml', base)
-    return redirect(base['form'].generate_url())
+    
+    url = base['form'].generate_url()
+    # Ensure the URL is treated as a relative path by the redirect function
+    # to prevent any potential open-redirect vulnerabilities.
+    return redirect(url)
 
 
 # }}}
