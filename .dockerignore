@@ -16,7 +16,6 @@ __pycache__/
 .vscode/
 
 # Project metadata
-requirements.txt
 Dockerfile
 Makefile
 DEPLOYMENT.md
