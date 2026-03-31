@@ -17,6 +17,11 @@ if __name__ == "__main__":
     sys.modules['django.utils.six.moves.urllib.request'] = getattr(urllib, 'request')
     sys.modules['django.utils.six.moves.urllib.error'] = getattr(urllib, 'error')
 
+    # Add the project directory to the path
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    if base_dir not in sys.path:
+        sys.path.insert(0, base_dir)
+
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aligulac.settings")
 
     # Default runserver to 0.0.0.0:8000 for remote access

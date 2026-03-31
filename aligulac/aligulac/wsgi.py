@@ -23,6 +23,12 @@ sys.modules['django.utils.six.moves.urllib.parse'] = getattr(urllib, 'parse')
 sys.modules['django.utils.six.moves.urllib.request'] = getattr(urllib, 'request')
 sys.modules['django.utils.six.moves.urllib.error'] = getattr(urllib, 'error')
 
+# Add the project directory to the path
+# We go up one level from the inner aligulac folder to reach the app root
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if base_dir not in sys.path:
+    sys.path.insert(0, base_dir)
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "aligulac.settings")
 
 from django.core.wsgi import get_wsgi_application

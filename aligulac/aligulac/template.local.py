@@ -14,7 +14,8 @@ SECRET_KEY = ''
 # API key to openexchangerates.org
 EXCHANGE_ID = ''
 
-# Database username and password
+# Database name, username and password
+DB_NAME = 'aligulac'
 DB_USER = ''
 DB_PASSWORD = ''
 
