@@ -203,3 +203,4 @@ aligulac/bugrep/
 
 # Virtualenv
 .venv
+.env
