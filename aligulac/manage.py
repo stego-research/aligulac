@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 import os
+import sys
+
+# Add the project directory to the path
+# This must happen before any django imports or settings access
+base_dir = os.path.dirname(os.path.abspath(__file__))
+if base_dir not in sys.path:
+    sys.path.insert(0, base_dir)
 
 if __name__ == "__main__":
     # Monkey patch for django.utils.six which was removed in Django 3.0+
     # and causes issues in Python 3.12 even with Django 2.2
     import six
-    import sys
 
     # Use getattr for lazy attributes to avoid static analysis issues in IDEs
     sys.modules['django.utils.six'] = six

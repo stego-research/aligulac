@@ -195,22 +195,17 @@ and all you need to do is create the event tree and assign them.
 
 This is the source code for the website http://aligulac.com
 
-The requirements are described in the requirements.txt file. It can be used directly with pip.
+The requirements are managed by Pipenv. You can set up the environment with:
+
+```bash
+pipenv install
+```
 
 Needs:
 
-- Python 2.6 or 2.7
-- Django 1.8.x
-- A MySQL server
-- Python modules:
-    * ccy
-    * dateutil
-    * markdown
-    * mysqldb
-    * numpy
-    * pyparsing
-    * scipy
-    * simplejson
+- Python 3.12
+- Django 4.2.x
+- A PostgreSQL server
 
 The repository does **not** contain the Django settings file or the database dumps. Templates are provided in [default.settings.py](aligulac/aligulac/default.settings.py) and [template.local.py](aligulac/aligulac/template.local.py)
 

@@ -1,0 +1,23 @@
+# Local virtualenvs
+.venv/
+.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.idea/
+.vscode/
+
+# Project metadata
+Dockerfile
+Makefile
+DEPLOYMENT.md
+aligulac.sql
+aligulac_dev.sql
