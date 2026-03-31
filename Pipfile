@@ -25,6 +25,7 @@ setuptools = "*"
 django-tastypie = ">=0.14.5"
 django-sniplates = "*"
 certifi = "*"
+gunicorn = "*"
 
 [dev-packages]
 
