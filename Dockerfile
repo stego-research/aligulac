@@ -36,6 +36,11 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy the whole project to /app/aligulac
 COPY . /app/aligulac/
 
+# Ensure local.py exists even if it was ignored by git
+RUN if [ ! -f /app/aligulac/aligulac/aligulac/local.py ]; then \
+        cp /app/aligulac/aligulac/aligulac/template.local.py /app/aligulac/aligulac/aligulac/local.py; \
+    fi
+
 # Create untracked directory for cache and standard log directory
 RUN mkdir -p /app/aligulac/untracked /var/log/aligulac && \
     touch /var/log/aligulac/error.log && \

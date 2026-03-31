@@ -192,7 +192,6 @@ pip-log.txt
 *.pickle
 *.sql
 aligulac/update
-settings.py
 resources/js-src/build
 resources/js-src/deploy
 resources/js/general.min.js
