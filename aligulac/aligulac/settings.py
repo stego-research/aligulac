@@ -34,6 +34,10 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = local.ALLOWED_HOSTS
 
+CSRF_TRUSTED_ORIGINS = get_env('CSRF_TRUSTED_ORIGINS', '').split(',')
+# Clean up empty strings if no origins provided
+CSRF_TRUSTED_ORIGINS = [o for o in CSRF_TRUSTED_ORIGINS if o]
+
 LOCALE_PATHS = local.LOCALE_PATHS
 LANGUAGE_CODE = 'en_US'
 

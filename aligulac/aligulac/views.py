@@ -412,10 +412,13 @@ def db(request):
         ],
 
         'dump': os.path.exists(DUMP_PATH),
-        'updated': datetime.fromtimestamp(os.stat(PROJECT_PATH + 'update').st_mtime),
-
         'dbtables': DBTABLES,
     })
+
+    try:
+        base['updated'] = datetime.fromtimestamp(os.stat(os.path.join(PROJECT_PATH, 'update')).st_mtime)
+    except:
+        base['updated'] = None
 
     base.update({
         'noffline': base['nmatches'] - base['nonline'],
@@ -425,15 +428,18 @@ def db(request):
     })
 
     if base['dump']:
-        stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql'))
-        base.update({
-            'megabytes': stat.st_size / 1048576,
-            'modified': datetime.fromtimestamp(stat.st_mtime),
-        })
-        stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
-        base.update({
-            'gz_megabytes': stat.st_size / 1048576
-        })
+        try:
+            stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql'))
+            base.update({
+                'megabytes': stat.st_size / 1048576,
+                'modified': datetime.fromtimestamp(stat.st_mtime),
+            })
+            stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
+            base.update({
+                'gz_megabytes': stat.st_size / 1048576
+            })
+        except (FileNotFoundError, OSError):
+            pass
 
     return render(request, 'db.djhtml', base)
 

@@ -469,14 +469,14 @@ ratings.views.events.
             </td>
             <td style="width: 60%;">
               {% if event.earliest and event.latest %}
-                {% ifequal event.earliest event.latest %}
+                {% if event.earliest == event.latest %}
                   {{ event.earliest }}
               {% else %}
                   {% with fst=event.earliest snd=event.latest %}
                     {% comment %}Translators: Date to date.{% endcomment %}
                     {% blocktrans %}{{ fst }} to {{ snd }}{% endblocktrans %}
                   {% endwith %}
-                {% endifequal %}
+                {% endif %}
               {% endif %}
             </td>
           </tr>
