@@ -15,6 +15,10 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+# Helper to get env or default
+def get_env(name, default=None):
+    return os.environ.get(name, default)
+
 from django.utils.translation import gettext_lazy as _
 
 from . import local as local
@@ -29,6 +33,10 @@ DEBUG_TOOLBAR = local.DEBUG_TOOLBAR
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = local.ALLOWED_HOSTS
+
+CSRF_TRUSTED_ORIGINS = get_env('CSRF_TRUSTED_ORIGINS', '').split(',')
+# Clean up empty strings if no origins provided
+CSRF_TRUSTED_ORIGINS = [o for o in CSRF_TRUSTED_ORIGINS if o]
 
 LOCALE_PATHS = local.LOCALE_PATHS
 LANGUAGE_CODE = 'en_US'
@@ -171,20 +179,29 @@ DATABASES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': local.ERROR_LOG_FILE
-        }
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['error_file'],
-            'level': 'ERROR',
-            'propagate': True
-        }
-    }
+        'django': {
+            'handlers': ['console'],
+            'level': get_env('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
 }
 
 # Internationalization

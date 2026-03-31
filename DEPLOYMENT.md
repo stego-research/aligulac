@@ -43,6 +43,7 @@ The application is configured via environment variables. These can be passed to 
 | `DB_USER` | PostgreSQL username. | `postgres` |
 | `DB_PASSWORD` | PostgreSQL password. | `postgres` |
 | `ALLOWED_HOSTS` | Comma-separated list of domains/IPs (e.g. `aligulac.com,1.2.3.4`). | `*` |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated list of trusted origins (e.g. `https://aligulac.stego.ai`). | `""` |
 
 ### **Optional Configuration**
 | Variable | Description | Default |
