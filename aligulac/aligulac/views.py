@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.db.models import (
     Count,
 )
-from django.http import HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import (
     redirect,
     render,
@@ -343,11 +343,12 @@ def home(request):
             type=Message.INFO,
         ))
 
-    entries = filter_active(Rating.objects.filter(period=base['curp'])) \
-        .order_by('-rating') \
-        .select_related('player', 'prev')[0:10]
-
-    entries = populate_teams(entries)
+    entries = []
+    if base['curp']:
+        entries = filter_active(Rating.objects.filter(period=base['curp'])) \
+            .order_by('-rating') \
+            .select_related('player', 'prev')[0:10]
+        entries = populate_teams(entries)
 
     blogs = Post.objects.order_by('-date')[0:3]
 
