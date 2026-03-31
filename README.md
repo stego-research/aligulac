@@ -10,23 +10,14 @@ Contributing to Aligulac can take several forms.
 
 These are described in the relevant sections below.
 
-## Meeting places
-
-The most active forum for Aligulac contributors to meet and coordinate is our
-Skype chat. To get in, just add TheBB on Skype. His username is *evfonn*.
-
-There is also an IRC channel on quakenet: #aligulac. It is not as active, but
-favored by some.
-
 ## Maintaining the database
 
-Aligulac maintains a fairly extensive progaming database tracking the following:
+Aligulac maintains a fairly extensive database tracking the following:
 
-* Matches and results (these terms are used interchangeably). By *match* is
-  meant a series of games. That is, Aligulac does not track individual games.
+* Matches and results (these terms are used interchangeably). *match* means a series of games. That is, Aligulac does not track individual games.
 * Players
 * Teams
-* Events, including prizepools.
+* Events, including prize pools.
 
 Essentially, the most routine updates that must be made happen when matches are
 played in a tournament, or when team transfers occur. More exceptional cases
@@ -36,7 +27,7 @@ major changes to tournament structures.
 ### Players
 
 Most of the information about a player can be changed directly on a player's
-page if you are logged in, by clicking the **edit** link above the infobox. If
+page if you are logged in, by clicking the **edit** link above the info box. If
 something can't be changed there, it must be changed in the admin interface (use
 the **admin** link).
 
@@ -191,8 +182,6 @@ and all you need to do is create the event tree and assign them.
 
 ## Developing the website
 
-(Unfinished section.)
-
 This is the source code for the website http://aligulac.com
 
 The requirements are managed by Pipenv. You can set up the environment with:
@@ -201,14 +190,17 @@ The requirements are managed by Pipenv. You can set up the environment with:
 pipenv install
 ```
 
-Needs:
+If you have GNU Make, you can also use certain makefile targets, such as:
+
+- build-image to build a docker/podman container image
+- run-dev to run the server with default server configuration
+
+Additional details on how to run a server are located in DEPLOYMENT.md.
+
+The primary dependencies to run Aligulac are:
 
 - Python 3.12
 - Django 4.2.x
 - A PostgreSQL server
 
 The repository does **not** contain the Django settings file or the database dumps. Templates are provided in [default.settings.py](aligulac/aligulac/default.settings.py) and [template.local.py](aligulac/aligulac/template.local.py)
-
-## Other
-
-(Unfinished section.)

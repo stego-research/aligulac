@@ -103,6 +103,7 @@ urlpatterns = [
     path('about/blog/', blog.views.blog),
     path('about/db/', aligulac.views.db),
     path('about/api/', aligulac.views.api),
+    path('about/acknowledgements/', aligulac.views.acknowledgements),
 
     path('inference/', ratings.inference_views.predict),
     path('inference/match/', ratings.inference_views.match),

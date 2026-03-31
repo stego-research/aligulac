@@ -1,0 +1,74 @@
+{% extends "index.djhtml" %}
+{% load i18n %}
+
+{% block title %}{% trans "Acknowledgements" %}{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 text">
+      <h2>{% trans "Acknowledgements" %}</h2>
+      
+      <p>{% blocktrans %}Aligulac couldn't exist without our contributors, amazing open source projects, and an incredibly supportive community. We especially want to thank:{% endblocktrans %}</p>
+
+      <div class="row" style="margin-top: 2em;">
+        <div class="col-md-6">
+          <h4>{% trans "Technology Stack" %}</h4>
+          <p>
+            {% with a1="<a target=\"_blank\" href=\"http://www.djangoproject.com/\">" %}
+            {% with a2="<a target=\"_blank\" href=\"http://python.org\">" %}
+              {% blocktrans %}Powered by {{a1}}Django 4.2</a> and {{a2}}Python 3.12</a>.{% endblocktrans %}
+            {% endwith %}{% endwith %}
+          </p>
+          <p>
+            {% trans "Database: PostgreSQL" %}
+          </p>
+        </div>
+
+        <div class="col-md-6">
+          <h4>{% trans "Assets & Charts" %}</h4>
+          <p>
+            {% with a1="<a target=\"_blank\" href=\"https://liquipedia.net/starcraft2/Main_Page\">" %}
+            {% with a3="<a target=\"_blank\" href=\"http://highcharts.com/\">" %}
+              {% blocktrans %}Icons by Mark James. Race icons by {{a1}}Liquipedia</a>. Charts by {{a3}}Highcharts</a>.{% endblocktrans %}
+            {% endwith %}{% endwith %}
+          </p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 2em;">
+        <div class="col-xs-12">
+          <h4>{% trans "Database Contributors" %}</h4>
+          <p>{% blocktrans %}Aligulac is built on the hard work of its database contributors. We would like to recognize the top submitters who have helped keep the data accurate and up-to-date:{% endblocktrans %}</p>
+          <ul class="list-inline">
+            {% for s in submitters %}
+              <li><strong>{{ s.username }}</strong> ({{ s.nmatches }}){% if not forloop.last %},{% endif %}</li>
+            {% endfor %}
+          </ul>
+          <p><a href="/about/db/">{% trans "View full database statistics and contributors list" %} &raquo;</a></p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 2em;">
+        <div class="col-xs-12">
+          <h4>{% trans "Community & Feedback" %}</h4>
+          <p>
+            {% with a1="<a target=\"_blank\" href=\"http://twitter.com/Sc2Aligulac\">" %}
+            {% with a2="<a target=\"_blank\" href=\"http://github.com/stego-research/aligulac\">" %}
+            {% with a3="<a target=\"_blank\" href=\"http://www.teamliquid.net/forum/starcraft-2/404035-aligulaccom-changelog-and-feedback-thread\">" %}
+              {% blocktrans %}Find us on {{a1}}Twitter</a>, {{a2}}GitHub</a> and {{a3}}Team Liquid</a>.{% endblocktrans %}
+            {% endwith %}{% endwith %}{% endwith %}
+          </p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 2em;">
+        <div class="col-xs-12">
+          <h4>{% trans "Original Author" %}</h4>
+          <p>
+            {% blocktrans %}We are deeply grateful to <strong>Eivind Fonn</strong>, the original creator and author of Aligulac, for his years of dedication and for building the incredible foundation this project stands on.{% endblocktrans %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -154,28 +154,11 @@ To use, you should define the following blocks:
       <div class="row">
         <div class="col-xs-12">
           <footer class="text-muted small">
-            {% with a1="<a target=\"_blank\" href=\"http://twitter.com/Sc2Aligulac\">" %}
-            {% with a2="<a target=\"_blank\" href=\"http://github.com/TheBB/aligulac\">" %}
-            {% with a3="<a target=\"_blank\" href=\"http://www.teamliquid.net/forum/starcraft-2/404035-aligulaccom-changelog-and-feedback-thread\">" %}
-              <p>{% blocktrans %}Find us on {{a1}}Twitter</a>, {{a2}}GitHub</a> and {{a3}}Team Liquid</a>.{% endblocktrans %}</p>
-            {% endwith %}{% endwith %}{% endwith %}
+            <p>©2026 Stego Research LLC. Aligulac is <a target="_blank" href="https://github.com/stego-research/aligulac">open-source software</a>.<br>
+            All data provided by this site is free for non-commercial use.</p>
 
-            {% with a1="<a target=\"_blank\" href=\"http://www.djangoproject.com/\">" %}
-            {% with a2="<a target=\"_blank\" href=\"http://python.org\">" %}
-              <p>{% blocktrans %}Powered by {{a1}}Django 4.2</a>, {{a2}}Python 3.12</a>{% endblocktrans %}</p>
-            {% endwith %}{% endwith %}
 
-            {% with a1="<a target=\"_blank\" href=\"https://liquipedia.net/starcraft2/Main_Page\">" %}
-            {% with a3="<a target=\"_blank\" href=\"http://highcharts.com/\">" %}
-              <p>{% blocktrans %}Icons by Mark James. Race icons by {{a1}}Liquipedia</a>. Charts by {{a3}}Highcharts</a>.{% endblocktrans %}</p>
-            {% endwith %}{% endwith %}
-
-            {% with btc="1Ew7FPorb5u3EpqgUtz9s8wFPRDPbYcbMo" %}
-              <p>{% blocktrans %}Bitcoin donations (if you insist) on address: <br>{{btc}}{% endblocktrans %}</p>
-            {% endwith %}
-            <button class="btn btn-default" id="gen_short">
-              <span class="small text-muted">{% trans "Generate short URL for this page" %}</span>
-            </button>
+            <p><a href="/about/acknowledgements/">{% trans "Acknowledgements" %}</a> &nbsp;|&nbsp; <a target="_blank" href="http://twitter.com/Sc2Aligulac">Twitter</a> &nbsp;|&nbsp; <a target="_blank" href="https://discord.gg/723Df2yaaw">Discord</a></p>
 
             <span id="disp_short"></span>
           </footer>
