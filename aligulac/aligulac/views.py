@@ -665,3 +665,6 @@ def h500(request):
     base = base_ctx(request=request)
     return HttpResponseNotFound(render_to_string('500.djhtml', base))
 # }}}
+
+def health_check(request):
+    return HttpResponse('OK', content_type='text/plain')
