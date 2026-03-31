@@ -1,4 +1,5 @@
 # {{{ Imports
+import os
 import json
 import random
 import shlex
@@ -345,12 +346,24 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
                 add_subnav(_('Adjustments'), base_url + 'period/%i/' % rating.period.id)
 
     if DEBUG:
-        p = subprocess.Popen(['git', '-C', PROJECT_PATH, 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
-        base['commithash'] = p.communicate()[0].decode().strip()[:8]
+        base['commithash'] = os.environ.get('COMMIT_HASH', '')
+        base['commitbranch'] = os.environ.get('COMMIT_BRANCH', '')
 
-        p = subprocess.Popen(['git', '-C', PROJECT_PATH, 'rev-parse', '--abbrev-ref', 'HEAD'],
-                             stdout=subprocess.PIPE)
-        base['commitbranch'] = p.communicate()[0].decode().strip()
+        if not base['commithash'] or not base['commitbranch']:
+            try:
+                p = subprocess.Popen(['git', '-C', PROJECT_PATH, 'rev-parse', 'HEAD'],
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                out, err = p.communicate()
+                if out:
+                    base['commithash'] = out.decode().strip()[:8]
+
+                p = subprocess.Popen(['git', '-C', PROJECT_PATH, 'rev-parse', '--abbrev-ref', 'HEAD'],
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                out, err = p.communicate()
+                if out:
+                    base['commitbranch'] = out.decode().strip()
+            except (FileNotFoundError, subprocess.SubprocessError):
+                pass
 
     return base
 
