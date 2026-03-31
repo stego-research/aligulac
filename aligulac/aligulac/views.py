@@ -676,3 +676,15 @@ def h500(request):
 def health_check(request):
     import django.http
     return django.http.HttpResponse('OK', content_type='text/plain')
+
+def acknowledgements(request):
+    base = base_ctx('About', 'Acknowledgements', request)
+    
+    # Get top submitters (similar to db view but limited to top 10)
+    submitters = [
+        u for u in User.objects.all().annotate(nmatches=Count('match')).order_by('-nmatches')
+        if u.nmatches > 0
+    ][:10]
+    
+    base.update({'submitters': submitters})
+    return render(request, 'acknowledgements.djhtml', base)

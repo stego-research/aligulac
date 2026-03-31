@@ -4,14 +4,17 @@ import os
 def get_env(name, default=None):
     return os.environ.get(name, default)
 
+# Dynamically determine base directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Path of the folder where manage.py is located
-PROJECT_PATH = get_env('PROJECT_PATH', '/app/aligulac/')
+PROJECT_PATH = get_env('PROJECT_PATH', os.path.join(BASE_DIR, 'aligulac/'))
 
 # Path of folder where database dumps are saved
-DUMP_PATH = get_env('DUMP_PATH', '/app/aligulac/untracked/')
+DUMP_PATH = get_env('DUMP_PATH', os.path.join(BASE_DIR, 'untracked/'))
 
 # Path of folder where the locales are stored
-LOCALE_PATHS = (get_env('LOCALE_PATHS', '/app/aligulac/locale/'),)
+LOCALE_PATHS = (get_env('LOCALE_PATHS', os.path.join(BASE_DIR, 'locale/')),)
 
 # Secret Key
 SECRET_KEY = get_env('SECRET_KEY', '')
@@ -28,7 +31,8 @@ DB_USER = get_env('DB_USER', '')
 DB_PASSWORD = get_env('DB_PASSWORD', '')
 
 # Folder where the templates are stored
-TEMPLATE_DIRS = (get_env('TEMPLATE_DIRS', '/app/aligulac/templates/'),)
+TEMPLATE_DIRS = (get_env('TEMPLATE_DIRS', os.path.join(BASE_DIR, 'templates/')),)
+
 
 # Host names this server accepts connections to
 ALLOWED_HOSTS = get_env('ALLOWED_HOSTS', '.aligulac.com,localhost').split(',')
