@@ -42,9 +42,13 @@ RUN if [ ! -f /app/aligulac/aligulac/aligulac/local.py ]; then \
     fi
 
 # Create untracked directory for cache and standard log directory
+# This must happen BEFORE collectstatic because Django initializes logging on startup
 RUN mkdir -p /app/aligulac/untracked /var/log/aligulac && \
     touch /var/log/aligulac/error.log && \
     chmod -R 777 /app/aligulac/untracked /var/log/aligulac
+
+# Run collectstatic to gather all assets for whitenoise
+RUN SECRET_KEY=build-time-only-key PYTHONPATH=/app/aligulac/aligulac /app/.venv/bin/python /app/aligulac/aligulac/manage.py collectstatic --noinput
 
 # Set environment variables for the app
 ENV PATH="/app/.venv/bin:$PATH"
