@@ -83,55 +83,65 @@
     --spacing-lg: 24px;
     --spacing-xl: 32px;
 
+    --race-t: #0066CC;
+    --race-z: #CC0000;
+    --race-p: #00AA00;
+    --race-r: #777777;
+    --race-s: #555555;
+
+    --race-t-bg: rgba(0, 102, 204, 0.2);
+    --race-z-bg: rgba(204, 0, 0, 0.2);
+    --race-p-bg: rgba(0, 170, 0, 0.2);
+
     --btn-radius: 4px;
     --transition-speed: 0.2s;
 }
 
 [data-theme='dark'] {
-    /* Colors - Dark Theme Overrides */
-    --bg-primary: #0f0c1a;
-    --bg-secondary: #1c182e;
-    --bg-tertiary: #120a1f;
+    /* Colors - Dark Theme Overrides - Vivid Midnight (REPLAYMAN inspired) */
+    --bg-primary: #110022;
+    --bg-secondary: #221133;
+    --bg-tertiary: #090014;
     
-    --fg-primary: #e0d8f0;
-    --fg-secondary: #9a92ac;
-    --fg-muted: rgba(224, 216, 240, 0.5);
-    --fg-disabled: rgba(224, 216, 240, 0.3);
+    --fg-primary: #ffeeff;
+    --fg-secondary: #dccbed;
+    --fg-muted: rgba(220, 203, 237, 0.7);
+    --fg-disabled: rgba(220, 203, 237, 0.5);
     
-    --link-color: #b3a9cc;
-    --link-hover-color: #dcd0ff;
+    --link-color: #dccbed;
+    --link-hover-color: #ffeeff;
     
-    --border-color: rgba(224, 216, 240, 0.1);
-    --border-dark: #08060f;
-    --border-subtle: rgba(224, 216, 240, 0.05);
+    --border-color: rgba(220, 203, 237, 0.15);
+    --border-dark: #090014;
+    --border-subtle: rgba(220, 203, 237, 0.08);
     
     --input-bg: #221133;
     --input-border: #110022;
     --input-focus-border: #aaddbb;
     --input-focus-shadow: rgba(170, 221, 187, 0.4);
     
-    --msg-success-bg: #2e4a2e;
-    --msg-success-border: #3e5a3e;
+    --msg-success-bg: #1a2e1a;
+    --msg-success-border: #2e4a2e;
     --msg-success-fg: #aaddbb;
     
-    --msg-warning-bg: #4a4a2e;
-    --msg-warning-border: #5a5a3e;
+    --msg-warning-bg: #2e2a1a;
+    --msg-warning-border: #4a4a2e;
     --msg-warning-fg: #ffeedd;
     
-    --msg-info-bg: #2e3a4a;
-    --msg-info-border: #3e4a5a;
-    --msg-info-fg: #afd9ee;
+    --msg-info-bg: #1a1a2e;
+    --msg-info-border: #2e2e4a;
+    --msg-info-fg: #dccbed;
     
-    --msg-error-bg: #4a2e2e;
-    --msg-error-border: #5a3e3e;
+    --msg-error-bg: #2e1a1a;
+    --msg-error-border: #4a2e2e;
     --msg-error-fg: #f04b64;
 
-    --event-panel-individual-bg: #2e4a2e;
-    --event-panel-individual-border: #3e5a3e;
-    --event-panel-team-bg: #4a2e2e;
-    --event-panel-team-border: #5a3e3e;
-    --event-panel-frequent-bg: #2e3a4a;
-    --event-panel-frequent-border: #3e4a5a;
+    --event-panel-individual-bg: #1a2e1a;
+    --event-panel-individual-border: #2e4a2e;
+    --event-panel-team-bg: #2e1a1a;
+    --event-panel-team-border: #4a2e2e;
+    --event-panel-frequent-bg: #1a1a2e;
+    --event-panel-frequent-border: #2e2e4a;
 
     --tree-node-event-bg: #2e1111;
     --tree-node-round-bg: #112e11;
@@ -154,6 +164,14 @@
 
     --well-bg: #221133;
     --well-border: #110022;
+
+    --race-t: #2196F3;
+    --race-z: #CC0000;
+    --race-p: #00AA00;
+
+    --race-t-bg: rgba(33, 150, 243, 0.3);
+    --race-z-bg: rgba(204, 0, 0, 0.3);
+    --race-p-bg: rgba(0, 170, 0, 0.3);
 }
 
 /* Global Helper Overrides */
@@ -280,6 +298,37 @@
 .status-badge-online { border-color: rgba(0, 255, 0, 0.3); }
 .status-badge-offline { border-color: rgba(255, 0, 0, 0.3); }
 
+/* Progress Bars */
+.progress {
+    background-color: var(--bg-tertiary) !important;
+    box-shadow: none !important;
+}
+
+.progress-bar {
+    box-shadow: none !important;
+    color: var(--bg-primary) !important;
+    font-weight: 700;
+}
+
+.progress-bar-default { background-color: var(--fg-muted) !important; }
+.progress-bar-primary, .progress-bar-t { background-color: var(--race-t) !important; }
+.progress-bar-success, .progress-bar-p { background-color: var(--race-p) !important; }
+.progress-bar-danger, .progress-bar-z { background-color: var(--race-z) !important; }
+.progress-bar-info { background-color: var(--msg-info-fg) !important; }
+.progress-bar-warning { background-color: var(--msg-warning-fg) !important; }
+
+/* Subtle stripes */
+.progress-striped .progress-bar,
+.progress-bar-striped {
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .1) 50%, rgba(255, 255, 255, .1) 75%, transparent 75%, transparent) !important;
+    background-size: 40px 40px !important;
+}
+
+/* Race-specific backgrounds for progress wrappers when needed */
+.progress-p { background-color: var(--race-p-bg) !important; }
+.progress-t { background-color: var(--race-t-bg) !important; }
+.progress-z { background-color: var(--race-z-bg) !important; }
+
 /* 
    BASE STYLES & LAYOUT
    --------------------
@@ -324,7 +373,13 @@ h2 {
 
 h1 small, h2 small, h3 small {
     margin-left: 0.7em;
-    color: var(--fg-secondary);
+    color: var(--fg-primary);
+}
+
+[data-theme='dark'] h1 small, 
+[data-theme='dark'] h2 small, 
+[data-theme='dark'] h3 small {
+    font-weight: 700;
 }
 
 /* Subheadings */
@@ -502,8 +557,26 @@ footer {
 }
 
 /* Tables */
+.table-bordered {
+    border: 1px solid var(--border-color);
+}
+
+.table-bordered > thead > tr > th,
+.table-bordered > tbody > tr > th,
+.table-bordered > tfoot > tr > th,
+.table-bordered > thead > tr > td,
+.table-bordered > tbody > tr > td,
+.table-bordered > tfoot > tr > td {
+    border: 1px solid var(--border-color);
+}
+
 .table > thead > tr > th {
     border-bottom: 2px solid var(--border-color) !important;
+    background-color: var(--bg-secondary);
+}
+
+.table > tbody > tr > th {
+    background-color: var(--bg-secondary);
 }
 
 .table > thead > tr > th,
@@ -618,13 +691,23 @@ div.text, div.text > p, div.text > ul > li { text-align: justify; }
     border-style: solid;
     border-width: 1px;
     padding: 1em;
-    border-radius: 1em;
+    border-radius: 0.5em;
     margin-bottom: 1em;
     margin-top: 1em;
     overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 1em;
 }
 
-.message > img { margin-right: 1em; }
+.message .material-symbols-outlined {
+    font-size: 2em;
+    flex-shrink: 0;
+}
+
+.message p {
+    margin: 0;
+}
 
 .m-success, .alert-success {
     background-color: var(--msg-success-bg);

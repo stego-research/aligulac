@@ -262,7 +262,13 @@ In general, if you're trying to figure out how this works, may God have mercy on
                 {% elif not lm_noright %}
                   {% if m.messages %}
                     {% for msg in m.messages %}
-                      <img src="{{ msg.type|img }}" title="{{ msg.text }}">
+                      <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.2em;" title="{{ msg.text }}">
+                        {% if msg.type == "info" %}info
+                        {% elif msg.type == "error" %}error
+                        {% elif msg.type == "warning" %}warning
+                        {% elif msg.type == "success" %}check_circle
+                        {% else %}info{% endif %}
+                      </span>
                     {% endfor %}
                   {% endif %}
 

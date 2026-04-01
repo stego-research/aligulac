@@ -93,13 +93,13 @@ This is the Hall of Fame template. It's called from ratings.views.records.
          { 
            name: '{{ p.0.tag }}',
            {% if p.0.race == "T" %}
-           color: '#0000dd',
+           color: 'var(--race-t)',
            {% elif p.0.race == "Z" %}
-           color: '#dd0000',
+           color: 'var(--race-z)',
            {% elif p.0.race == "P" %}
-           color: '#00aa00',
+           color: 'var(--race-p)',
            {% else %}
-           color: '#000000',
+           color: 'var(--fg-muted)',
            {% endif %}
            lineWidth: 1,
            data: [{% for r in p.1 %} {
