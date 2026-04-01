@@ -114,7 +114,7 @@ def performance(oppr, opps, oppc, W, L, text='', pr=False):
             meanok = False
         else:
             gen_phi = lambda p, x: pdf(x, loc=p[0], scale=sqrt(1 + p[1] ** 2))
-            gen_Phi = lambda p, x: max(min(cdf(x, loc=p[0], scale=sqrt(1 + p[1] ** 2)), 1 - LOG_CAP), LOG_CAP)
+            gen_Phi = lambda p, x: maximum(minimum(cdf(x, loc=p[0], scale=sqrt(1 + p[1] ** 2)), 1 - LOG_CAP), LOG_CAP)
 
             def logL(x):
                 ret = 0.0
@@ -215,7 +215,7 @@ def update(myr, mys, oppr, opps, oppc, W, L, text='', pr=False, Ncats=3):
     mbar = oppr
     sbar = sqrt(opps ** 2 + 1)
     gen_phi = lambda j, x: pdf(x, loc=mbar[j], scale=sbar[j])
-    gen_Phi = lambda j, x: max(min(cdf(x, loc=mbar[j], scale=sbar[j]), 1 - LOG_CAP), LOG_CAP)
+    gen_Phi = lambda j, x: maximum(minimum(cdf(x, loc=mbar[j], scale=sbar[j]), 1 - LOG_CAP), LOG_CAP)
 
     alpha = pi / 2 / sqrt(3)
     myrc = myr[[0] + played_cats_p1]

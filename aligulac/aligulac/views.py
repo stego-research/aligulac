@@ -418,7 +418,13 @@ def db(request):
     try:
         base['updated'] = datetime.fromtimestamp(os.stat(os.path.join(PROJECT_PATH, 'update')).st_mtime)
     except:
-        base['updated'] = None
+        try:
+            latest = Period.objects.filter(computed=True).latest('id')
+            base['updated'] = datetime.combine(latest.end, datetime.min.time())
+        except:
+            base['updated'] = None
+
+    base['has_log'] = os.path.exists(os.path.join(PROJECT_PATH, 'static', 'update.txt'))
 
     base.update({
         'noffline': base['nmatches'] - base['nonline'],
