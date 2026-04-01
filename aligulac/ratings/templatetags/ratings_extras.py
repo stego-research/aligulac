@@ -306,9 +306,6 @@ def css(value):
 def fonts(value):
     return django_static('fonts/' + value)
 
-
-<<<<<<< Updated upstream
-=======
 # flag: Generates a flag-icon span
 @register.filter
 @stringfilter
@@ -336,7 +333,6 @@ def flag(value):
     return mark_safe(f'<span class="fi fi-{code}"></span>')
 
 
->>>>>>> Stashed changes
 # img: Generates a png-image file URL
 @register.filter
 @stringfilter
