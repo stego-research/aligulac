@@ -22,6 +22,7 @@ docker run -d \
   -e DB_NAME="aligulac" \
   -e DB_USER="postgres" \
   -e DB_PASSWORD="your-password" \
+  -e S3_BUCKET="your-aligulac-dumps-bucket" \
   --name aligulac-app \
   aligulac-app:latest
 ```
@@ -53,6 +54,17 @@ The application is configured via environment variables. These can be passed to 
 | `ERROR_LOG_FILE`| Path where application errors are logged. | `/var/log/aligulac/error.log` |
 | `CACHE_BACKEND` | Django cache backend. | `DummyCache` |
 | `EXCHANGE_ID` | API key for openexchangerates.org. | `""` |
+
+### **S3 Storage (Database Dumps)**
+If `S3_BUCKET` is configured, the database dump job (`dump.py`) will upload files to S3 and remove them from the local filesystem. Download links on the database status page will generate pre-signed S3 URLs.
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `S3_BUCKET` | The name of the S3 bucket for database dumps. | `""` (Disabled) |
+| `S3_REGION` | AWS region for the S3 bucket. | `us-east-1` |
+| `S3_ACCESS_KEY` | AWS Access Key ID (Optional if using IAM roles). | `None` |
+| `S3_SECRET_KEY` | AWS Secret Access Key (Optional if using IAM roles). | `None` |
+| `S3_ENDPOINT_URL` | Custom S3 endpoint URL (e.g., for MinIO or S3-compatible APIs). | `None` |
 
 ---
 

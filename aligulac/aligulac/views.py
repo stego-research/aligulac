@@ -24,10 +24,12 @@ from aligulac.settings import (
     PROJECT_PATH,
     LANGUAGES,
     STATIC_ROOT,
+    S3_BUCKET,
 )
 from aligulac.tools import (
     base_ctx,
     get_param,
+    get_s3_info,
     login_message,
     JsonResponse,
     Message,
@@ -413,9 +415,57 @@ def db(request):
             if u.nmatches > 0
         ],
 
-        'dump': os.path.exists(DUMP_PATH),
+        'dump': False,
         'dbtables': DBTABLES,
     })
+
+    if S3_BUCKET:
+        sql_info = get_s3_info('aligulac.sql.gz')
+        if sql_info:
+            base.update({
+                'dump': True,
+                'has_gzdump': True,
+                'gz_megabytes': sql_info['size'] / 1048576,
+                'modified': sql_info['modified'],
+                'gzdump_url': sql_info['url'],
+            })
+        
+        # Also try to get uncompressed if it exists
+        uncompressed_info = get_s3_info('aligulac.sql')
+        if uncompressed_info:
+            base.update({
+                'dump': True,
+                'has_dump': True,
+                'megabytes': uncompressed_info['size'] / 1048576,
+                'dump_url': uncompressed_info['url'],
+            })
+            if not base.get('modified'):
+                base['modified'] = uncompressed_info['modified']
+    else:
+        if os.path.exists(os.path.join(DUMP_PATH, 'aligulac.sql')):
+            base['dump'] = True
+            base['has_dump'] = True
+            try:
+                stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql'))
+                base.update({
+                    'megabytes': stat.st_size / 1048576,
+                    'modified': datetime.fromtimestamp(stat.st_mtime),
+                })
+            except (FileNotFoundError, OSError):
+                pass
+
+        if os.path.exists(os.path.join(DUMP_PATH, 'aligulac.sql.gz')):
+            base['dump'] = True
+            base['has_gzdump'] = True
+            try:
+                stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
+                base.update({
+                    'gz_megabytes': stat.st_size / 1048576,
+                })
+                if not base.get('modified'):
+                    base['modified'] = datetime.fromtimestamp(stat.st_mtime)
+            except (FileNotFoundError, OSError):
+                pass
 
     try:
         base['updated'] = datetime.fromtimestamp(os.stat(os.path.join(PROJECT_PATH, 'update')).st_mtime)
@@ -434,20 +484,6 @@ def db(request):
         'nuncatalogued': base['nmatches'] - base['nfull'],
         'ninactive': base['nteams'] - base['nactive'],
     })
-
-    if base['dump']:
-        try:
-            stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql'))
-            base.update({
-                'megabytes': stat.st_size / 1048576,
-                'modified': datetime.fromtimestamp(stat.st_mtime),
-            })
-            stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
-            base.update({
-                'gz_megabytes': stat.st_size / 1048576
-            })
-        except (FileNotFoundError, OSError):
-            pass
 
     return render(request, 'db.djhtml', base)
 

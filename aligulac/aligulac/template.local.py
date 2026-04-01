@@ -33,6 +33,13 @@ DB_PASSWORD = get_env('DB_PASSWORD', '')
 # Folder where the templates are stored
 TEMPLATE_DIRS = (get_env('TEMPLATE_DIRS', os.path.join(BASE_DIR, 'templates/')),)
 
+# S3 settings
+S3_BUCKET = get_env('S3_BUCKET', '')
+S3_ACCESS_KEY = get_env('S3_ACCESS_KEY', None)
+S3_SECRET_KEY = get_env('S3_SECRET_KEY', None)
+S3_REGION = get_env('S3_REGION', 'us-east-1')
+S3_ENDPOINT_URL = get_env('S3_ENDPOINT_URL', None)
+
 
 # Host names this server accepts connections to
 ALLOWED_HOSTS = get_env('ALLOWED_HOSTS', '.aligulac.com,localhost').split(',')
