@@ -156,22 +156,21 @@ dump. Called from aligulac.views.db.
       {% else %}
         <p>
           {% with datetime=modified|date:"DATETIME_FORMAT" tz=modified|date:"O" %}
-            {% if has_dump and has_gzdump %}
-              {% with durl=dump_url|default:"aligulac.sql" gzdurl=gzdump_url|default:"aligulac.sql.gz" dmb=megabytes|floatformat:1 gzdmb=gz_megabytes|floatformat:1 %}
-                {% if not dump_url %}{% with durl=durl|static %}{% endwith %}{% endif %}
-                {% if not gzdump_url %}{% with gzdurl=gzdurl|static %}{% endwith %}{% endif %}
-                {# The above with rebinding doesn't work well in all django versions, better to be explicit #}
-                {% blocktrans with du=dump_url|default:durl|static gzdu=gzdump_url|default:gzdurl|static %}You can download a PostgreSQL dump <a href="{{du}}">here</a> ({{dmb}} MiB) or <a href="{{gzdu}}">here</a> ({{gzdmb}} MiB gzipped), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
-              {% endwith %}
-            {% elif has_dump %}
-              {% with dmb=megabytes|floatformat:1 %}
-                {% blocktrans with du=dump_url|default:"aligulac.sql"|static %}You can download a PostgreSQL dump <a href="{{du}}">here</a> ({{dmb}} MiB), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
-              {% endwith %}
-            {% elif has_gzdump %}
-              {% with gzdmb=gz_megabytes|floatformat:1 %}
-                {% blocktrans with gzdu=gzdump_url|default:"aligulac.sql.gz"|static %}You can download a gzipped PostgreSQL dump <a href="{{gzdu}}">here</a> ({{gzdmb}} MiB), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
-              {% endwith %}
-            {% endif %}
+            {% with durl_static="aligulac.sql"|static gzdurl_static="aligulac.sql.gz"|static %}
+              {% if has_dump and has_gzdump %}
+                {% with dmb=megabytes|floatformat:1 gzdmb=gz_megabytes|floatformat:1 %}
+                  {% blocktrans with du=dump_url|default:durl_static gzdu=gzdump_url|default:gzdurl_static %}You can download a PostgreSQL dump <a href="{{du}}">here</a> ({{dmb}} MiB) or <a href="{{gzdu}}">here</a> ({{gzdmb}} MiB gzipped), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
+                {% endwith %}
+              {% elif has_dump %}
+                {% with dmb=megabytes|floatformat:1 %}
+                  {% blocktrans with du=dump_url|default:durl_static %}You can download a PostgreSQL dump <a href="{{du}}">here</a> ({{dmb}} MiB), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
+                {% endwith %}
+              {% elif has_gzdump %}
+                {% with gzdmb=gz_megabytes|floatformat:1 %}
+                  {% blocktrans with gzdu=gzdump_url|default:gzdurl_static %}You can download a gzipped PostgreSQL dump <a href="{{gzdu}}">here</a> ({{gzdmb}} MiB), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
+                {% endwith %}
+              {% endif %}
+            {% endwith %}
             {% trans "It is free to use for non-commercial purposes if you credit this website when doing so." %}
           {% endwith %}
         </p> 
