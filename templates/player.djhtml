@@ -167,7 +167,7 @@ This is the template for the main player page, called from ratings.views.player.
              x: {{ r.period.end|milliseconds }},
              y: {{ r.bf_rating|ratscale }}
                                 },{% endfor %}]
-         },
+         }{% if stories or teampoints %},{% endif %}
  {% if stories %}
                   {
            {% comment %}Translators: Stories are the dots on a player's rating chart.{% endcomment %}

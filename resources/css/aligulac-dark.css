@@ -507,18 +507,6 @@ div.tagsinput input.not_valid,
     fill: var(--foreground-placeholder-dark) !important;
 }
 
-/* Specific Series Overrides */
-/* General Rating Line (originally #000000) */
-.highcharts-series-4 path {
-    stroke: var(--foreground-primary-dark) !important;
-}
-
-/* Games Bar Chart (originally rgba(140,140,140,0.4)) */
-.highcharts-series-0 rect {
-    fill: var(--background-secondary-dark) !important;
-    fill-opacity: 0.6 !important;
-}
-
 /* Highcharts Exporting Menu Overrides */
 .highcharts-button rect {
     fill: var(--background-secondary-dark) !important;
