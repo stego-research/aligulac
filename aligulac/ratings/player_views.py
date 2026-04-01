@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 from dateutil.relativedelta import relativedelta
 from django import forms
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 from django.db.models import Sum, Q, Case, When, F, Count, IntegerField
 from django.shortcuts import render, get_object_or_404
 from django.utils.translation import gettext_lazy as _
@@ -596,12 +596,7 @@ def results(request, player_id):
     # {{{ Pagination
     paginator = Paginator(matches, SHOW_PER_LIST_PAGE)
     page_num = get_param(request, 'page', 1)
-    try:
-        page = paginator.page(page_num)
-    except PageNotAnInteger:
-        page = paginator.page(1)
-    except EmptyPage:
-        page = paginator.page(paginator.num_pages)
+    page = paginator.get_page(page_num)
 
     base['matches'] = display_matches(page.object_list, fix_left=player)
     base['page_obj'] = page
