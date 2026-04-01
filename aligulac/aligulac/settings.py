@@ -47,7 +47,7 @@ LANGUAGES = [
     ('pl', 'Polski'),
     ('da', 'Dansk'),
     ('nb', 'Norsk (bokmål)'),
-    ('zh', '中文(简体)'),
+    ('zh-hans', '中文(简体)'),
 ]
 
 if DEBUG:

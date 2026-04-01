@@ -307,6 +307,36 @@ def fonts(value):
     return django_static('fonts/' + value)
 
 
+<<<<<<< Updated upstream
+=======
+# flag: Generates a flag-icon span
+@register.filter
+@stringfilter
+def flag(value):
+    if not value:
+        return ""
+    
+    # Normalize: take first part of locale if present (e.g. en-us -> en)
+    code = value.lower().split('-')[0].split('_')[0]
+    
+    # lipis/flag-icons uses ISO 3166-1-alpha-2 country codes.
+    # We map some common language codes to their representative country flags.
+    mapping = {
+        'en': 'gb',
+        'uk': 'gb',
+        'nb': 'no',
+        'zh': 'cn',
+        'zh-hans': 'cn',
+        'da': 'dk',
+        'ko': 'kr',
+        'ja': 'jp',
+    }
+    code = mapping.get(code, code)
+    
+    return mark_safe(f'<span class="fi fi-{code}"></span>')
+
+
+>>>>>>> Stashed changes
 # img: Generates a png-image file URL
 @register.filter
 @stringfilter

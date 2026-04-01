@@ -10,6 +10,7 @@ ENV PIPENV_VENV_IN_PROJECT=1
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
+    gettext \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pipenv
@@ -53,6 +54,9 @@ RUN if [ ! -f /app/aligulac/aligulac/aligulac/local.py ]; then \
 RUN mkdir -p /app/aligulac/untracked /var/log/aligulac && \
     touch /var/log/aligulac/error.log && \
     chmod -R 777 /app/aligulac/untracked /var/log/aligulac
+
+# Compile translation files
+RUN cd /app/aligulac && PYTHONPATH=/app/aligulac/aligulac /app/.venv/bin/python manage.py compilemessages
 
 # Run collectstatic to gather all assets for whitenoise
 RUN SECRET_KEY=build-time-only-key PYTHONPATH=/app/aligulac/aligulac /app/.venv/bin/python /app/aligulac/aligulac/manage.py collectstatic --noinput

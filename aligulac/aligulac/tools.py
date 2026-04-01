@@ -25,7 +25,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.template.context_processors import csrf
 from django.template.loader import render_to_string
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
 from aligulac.settings import (
