@@ -1,0 +1,731 @@
+:root {
+    /* Fonts */
+    --font-title: 'Marcellus SC', Times, serif;
+    --font-main: 'Roboto', sans-serif;
+    
+    /* Font sizes */
+    --font-size-h1: 60px;
+    --font-size-h2: 2em;
+    --font-size-h3: 1.5em;
+    --font-size-base: 1.5em;
+    
+    /* Colors - Light Theme (Default) */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f8f8;
+    --bg-tertiary: #f5f5f5;
+    
+    --fg-primary: #000000;
+    --fg-secondary: #555555;
+    --fg-muted: #999999;
+    --fg-disabled: #aaaaaa;
+    
+    --link-color: #337ab7;
+    --link-hover-color: #23527c;
+    
+    --border-color: #e7e7e7;
+    --border-dark: #999999;
+    --border-subtle: #eeeeee;
+    
+    --input-bg: #ffffff;
+    --input-border: #cccccc;
+    --input-focus-border: #000000;
+    --input-focus-shadow: rgba(0, 0, 0, .4);
+    
+    --msg-success-bg: #dff0d8;
+    --msg-success-border: #c1e2b3;
+    --msg-success-fg: #3c763d;
+    
+    --msg-warning-bg: #fcf8e3;
+    --msg-warning-border: #f7ecb5;
+    --msg-warning-fg: #8a6d3b;
+    
+    --msg-info-bg: #d9edf7;
+    --msg-info-border: #afd9ee;
+    --msg-info-fg: #31708f;
+    
+    --msg-error-bg: #f2dede;
+    --msg-error-border: #e4b9b9;
+    --msg-error-fg: #a94442;
+
+    --event-panel-individual-bg: #dff0d8;
+    --event-panel-individual-border: #c1e2b3;
+    --event-panel-team-bg: #f2dede;
+    --event-panel-team-border: #e4b9b9;
+    --event-panel-frequent-bg: #d9edf7;
+    --event-panel-frequent-border: #afd9ee;
+
+    --tree-node-event-bg: #fff4f4;
+    --tree-node-round-bg: #f0fff0;
+
+    --tag-bg: #f8f8f8;
+    --tag-fg: #787878;
+    --tag-border: #ccc;
+    --tag-link: #9f9f9f;
+
+    --gold: gold;
+    --silver: silver;
+    --bronze: #cd7f32;
+
+    --navbar-bg: #f8f8f8;
+    --navbar-border: #e7e7e7;
+    --navbar-link: #777;
+    --navbar-link-hover: #333;
+    --navbar-link-active: #555;
+    --navbar-link-active-bg: #e7e7e7;
+
+    --btn-default-bg: #ffffff;
+    --btn-default-fg: #333333;
+    --btn-default-border: #cccccc;
+
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    --btn-radius: 4px;
+    --transition-speed: 0.2s;
+}
+
+[data-theme='dark'] {
+    /* Colors - Dark Theme Overrides */
+    --bg-primary: #110022;
+    --bg-secondary: #221133;
+    --bg-tertiary: #221133;
+    
+    --fg-primary: #ffeeff;
+    --fg-secondary: #dccbed;
+    --fg-muted: rgba(238, 221, 255, 0.6);
+    --fg-disabled: rgba(238, 221, 255, 0.4);
+    
+    --link-color: #aaddbb;
+    --link-hover-color: #ffeedd;
+    
+    --border-color: rgba(220, 203, 237, 0.1);
+    --border-dark: #110022;
+    --border-subtle: rgba(220, 203, 237, 0.05);
+    
+    --input-bg: #221133;
+    --input-border: #110022;
+    --input-focus-border: #aaddbb;
+    --input-focus-shadow: rgba(170, 221, 187, 0.4);
+    
+    --msg-success-bg: #2e4a2e;
+    --msg-success-border: #3e5a3e;
+    --msg-success-fg: #aaddbb;
+    
+    --msg-warning-bg: #4a4a2e;
+    --msg-warning-border: #5a5a3e;
+    --msg-warning-fg: #ffeedd;
+    
+    --msg-info-bg: #2e3a4a;
+    --msg-info-border: #3e4a5a;
+    --msg-info-fg: #afd9ee;
+    
+    --msg-error-bg: #4a2e2e;
+    --msg-error-border: #5a3e3e;
+    --msg-error-fg: #f04b64;
+
+    --event-panel-individual-bg: #2e4a2e;
+    --event-panel-individual-border: #3e5a3e;
+    --event-panel-team-bg: #4a2e2e;
+    --event-panel-team-border: #5a3e3e;
+    --event-panel-frequent-bg: #2e3a4a;
+    --event-panel-frequent-border: #3e4a5a;
+
+    --tree-node-event-bg: #2e1111;
+    --tree-node-round-bg: #112e11;
+
+    --tag-bg: #110022;
+    --tag-fg: #dccbed;
+    --tag-border: #110022;
+    --tag-link: #aaddbb;
+
+    --navbar-bg: #221133;
+    --navbar-border: #110022;
+    --navbar-link: #dccbed;
+    --navbar-link-hover: #ffeeff;
+    --navbar-link-active: #ffeeff;
+    --navbar-link-active-bg: #110022;
+
+    --btn-default-bg: #221133;
+    --btn-default-fg: #dccbed;
+    --btn-default-border: #110022;
+
+    --well-bg: #221133;
+    --well-border: #110022;
+}
+
+/* 
+   BASE STYLES & LAYOUT
+   --------------------
+*/
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--fg-secondary);
+    font-family: var(--font-main);
+    font-size: var(--font-size-base);
+    padding-top: 30px;
+    padding-bottom: 80px;
+}
+
+/* Title text ('ALIGULAC') and subheading */
+h1 {
+    font-family: var(--font-title);
+    font-size: var(--font-size-h1);
+    letter-spacing: 0.6em;
+    text-align: center;
+    padding-left: 0.7em; /* Required for centering */
+    color: var(--fg-primary);
+}
+
+.subheading {
+    letter-spacing: 0.1em;
+    text-align: center;
+}
+
+/* Major headings are in h2 */
+h2 {
+    font-size: var(--font-size-h2);
+    font-weight: 400;
+    border-style: none none solid none;
+    border-width: 0.05em;
+    border-color: var(--border-color);
+    font-variant: small-caps;
+    color: var(--fg-primary);
+    position: relative;
+}
+
+h2 small {
+    margin-left: 0.7em;
+}
+
+/* Subheadings */
+h3 {
+    font-size: var(--font-size-h3);
+    font-weight: 400;
+    border-style: none;
+    font-variant: small-caps;
+    color: var(--fg-primary);
+}
+
+/* Links */
+a {
+    color: var(--link-color);
+    transition: color var(--transition-speed) ease;
+}
+
+a:hover, a:focus {
+    color: var(--link-hover-color);
+}
+
+/* A blacklink is always the primary text color and never underlined. */
+a.blacklink {
+    color: var(--fg-primary) !important;
+}
+
+a.blacklink:hover {
+    text-decoration: none !important;
+}
+
+/* Centered navbar */
+@media (min-width: 768px) {
+    .navbar-nav {
+        margin: 0 auto;
+        display: table;
+        table-layout: fixed;
+        float: none;
+    }
+}
+
+.navbar {
+    border-radius: 0;
+    border-style: solid none solid none;
+    background-color: var(--navbar-bg);
+    border-color: var(--navbar-border);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: background-color var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: var(--navbar-link);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+    color: var(--navbar-link-hover);
+    background-color: var(--navbar-bg);
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+    color: var(--navbar-link-active);
+    background-color: var(--navbar-link-active-bg);
+}
+
+.dropdown-menu {
+    background-color: var(--navbar-bg);
+    border: 1px solid var(--navbar-border);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    transition: background-color var(--transition-speed), border-color var(--transition-speed);
+}
+
+.dropdown-menu > li > a {
+    color: var(--navbar-link);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+    background-color: var(--navbar-link-active-bg);
+    color: var(--navbar-link-active);
+}
+
+/* Menu hovering */
+@media (min-width: 768px) {
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+}
+
+/* Centered footer */
+footer {
+    text-align: center;
+}
+
+/* Change the glow around focused input */
+.form-control {
+    background-color: var(--input-bg);
+    color: var(--fg-primary);
+    border-color: var(--input-border);
+}
+
+.form-control:focus {
+    border-color: var(--input-focus-border);
+    outline: 0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
+    box-shadow:         inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
+}
+
+/* JQuery datepicker needs to have the same font */
+.ui-widget {
+    font-family: var(--font-main);
+}
+
+/* Autocomplete styles */
+.ui-autocomplete {
+    padding: 0.3em;
+    font-family: var(--font-main);
+    background-color: var(--bg-secondary);
+    color: var(--fg-secondary);
+    border: 1px solid var(--border-dark);
+}
+
+.ui-menu .ui-menu-item a {
+    border-radius: 0;
+    color: var(--fg-secondary);
+}
+
+.ui-menu .ui-menu-item a.ui-state-focus,
+.ui-menu .ui-menu-item a:hover {
+    background-color: var(--bg-primary);
+    color: var(--fg-primary);
+}
+
+.autocomp-team {
+    margin-left: 10em; /* So that the team names don't get too close */
+    color: var(--link-color);
+}
+
+.autocomp-header {
+    display: block;
+    text-align: center;
+    width: 100%;
+    background: var(--bg-secondary);
+    border-style: solid;
+    border-width: 1px 0px 1px 0px;
+    border-color: var(--border-dark);
+    margin-top: 2px;
+    color: var(--fg-primary);
+}
+
+/* Carets */
+.right-caret {
+    border-bottom: 5px solid transparent;
+    border-top: 5px solid transparent;
+    border-left: 5px solid var(--fg-primary);
+    display: inline-block;
+    width: 0;
+    height: 0;
+    opacity: 0.3;
+    vertical-align: middle;
+}
+
+.down-caret {
+    border-top: 5px solid var(--fg-primary);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    opacity: 0.3;
+    vertical-align: middle;
+}
+
+/* Tables */
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: var(--bg-secondary);
+}
+
+.table-hover > tbody > tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* Ratinglist table */
+.rl_number { width: 2em; text-align: right; }
+.rl_icon { width: 1em; text-align: center; }
+.rl_arrow { width: 2em; text-align: right; }
+.rl_name { width: 25%; }
+.rl_team { width: 20%; }
+.rl_rating { width: 8%; text-align: right; padding-left: 1em; }
+
+/* Historical overview table */
+.ho_icon { width: 13%; text-align: right; }
+.ho_pctg { width: 2em; text-align: right; }
+.ho_num { width: 13%; text-align: right; }
+
+/* Earnings table */
+.ea_number { width: 2em; text-align: right; }
+.ea_icon { width: 1em; text-align: center; }
+.ea_earnings { text-align: right; width: 10em; }
+.ea_flush { width: 15%; }
+
+/* Prize pool table */
+.pp_header {
+    background-color: var(--bg-tertiary);
+    color: var(--fg-primary);
+}
+
+.pp_showbtn { font-variant: small-caps; }
+.pp_icon { width: 1em; text-align: center; }
+.pp_1 { background-color: var(--gold); }
+.pp_2 { background-color: var(--silver); }
+.pp_3 { background-color: var(--bronze); }
+
+/* Match table */
+.lm_date { width: 17%; }
+.lm_rta { text-align: right; width: 3.5em; }
+.lm_pla { text-align: right; width: 23%; }
+.lm_score { width: 7em; text-align: center; }
+.lm_plb { width: 23%; }
+.lm_rtb { text-align: right; width: 3.5em; }
+.lm_right { text-align: right; width: 17%; }
+
+.eventheader {
+    background: var(--bg-tertiary);
+    color: var(--fg-primary);
+}
+
+.eventheader-right { font-variant: small-caps; }
+
+.winner a, td.winner { font-weight: 900; }
+
+.loser a {
+    font-weight: 100;
+    color: var(--fg-muted);
+}
+
+.loser a:hover {
+    color: var(--fg-secondary);
+}
+
+td.loser {
+    color: var(--fg-disabled);
+}
+
+/* Days since styles */
+.clock-expandable { cursor: pointer; }
+
+/* Subelements of h2 headings */
+h2.sub > small.right {
+    font-family: var(--font-main);
+    font-size: small;
+    position: absolute;
+    bottom: 0.2em;
+    right: 0;
+    font-variant: normal;
+}
+
+h2.sub > .left {
+    font-family: var(--font-main);
+    font-size: small;
+    position: absolute;
+    bottom: 0.2em;
+    margin-left: 1em;
+}
+
+/* Text justification */
+div.text, div.text > p, div.text > ul > li { text-align: justify; }
+
+/* Styles for message boxes */
+.message, .alert {
+    border-style: solid;
+    border-width: 1px;
+    padding: 1em;
+    border-radius: 1em;
+    margin-bottom: 1em;
+    margin-top: 1em;
+    overflow: auto;
+}
+
+.message > img { margin-right: 1em; }
+
+.m-success, .alert-success {
+    background-color: var(--msg-success-bg);
+    border-color: var(--msg-success-border);
+    color: var(--msg-success-fg);
+}
+
+.m-success:hover { background-color: var(--msg-success-border); }
+
+.m-warning, .alert-warning {
+    background-color: var(--msg-warning-bg);
+    border-color: var(--msg-warning-border);
+    color: var(--msg-warning-fg);
+}
+
+.m-warning:hover { background-color: var(--msg-warning-border); }
+
+.m-info, .alert-info {
+    background-color: var(--msg-info-bg);
+    border-color: var(--msg-info-border);
+    color: var(--msg-info-fg);
+}
+
+.m-info:hover { background-color: var(--msg-info-border); }
+
+.m-error, .alert-danger {
+    background-color: var(--msg-error-bg);
+    border-color: var(--msg-error-border);
+    color: var(--msg-error-fg);
+}
+
+.m-error:hover { background-color: var(--msg-error-border); }
+
+/* Class for inline form labels */
+.inline-label { margin-left: 0.7em; margin-right: 0.2em; }
+
+/* Infobox tables */
+.ibox-left {
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-right-color: var(--border-color);
+}
+
+/* Keep race and flag icons apart */
+.player img, .ui-corner-all img, .lm_plb img { padding-right: 0.3em; }
+.playerleft img, .lm_pla img { padding-left: 0.3em; }
+
+/* Event manager tree */
+.tree-node {
+    border-radius: 0px !important;
+    margin-top: 1px;
+    border-top: none;
+}
+
+.tree-node-first {
+    border-top: 1px solid var(--border-color);
+}
+
+.tree-node-event { background: var(--tree-node-event-bg); }
+.tree-node-round { background: var(--tree-node-round-bg); }
+
+/* Breadcrumbs in headers */
+h2 .breadcrumb {
+    background: transparent !important;
+    margin-bottom: 0px;
+    padding: 0px 0px;
+}
+
+h2 .breadcrumb li.active { color: var(--fg-primary); }
+h2 .breadcrumb > li + li:before { padding: 0 0; content: "/"; }
+
+/* Sortable lists */
+#sortable li { cursor: pointer; }
+
+/* Event table */
+.event-panel { box-shadow: none; }
+.event-panel a.eventname {
+    font-size: 1.3em;
+    font-weight: 400;
+    border-style: none;
+    font-variant: small-caps;
+    color: var(--fg-primary);
+}
+
+.event-panel a.eventname:hover {
+    color: var(--fg-secondary);
+    text-decoration: none;
+}
+
+.event-panel-individual {
+    background-color: var(--event-panel-individual-bg);
+    border-color: var(--event-panel-individual-border);
+}
+.event-panel-individual:hover { background-color: var(--event-panel-individual-border); }
+
+.event-panel-team {
+    background-color: var(--event-panel-team-bg);
+    border-color: var(--event-panel-team-border);
+}
+.event-panel-team:hover { background-color: var(--event-panel-team-border); }
+
+.event-panel-frequent {
+    background-color: var(--event-panel-frequent-bg);
+    border-color: var(--event-panel-frequent-border);
+}
+.event-panel-frequent:hover { background-color: var(--event-panel-frequent-border); }
+
+/* Search result span */
+span.searchres { padding-right: 1em; white-space: nowrap; }
+p.searchres { line-height: 2em; }
+
+/* Disabled select options */
+.option-disabled { background: var(--bg-secondary); }
+
+/* Progress bars */
+.progress { background-color: var(--bg-secondary); }
+.progress-bar-default { background-color: #888; }
+
+/* Wells */
+.well {
+    background-color: var(--well-bg);
+    border-color: var(--well-border);
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+/* List groups */
+.list-group-item {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+/* Tags input plugin */
+div.tagsinput {
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background: var(--input-bg);
+    padding: 5px;
+    overflow-y: auto;
+}
+
+div.tagsinput span.tag {
+    display: block;
+    float: left;
+    padding: 5px;
+    text-decoration: none;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    background: var(--tag-bg);
+    color: var(--tag-fg);
+    border: 1px solid var(--tag-border);
+}
+
+div.tagsinput span.tag a {
+    font-weight: 700;
+    color: var(--tag-link);
+    text-decoration: none;
+}
+
+div.tagsinput input {
+    width: 80px;
+    margin: 0;
+    border: 1px solid transparent;
+    padding: 5px;
+    background: transparent;
+    color: var(--fg-primary);
+    outline: 0;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* Comparisons */
+.compheader {
+    font-variant: small-caps;
+    font-size: 1.3em;
+    font-weight: bold;
+    background: var(--bg-secondary);
+    color: var(--fg-primary);
+}
+
+.hline {
+    background: var(--bg-secondary);
+    height: 4px;
+}
+
+/* Bootstrap Button Overrides */
+.btn-default, .btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger {
+    background-image: none !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease, color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.btn-default {
+    background-color: var(--btn-default-bg);
+    color: var(--btn-default-fg);
+    border-color: var(--btn-default-border);
+}
+
+.btn-default:hover, .btn-default:focus {
+    background-color: var(--bg-primary);
+    color: var(--fg-primary);
+    border-color: var(--link-color);
+}
+
+/* Dark Mode specific Highcharts Overrides (moved here but wrapped in data-theme) */
+[data-theme='dark'] .highcharts-container, 
+[data-theme='dark'] .highcharts-container svg {
+    background-color: transparent !important;
+}
+
+[data-theme='dark'] .highcharts-background {
+    fill: transparent !important;
+}
+
+[data-theme='dark'] .highcharts-title, 
+[data-theme='dark'] .highcharts-subtitle, 
+[data-theme='dark'] .highcharts-axis-title, 
+[data-theme='dark'] .highcharts-axis-labels text, 
+[data-theme='dark'] .highcharts-legend-item text {
+    fill: var(--fg-secondary) !important;
+    color: var(--fg-secondary) !important;
+}
+
+[data-theme='dark'] .highcharts-grid-line {
+    stroke: var(--border-color) !important;
+}
+
+[data-theme='dark'] .highcharts-tooltip-box {
+    fill: var(--bg-secondary) !important;
+    fill-opacity: 0.9;
+    stroke: var(--bg-primary) !important;
+}
+
+[data-theme='dark'] .highcharts-tooltip text {
+    fill: var(--fg-primary) !important;
+}

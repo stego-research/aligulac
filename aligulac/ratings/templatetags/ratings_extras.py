@@ -579,6 +579,10 @@ def eventlistend(value, N=None):
 
 # Model display filters
 
+from ratings.templatetags.race_icons import race_icon
+
+# ... (rest of imports remains the same)
+
 @register.filter
 def player(value, arg=None):
     if not isinstance(value, Player):
@@ -592,14 +596,14 @@ def player(value, arg=None):
     return mark_safe((
                          "<span class='player'>"
                          "<a href='/players/{id}-{safetag}/' class='{cl}'>"
-                         "{flag}<img src='{race}' />{tag}"
+                         "{flag}{race_svg}{tag}"
                          "</a>"
                          "</span>"
                      ).format(tag=value.tag,
                               safetag=urlfilter(value.tag),
                               id=value.id,
                               flag=flag,
-                              race=img(value.race),
+                              race_svg=race_icon(value.race, size=16),
                               cl=arg if arg is not None else ''))
 
 
@@ -616,14 +620,14 @@ def playerleft(value, arg=None):
     return mark_safe((
                          "<span class='playerleft'>"
                          "<a href='/players/{id}-{safetag}/' class='{cl}'>"
-                         "{tag}<img src='{race}'>{flag}"
+                         "{tag}{race_svg}{flag}"
                          "</a>"
                          "</span>"
                      ).format(tag=value.tag,
                               safetag=urlfilter(value.tag),
                               id=value.id,
                               flag=flag,
-                              race=img(value.race),
+                              race_svg=race_icon(value.race, size=16),
                               cl=arg if arg is not None else ''))
 
 

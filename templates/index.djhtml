@@ -32,18 +32,15 @@ To use, you should define the following blocks:
     </style>
     <link rel="stylesheet" href="{{"bootstrap.min"|css}}" type="text/css">
     <link rel="stylesheet" href="{{"jquery-ui.min"|css}}" type="text/css">
-    <link rel="stylesheet" id="main-theme" href="{{"aligulac-theme"|css}}" type="text/css">
+    <link rel="stylesheet" id="main-theme" href="{{"aligulac"|css}}" type="text/css">
     <script type="text/javascript">
       (function() {
         try {
-          var theme = localStorage.getItem('theme');
-          if (theme === 'dark') {
-            document.getElementById('main-theme').href = '{{"aligulac-dark"|css}}';
-          }
+          var theme = localStorage.getItem('theme') || 'light';
+          document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {}
       })();
-    </script>
-    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
+    </script>    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
@@ -175,19 +172,17 @@ To use, you should define the following blocks:
               document.getElementById('theme-toggle').addEventListener('click', function(e) {
                 e.preventDefault();
                 try {
-                  var currentTheme = localStorage.getItem('theme') || 'light';
+                  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
                   var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                   localStorage.setItem('theme', newTheme);
                   window.location.reload();
                 } catch (err) {
-                  // Fallback if localStorage is restricted
-                  var themeLink = document.getElementById('main-theme');
-                  var isDark = themeLink.href.indexOf('aligulac-dark') !== -1;
-                  themeLink.href = isDark ? '{{"aligulac-theme"|css}}' : '{{"aligulac-dark"|css}}';
+                  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                  var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                  document.documentElement.setAttribute('data-theme', newTheme);
                 }
               });
-            </script>
-          </footer>
+            </script>          </footer>
         </div>
       </div>
     </div>
