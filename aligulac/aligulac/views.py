@@ -23,6 +23,7 @@ from aligulac.settings import (
     DUMP_PATH,
     PROJECT_PATH,
     LANGUAGES,
+    STATIC_ROOT,
 )
 from aligulac.tools import (
     base_ctx,
@@ -40,6 +41,7 @@ from ratings.models import (
     HOTS,
     LOTV,
     Match,
+    Period,
     Player,
     Rating,
     WOL,
@@ -417,8 +419,14 @@ def db(request):
 
     try:
         base['updated'] = datetime.fromtimestamp(os.stat(os.path.join(PROJECT_PATH, 'update')).st_mtime)
-    except:
-        base['updated'] = None
+    except (FileNotFoundError, OSError):
+        try:
+            latest = Period.objects.filter(computed=True).latest('id')
+            base['updated'] = datetime.combine(latest.end, datetime.min.time())
+        except Period.DoesNotExist:
+            base['updated'] = None
+
+    base['has_log'] = os.path.exists(os.path.join(STATIC_ROOT, 'update.txt'))
 
     base.update({
         'noffline': base['nmatches'] - base['nonline'],

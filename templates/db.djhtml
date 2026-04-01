@@ -26,8 +26,10 @@ dump. Called from aligulac.views.db.
               {% trans "Last ratings update" %}
             </td>
             <td style="width: 60%">
-              {{ updated|date:"DATETIME_FORMAT" }} (UTC {{ updated|date:"O" }})
+              {{ updated|date:"DATETIME_FORMAT" }} (UTC {{ updated|date:"O" }})
+              {% if has_log %}
               (<a href="{{ "update.txt"|static }}">{% trans "log" %}</a>)
+              {% endif %}
             </td>
           </tr>
           <tr>
