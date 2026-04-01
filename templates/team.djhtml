@@ -5,6 +5,7 @@ This shows a team page. Called from ratings.teamviews.team.
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load sniplates %}
 {% load i18n %}
 
@@ -110,7 +111,7 @@ This shows a team page. Called from ratings.teamviews.team.
               <td class="text-right ibox-left" style="width: 40%">{% trans "Players" %}</td>
               <td style="width: 60%">
                 {{nplayers}}
-                ({% if nprotoss %}{{nprotoss}} <img src="{{'P'|img}}">{% if nterran or nzerg %},{% else %}){% endif %}{% endif %} {% if nterran %}{{nterran}} <img src="{{'T'|img}}">{% if nzerg %},{% else %}){% endif %}{% endif %} {% if nzerg %}{{nzerg}} <img src="{{'Z'|img}}">){% endif %}
+                ({% if nprotoss %}{{nprotoss}} {% race_icon 'P' size=16 %}{% if nterran or nzerg %},{% else %}){% endif %}{% endif %} {% if nterran %}{{nterran}} {% race_icon 'T' size=16 %}{% if nzerg %},{% else %}){% endif %}{% endif %} {% if nzerg %}{{nzerg}} {% race_icon 'Z' size=16 %}){% endif %}
               </td>
             </tr>
           {% endif %}
@@ -238,7 +239,7 @@ This shows a team page. Called from ratings.teamviews.team.
                   {% endif %}
                 </td>
                 <td class="rl_icon">
-                  <img src="{{ tm.player.race|img }}" alt="{{tm.player.race}}">
+                  {% race_icon tm.player.race size=16 %}
                 </td>
                 <td>
                   <a href="/players/{{tm.player.id}}-{{tm.player.tag|urlfilter}}/">{{tm.player.tag}}</a>

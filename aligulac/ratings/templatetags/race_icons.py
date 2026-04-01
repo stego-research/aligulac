@@ -19,6 +19,11 @@ RACE_SVGS = {
 }
 
 @register.simple_tag
+def race_icons_js():
+    import json
+    return mark_safe(json.dumps(RACE_SVGS))
+
+@register.simple_tag
 def race_icon(race, size=24, cls=""):
     race = race.upper() if race else ""
     if race not in RACE_SVGS:

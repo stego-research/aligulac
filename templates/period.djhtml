@@ -5,6 +5,7 @@ This template shows a rating list for a given period.
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% block title %}{% blocktrans with n=period.id %}List {{n}}{% endblocktrans %}{% endblock %}
@@ -335,14 +336,14 @@ This template shows a rating list for a given period.
           <tr class="small">
             <td class="text-right ibox-left">{% trans "Leading race" %}</td>
             <td>
-              <img src="{{ period|oprace|img }}" alt="{{ period|oprace|racefull }}" /> 
+              {% race_icon period|oprace size=16 %} 
               {{ period|oprace|racefull }} ({{ period|oppctg }}%)
             </td>
           </tr>
           <tr class="small">
             <td class="text-right ibox-left">{% trans "Lagging race" %}</td>
             <td>
-              <img src="{{ period|uprace|img }}" alt="{{ period|uprace|racefull }}" /> 
+              {% race_icon period|uprace size=16 %} 
               {{ period|uprace|racefull }} ({{ period|uppctg }}%)
             </td>
           </tr>

@@ -27,6 +27,7 @@ In general, if you're trying to figure out how this works, may God have mercy on
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% if not lm_notable %}
@@ -195,7 +196,7 @@ In general, if you're trying to figure out how this works, may God have mercy on
                   <img src="{{ m.pla.country|lower|img:"flags" }}" alt="{{ m.pla.country }}">
                 {% endif %}
                 {% if m.pla.race %}
-                  <img src="{{ m.pla.race|img }}" alt="{{ m.pla.race }}">
+                  {% race_icon m.pla.race size=16 %}
                 {% endif %}
               </td>
               <td class="lm_score" style="vertical-align: middle;">
@@ -219,7 +220,7 @@ In general, if you're trying to figure out how this works, may God have mercy on
               </td>
               <td class="lm_plb {% if m.plb.score >= m.pla.score %}winner{% else %}loser{% endif %}" style="vertical-align: middle;">
                 {% if m.plb.race %}
-                  <img src="{{ m.plb.race|img }}" alt="{{ m.plb.race }}">
+                  {% race_icon m.plb.race size=16 %}
                 {% endif %}
                 {% if m.plb.country %}
                   <img src="{{ m.plb.country|lower|img:"flags" }}" alt="{{ m.plb.country }}">

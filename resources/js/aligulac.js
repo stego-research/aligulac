@@ -165,7 +165,7 @@
         obj.key = obj.tag + " " + obj.id;
         team = (obj.teams && obj.teams.length > 0 ? "<span class='autocomp-team pull-right'>" + obj.teams[0][0] + "</span>" : '');
         flag = (obj.country ? "<img src='" + (flags_dir + obj.country.toLowerCase()) + ".png' />" : '');
-        race = "<img src='" + (races_dir + obj.race.toUpperCase()) + ".png' />";
+        race = getRaceIcon(obj.race);
         name = "<span>" + obj.tag + "</span>";
         return "<a>" + flag + race + name + team + "</a>";
       case 'team':

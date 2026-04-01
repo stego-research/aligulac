@@ -14,6 +14,7 @@ To use, you should define the following blocks:
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 {% load sniplates %}
 {% load_widgets common="forms.djhtml" %}
@@ -194,7 +195,19 @@ To use, you should define the following blocks:
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
      var flags_dir = '{{"flags/"|imgdir}}';
-     var races_dir = '{{"/"|imgdir}}';
+     var race_svgs = {% race_icons_js %};
+     function getRaceIcon(race, size) {
+       race = race ? race.toUpperCase() : "";
+       if (!race_svgs[race]) return "";
+       var data = race_svgs[race];
+       var width = size || 16;
+       var height = size || 16;
+       if (race === 'P') {
+         width = Math.round(width * 0.85);
+         height = Math.round(height * 1.2);
+       }
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;">' + data.path + '</svg>';
+     }
      var autocomp_strings = {
        'Players': '{% trans "Players" %}',
        'Teams': '{% trans "Teams" %}',

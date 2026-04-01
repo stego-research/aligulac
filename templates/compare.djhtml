@@ -5,6 +5,7 @@ Player comparison
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% block title %}{% trans "Comparing players" %}{% endblock %}
@@ -22,7 +23,7 @@ Player comparison
               {% for p in players %}
                 <th class="text-right">
                   <a href="{{p|player_url}}" target="_blank">
-                    <img src="{{p.race|img}}"> {{ p.tag }}
+                    {% race_icon p.race size=16 %} {{ p.tag }}
                   </a>
                   <br>
                   <a href="/periods/latest/?nats={{ p.country }}" target="_blank">

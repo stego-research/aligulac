@@ -5,6 +5,7 @@ This is the template for the historical overview page, showing all the ranking l
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% block title %}{% trans "Historical overview" %}{% endblock %}
@@ -30,9 +31,9 @@ This is the template for the historical overview page, showing all the ranking l
           {% for period in periods %}
             <tr>
               <td><a href="/periods/{{ period.id }}/">{{ period.end|date:"DATE_FORMAT" }}</a></td>
-              <td class="ho_icon"><img src="{{ period|oprace|img }}" alt="{{ period|oprace }}"></td>
+              <td class="ho_icon">{% race_icon period|oprace size=16 %}</td>
               <td class="ho_pctg">{{ period|oppctg }}%</td>
-              <td class="ho_icon"><img src="{{ period|uprace|img }}" alt="{{ period|uprace }}"></td>
+              <td class="ho_icon">{% race_icon period|uprace size=16 %}</td>
               <td class="ho_pctg">{{ period|uppctg }}%</td>
               <td class="ho_num">{{period.num_retplayers|add:period.num_newplayers}}</td>
               <td class="ho_num">{{period.num_newplayers}}</td>

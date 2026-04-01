@@ -5,6 +5,7 @@ This is the template for the earnings of a player. It's called from ratings.view
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load humanize %}
 {% load i18n %}
 
@@ -148,7 +149,7 @@ This is the template for the earnings of a player. It's called from ratings.view
                   {% endif %}
                 </td>
                 <td class="ea_icon">
-                  <img src="{{ e.playerobj.race|img }}" alt="{{ e.playerobj.race }}">
+                  {% race_icon e.playerobj.race size=16 %}
                 </td>
                 <td class="ea_name">
                   <a href="/players/{{ e.playerobj.id }}-{{ e.playerobj.tag|urlfilter }}/">

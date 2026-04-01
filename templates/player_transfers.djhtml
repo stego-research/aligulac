@@ -1,6 +1,7 @@
 {% extends "index.djhtml" %}
    
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% block title %}{% trans "Recent player transfers" %}{% endblock %}
@@ -31,7 +32,7 @@
                 {% endif %}
               </td>
               <td class="rl_icon">
-                <img src="{{ trade.player.race|img }}" alt="{{ trade.player.race }}">
+                {% race_icon trade.player.race size=16 %}
               </td>
               <td>
                 <a href="/players/{{ trade.player.id }}-{{ trade.player.tag|urlfilter }}/">

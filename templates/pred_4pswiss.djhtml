@@ -5,6 +5,7 @@ This is the prediction page for four player Swiss groups. It's called from ratin
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% block title %}{% trans "Dual tournament" %}{% endblock %}
@@ -39,7 +40,7 @@ This is the prediction page for four player Swiss groups. It's called from ratin
                 {% endif %}
               </td>
               <td class="rl_icon">
-                <img src="{{ e.player.race|img }}" alt="{{ e.player.race }}" class="btm" />
+                {% race_icon e.player.race size=16 cls="btm" %}
               </td>
               <td>
                 <a href="/players/{{e.player.id}}-{{e.player.tag|urlfilter}}/">{{ e.player.tag }}</a>
