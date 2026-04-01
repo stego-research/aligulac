@@ -353,13 +353,21 @@ def flag(value):
     if not value:
         return ""
     
-    # Handle special cases if necessary (e.g., 'uk' -> 'gb', 'en' -> 'gb-eng' or similar)
-    # lipis/flag-icons uses ISO 3166-1-alpha-2
-    code = value.lower()
-    if code == 'uk':
-        code = 'gb'
-    elif code == 'en':
-        code = 'gb-eng'
+    # Normalize: take first part of locale if present (e.g. en-us -> en)
+    code = value.lower().split('-')[0].split('_')[0]
+    
+    # lipis/flag-icons uses ISO 3166-1-alpha-2 country codes.
+    # We map some common language codes to their representative country flags.
+    mapping = {
+        'en': 'gb',
+        'uk': 'gb',
+        'nb': 'no',
+        'zh': 'cn',
+        'da': 'dk',
+        'ko': 'kr',
+        'ja': 'jp',
+    }
+    code = mapping.get(code, code)
     
     return mark_safe(f'<span class="fi fi-{code}"></span>')
 

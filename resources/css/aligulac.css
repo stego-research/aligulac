@@ -536,8 +536,15 @@ div.text, div.text > p, div.text > ul > li { text-align: justify; }
 }
 
 /* Keep race and flag icons apart */
-.player img, .ui-corner-all img, .lm_plb img { padding-right: 0.3em; }
-.playerleft img, .lm_pla img { padding-left: 0.3em; }
+.player img, .ui-corner-all img, .lm_plb img, .player .fi, .ui-corner-all .fi, .lm_plb .fi { padding-right: 0.3em; }
+.playerleft img, .lm_pla img, .playerleft .fi, .lm_pla .fi { padding-left: 0.3em; }
+
+.fi {
+    vertical-align: middle;
+    width: 1.33333333em;
+    line-height: 1em;
+    display: inline-block;
+}
 
 /* Event manager tree */
 .tree-node {

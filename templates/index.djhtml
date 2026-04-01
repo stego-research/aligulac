@@ -122,7 +122,7 @@ To use, you should define the following blocks:
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-muted">
           <form action="/language/" method="POST">
             {% trans "Language" %}:
-            <a href="#" class="langbtn"><span class="fi fi-{{ lang|lower }}"></span></a>
+            <a href="#" class="langbtn">{{ lang|flag }}</a>
             <input type="hidden" name="return" value="{{ cur_path }}" />
           </form>
         </div>
@@ -197,6 +197,21 @@ To use, you should define the following blocks:
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
      var flags_dir = '{{"flags/"|imgdir}}';
+     function getFlag(code) {
+       if (!code) return "";
+       code = code.toLowerCase().split('-')[0].split('_')[0];
+       var mapping = {
+         'en': 'gb',
+         'uk': 'gb',
+         'nb': 'no',
+         'zh': 'cn',
+         'da': 'dk',
+         'ko': 'kr',
+         'ja': 'jp'
+       };
+       if (mapping[code]) code = mapping[code];
+       return '<span class="fi fi-' + code + '"></span>';
+     }
      var race_svgs = {% race_icons_js %};
      function getRaceIcon(race, size) {
        race = race ? race.toUpperCase() : "";
