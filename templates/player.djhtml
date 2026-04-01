@@ -122,7 +122,6 @@ This is the template for the main player page, called from ratings.views.player.
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Protoss" %}',
-           color: '#00dd00',
            lineWidth: 1,
            dashStyle: 'Dash',
            enableMouseTracking: false,
@@ -134,7 +133,6 @@ This is the template for the main player page, called from ratings.views.player.
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Terran" %}',
-           color: '#0000dd',
            lineWidth: 1,
            dashStyle: 'Dash',
            enableMouseTracking: false,
@@ -146,7 +144,6 @@ This is the template for the main player page, called from ratings.views.player.
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Zerg" %}',
-           color: '#dd0000',
            lineWidth: 1,
            dashStyle: 'Dash',
            enableMouseTracking: false,
@@ -173,7 +170,6 @@ This is the template for the main player page, called from ratings.views.player.
            {% comment %}Translators: Stories are the dots on a player's rating chart.{% endcomment %}
            name: '{% trans "Stories" %}',
            type: 'scatter',
-           color: '#ffaa00',
            yAxis: 0,
            marker: {
              enabled: true,
@@ -190,7 +186,6 @@ This is the template for the main player page, called from ratings.views.player.
                   {
            name: '{% trans "Team switches" %}',
            type: 'scatter',
-           color: '#FF0000',
            yAxis: 0,
            marker: {
              enabled: true,
