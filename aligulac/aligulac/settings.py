@@ -79,7 +79,7 @@ CACHES = {
     }
 }
 
-if 'redis' in local.CACHE_BACKEND.lower():
+if local.CACHE_BACKEND == 'django_redis.cache.RedisCache':
     CACHES['default'].update({
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',

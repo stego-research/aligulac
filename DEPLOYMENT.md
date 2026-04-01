@@ -60,11 +60,11 @@ The application is configured via environment variables. These can be passed to 
 To use a shared Redis cache across multiple parallel ECS instances (recommended for consistent shared page caching across instances):
 
 1. Set `CACHE_BACKEND="django_redis.cache.RedisCache"`.
-2. Set `CACHE_LOCATION="redis://redis.example.internal:6379/1"`.
+2. Set `CACHE_LOCATION="redis://prod-redis.internal.stego.ai:6379"`.
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `CACHE_DB` | Redis database index. | `1` |
+| `CACHE_DB` | Redis database index (Source of truth). | `1` |
 | `CACHE_PREFIX` | Key prefix for the cache to avoid collisions. | `aligulac` |
 | `REDIS_PASSWORD` | Password for Redis authentication (optional). | `None` |
 | `VALKEY_PASSWORD` | Password for Valkey authentication (optional). | `None` |
