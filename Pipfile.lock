@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7e349242e77f854a10e7c3f75947772a1ca37bc183e2b8b505cf19f0987899de"
+            "sha256": "c40632f40e0968fb3fed0daab0c0d85c3982ee3d5a2d8656fbf302d1e8e82024"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -84,6 +84,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==6.2.0"
+        },
+        "django-redis": {
+            "hashes": [
+                "sha256:20bf0063a8abee567eb5f77f375143c32810c8700c0674ced34737f8de4e36c0",
+                "sha256:2d9cb12a20424a4c4dde082c6122f486628bae2d9c2bee4c0126a4de7fda00dd"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==6.0.0"
         },
         "django-six": {
             "hashes": [
@@ -345,6 +354,14 @@
             ],
             "index": "pypi",
             "version": "==2019.1"
+        },
+        "redis": {
+            "hashes": [
+                "sha256:64a6ea7bf567ad43c964d2c30d82853f8df927c5c9017766c55a1d1ed95d18ad",
+                "sha256:a9c74a5c893a5ef8455a5adb793a31bb70feb821c86eccb62eebef5a19c429ec"
+            ],
+            "markers": "python_version >= '3.10'",
+            "version": "==7.4.0"
         },
         "s3transfer": {
             "hashes": [
