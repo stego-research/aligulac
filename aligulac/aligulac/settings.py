@@ -88,6 +88,8 @@ if local.CACHE_BACKEND == 'django_redis.cache.RedisCache':
         },
         'KEY_PREFIX': getattr(local, 'CACHE_PREFIX', 'aligulac'),
     })
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
 
 CACHE_TIMES = {
     # Trivially constant pages, one day
