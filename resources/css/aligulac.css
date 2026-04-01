@@ -166,12 +166,13 @@ body {
     color: var(--fg-secondary);
     font-family: var(--font-main);
     font-size: var(--font-size-base);
-    padding-top: 30px;
+    padding-top: var(--spacing-sm);
     padding-bottom: 80px;
 }
 
 /* Title text ('ALIGULAC') and subheading */
 h1 {
+    margin-top: var(--spacing-md);
     font-family: var(--font-title);
     font-size: var(--font-size-h1);
     letter-spacing: 0.6em;
