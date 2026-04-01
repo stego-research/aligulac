@@ -45,14 +45,20 @@ dt = datetime.now()
 info("Dumping full database.")
 
 pg_dump = [
-    "pg_dump", "-O", "-c", "-U",
-    DATABASES['default']['USER'],
+    "pg_dump", "-O", "-c",
+    "-U", DATABASES['default']['USER'],
+    "-h", DATABASES['default']['HOST'],
+    "-p", str(DATABASES['default']['PORT']),
     DATABASES['default']['NAME']
 ]
 
+env = os.environ.copy()
+if DATABASES['default']['PASSWORD']:
+    env['PGPASSWORD'] = DATABASES['default']['PASSWORD']
+
 full_path = os.path.join(DUMP_PATH, 'full.sql.gz')
 with open(full_path, "w") as f:
-    p_pg = Popen(pg_dump, stdout=subprocess.PIPE)
+    p_pg = Popen(pg_dump, stdout=subprocess.PIPE, env=env)
     p_gzip = Popen(["gzip"], stdin=p_pg.stdout, stdout=f)
     p_gzip.communicate()
 # }}}
@@ -63,7 +69,7 @@ info("Dumping public database.")
 
 public_path = os.path.join(DUMP_PATH, 'aligulac.sql')
 
-pub_pg_dump = pg_dump[:5]
+pub_pg_dump = pg_dump[:9]
 
 for tbl in public_tables:
     pub_pg_dump.extend(['-t', tbl])
@@ -71,7 +77,7 @@ for tbl in public_tables:
 pub_pg_dump.append(pg_dump[-1])
 
 with open(public_path, 'w') as f:
-    subprocess.call(pub_pg_dump, stdout=f)
+    subprocess.call(pub_pg_dump, stdout=f, env=env)
 
 
 # }}}
