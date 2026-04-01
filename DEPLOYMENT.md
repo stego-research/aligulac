@@ -57,7 +57,7 @@ The application is configured via environment variables. These can be passed to 
 | `EXCHANGE_ID` | API key for openexchangerates.org. | `""` |
 
 ### **Redis Cache (Recommended for Multi-instance)**
-To use a shared Redis cache across multiple parallel ECS instances (required for consistent page caching and session management):
+To use a shared Redis cache across multiple parallel ECS instances (recommended for consistent shared page caching across instances):
 
 1. Set `CACHE_BACKEND="django_redis.cache.RedisCache"`.
 2. Set `CACHE_LOCATION="redis://redis.example.internal:6379/1"`.
