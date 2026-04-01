@@ -1,6 +1,7 @@
 # {{{ Imports
 import os
 import json
+import logging
 import random
 import shlex
 import string
@@ -12,6 +13,7 @@ from itertools import chain
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
 
 from django import forms
 from django.contrib.auth import (
@@ -48,6 +50,8 @@ from ratings.tools import get_latest_period, find_player
 
 # }}}
 
+logger = logging.getLogger(__name__)
+
 
 # {{{ get_s3_info: Returns metadata and a pre-signed URL for an S3 object.
 def get_s3_info(key, expiration=3600):
@@ -77,7 +81,11 @@ def get_s3_info(key, expiration=3600):
             'modified': response['LastModified'],
             'url': url,
         }
-    except:
+    except (ClientError, NoCredentialsError, EndpointConnectionError) as e:
+        logger.error(f"Error fetching S3 info for key '{key}': {e}")
+        return None
+    except Exception as e:
+        logger.exception(f"Unexpected error fetching S3 info for key '{key}': {e}")
         return None
 
 
