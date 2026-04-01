@@ -47,9 +47,11 @@ ALLOWED_HOSTS = get_env('ALLOWED_HOSTS', '.aligulac.com,localhost').split(',')
 # Necessary for django debug toolbar to work
 INTERNAL_IPS = get_env('INTERNAL_IPS', '127.0.0.1').split(',')
 
-# Cache backend
+# Cache settings
 CACHE_BACKEND = get_env('CACHE_BACKEND', 'django.core.cache.backends.dummy.DummyCache')
 CACHE_LOCATION = get_env('CACHE_LOCATION', '/app/aligulac/untracked/cache/')
+CACHE_DB = get_env('CACHE_DB', '1')
+CACHE_PREFIX = get_env('CACHE_PREFIX', 'aligulac')
 
 # Debug mode
 DEBUG = get_env('DEBUG', 'True').lower() == 'true'

@@ -79,6 +79,15 @@ CACHES = {
     }
 }
 
+if 'redis' in local.CACHE_BACKEND.lower():
+    CACHES['default'].update({
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'DB': getattr(local, 'CACHE_DB', '1'),
+        },
+        'KEY_PREFIX': getattr(local, 'CACHE_PREFIX', 'aligulac'),
+    })
+
 CACHE_TIMES = {
     # Trivially constant pages, one day
     'aligulac.views.h404': 24 * 60 * 60,
