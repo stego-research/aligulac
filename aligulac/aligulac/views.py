@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.db.models import (
     Count,
 )
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
+from django.http import HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import (
     redirect,
     render,
@@ -429,7 +429,7 @@ def db(request):
                 'modified': sql_info['modified'],
                 'gzdump_url': sql_info['url'],
             })
-        
+
         # Also try to get uncompressed if it exists
         uncompressed_info = get_s3_info('aligulac.sql')
         if uncompressed_info:
@@ -715,20 +715,23 @@ def h404(request, exception):
 def h500(request):
     base = base_ctx(request=request)
     return HttpResponseServerError(render_to_string('500.djhtml', base))
+
+
 # }}}
 
 def health_check(request):
     import django.http
     return django.http.HttpResponse('OK', content_type='text/plain')
 
+
 def acknowledgements(request):
     base = base_ctx('About', 'Acknowledgements', request)
-    
+
     # Get top submitters (similar to db view but limited to top 10)
     submitters = [
         u for u in User.objects.all().annotate(nmatches=Count('match')).order_by('-nmatches')
         if u.nmatches > 0
     ][:10]
-    
+
     base.update({'submitters': submitters})
     return render(request, 'acknowledgements.djhtml', base)

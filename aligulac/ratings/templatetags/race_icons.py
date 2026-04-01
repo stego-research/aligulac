@@ -18,26 +18,28 @@ RACE_SVGS = {
     'P': {'viewBox': '0 0 591 1085', 'path': PROTOSS_SVG},
 }
 
+
 @register.simple_tag
 def race_icons_js():
     import json
     return mark_safe(json.dumps(RACE_SVGS))
+
 
 @register.simple_tag
 def race_icon(race, size=24, cls=""):
     race = race.upper() if race else ""
     if race not in RACE_SVGS:
         return ""
-    
+
     data = RACE_SVGS[race]
-    
+
     # Scale Protoss slightly differently to match visual weight, like in REPLAYMAN
     width = size
     height = size
     if race == 'P':
         width = int(size * 0.85)
         height = int(size * 1.2)
-    
+
     svg = f"""<svg 
     width="{width}" 
     height="{height}" 

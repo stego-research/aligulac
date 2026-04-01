@@ -1,7 +1,7 @@
 # {{{ Imports
-import os
 import json
 import logging
+import os
 import random
 import shlex
 import string
@@ -14,7 +14,6 @@ from itertools import chain
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
-
 from django import forms
 from django.contrib.auth import (
     authenticate,
@@ -46,7 +45,6 @@ from ratings.models import (
 )
 from ratings.templatetags.ratings_extras import urlfilter
 from ratings.tools import get_latest_period, find_player
-
 
 # }}}
 

@@ -15,9 +15,11 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+
 # Helper to get env or default
 def get_env(name, default=None):
     return os.environ.get(name, default)
+
 
 from django.utils.translation import gettext_lazy as _
 

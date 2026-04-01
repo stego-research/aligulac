@@ -567,10 +567,14 @@ def results(request, player_id):
 
     # {{{ Statistics
     stats = matches.aggregate(
-        sc_my=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0, output_field=IntegerField())),
-        sc_op=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0, output_field=IntegerField())),
-        msc_my=Count(Case(When(pla=player, sca__gt=F('scb'), then=1), When(plb=player, scb__gt=F('sca'), then=1), output_field=IntegerField())),
-        msc_op=Count(Case(When(pla=player, scb__gt=F('sca'), then=1), When(plb=player, sca__gt=F('scb'), then=1), output_field=IntegerField())),
+        sc_my=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0,
+                       output_field=IntegerField())),
+        sc_op=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0,
+                       output_field=IntegerField())),
+        msc_my=Count(Case(When(pla=player, sca__gt=F('scb'), then=1), When(plb=player, scb__gt=F('sca'), then=1),
+                          output_field=IntegerField())),
+        msc_op=Count(Case(When(pla=player, scb__gt=F('sca'), then=1), When(plb=player, sca__gt=F('scb'), then=1),
+                          output_field=IntegerField())),
     )
 
     base.update({

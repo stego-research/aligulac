@@ -101,6 +101,7 @@ def decompress_file(source):
 compress_file(public_path)
 decompress_file(full_path)
 
+
 # }}}
 
 # {{{ Upload to S3

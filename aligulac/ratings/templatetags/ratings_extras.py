@@ -12,15 +12,14 @@ from django import template
 from django.template.defaultfilters import (
     stringfilter,
 )
+from django.templatetags.static import static as django_static
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-from django.templatetags.static import static as django_static
 
 from aligulac.settings import (
     PRF_NA,
     PRF_INF,
     PRF_MININF,
-    DEBUG,
 )
 from countries import (
     transformations,
@@ -54,7 +53,7 @@ def signify(value):
 def rating_arrow(value):
     if not value or value == 0:
         return ""
-    
+
     # Thresholds from original makearrows
     if abs(value) > 0.1:
         icon = 'arrow_shape_up_stack_2'
@@ -62,12 +61,12 @@ def rating_arrow(value):
         icon = 'arrow_shape_up_stack'
     else:
         icon = 'arrow_shape_up'
-    
+
     color = 'text-success' if value > 0 else 'text-danger'
     style = 'vertical-align: middle; font-size: 1.2em; font-weight: bold; display: inline-block;'
     if value < 0:
         style += ' transform: rotate(180deg);'
-        
+
     return mark_safe(f'<span class="material-symbols-outlined {color}" style="{style}">{icon}</span>')
 
 
@@ -76,7 +75,7 @@ def rating_arrow(value):
 def rank_arrow(diff):
     if not diff or diff == 0:
         return ""
-    
+
     # diff is entry.prev.position - entry.position
     # If positive, rank improved (up)
     icon = 'arrow_shape_up'
@@ -84,7 +83,7 @@ def rank_arrow(diff):
     style = 'vertical-align: middle; font-size: 1.2em; font-weight: bold; display: inline-block;'
     if diff < 0:
         style += ' transform: rotate(180deg);'
-    
+
     return mark_safe(f'<span class="material-symbols-outlined {color}" style="{style}">{icon}</span>')
 
 
@@ -352,10 +351,10 @@ def fonts(value):
 def flag(value):
     if not value:
         return ""
-    
+
     # Normalize: take first part of locale if present (e.g. en-us -> en)
     code = value.lower().split('-')[0].split('_')[0]
-    
+
     # lipis/flag-icons uses ISO 3166-1-alpha-2 country codes.
     # We map some common language codes to their representative country flags.
     mapping = {
@@ -369,7 +368,7 @@ def flag(value):
         'ja': 'jp',
     }
     code = mapping.get(code, code)
-    
+
     return mark_safe(f'<span class="fi fi-{code}"></span>')
 
 
@@ -410,7 +409,7 @@ def imgdir(value):
     value = str(value)
     if not value.startswith('/'):
         value = '/' + value
-    
+
     # Strip leading slash because django_static adds it or STATIC_URL does
     val = value[1:] if value.startswith('/') else value
     return django_static('img/' + val)
@@ -646,6 +645,7 @@ def eventlistend(value, N=None):
 # Model display filters
 
 from ratings.templatetags.race_icons import race_icon
+
 
 # ... (rest of imports remains the same)
 
