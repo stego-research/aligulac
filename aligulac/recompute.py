@@ -153,7 +153,7 @@ if 'debug' not in sys.argv:
     cur.execute('UPDATE player SET current_rating_id = (SELECT rating.id FROM rating '
                 'WHERE rating.period_id=%i AND rating.player_id=player.id)' % latest.id)
 
-    os.system(PROJECT_PATH + 'event_sort.py')
+    os.system(os.path.join(PROJECT_PATH, 'event_sort.py'))
 
 print('[%s] Finished' % str(datetime.now()), flush=True)
 
