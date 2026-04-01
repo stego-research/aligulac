@@ -66,6 +66,12 @@ DUMP_PATH = local.DUMP_PATH
 INTERNAL_IPS = local.INTERNAL_IPS
 EXCHANGE_ID = local.EXCHANGE_ID
 
+S3_BUCKET = getattr(local, 'S3_BUCKET', '')
+S3_ACCESS_KEY = getattr(local, 'S3_ACCESS_KEY', None)
+S3_SECRET_KEY = getattr(local, 'S3_SECRET_KEY', None)
+S3_REGION = getattr(local, 'S3_REGION', 'us-east-1')
+S3_ENDPOINT_URL = getattr(local, 'S3_ENDPOINT_URL', None)
+
 CACHES = {
     'default': {
         'BACKEND': local.CACHE_BACKEND,

@@ -5,9 +5,17 @@ import subprocess
 from datetime import datetime
 from subprocess import Popen
 
+import boto3
+from botocore.config import Config
+
 from aligulac.settings import (
     DATABASES,
     DUMP_PATH,
+    S3_BUCKET,
+    S3_ACCESS_KEY,
+    S3_SECRET_KEY,
+    S3_REGION,
+    S3_ENDPOINT_URL,
 )
 
 public_tables = [
@@ -86,5 +94,35 @@ def decompress_file(source):
 
 compress_file(public_path)
 decompress_file(full_path)
+
+# }}}
+
+# {{{ Upload to S3
+
+def upload_to_s3(source, destination):
+    info("Uploading {} to S3://{}/{}".format(source, S3_BUCKET, destination))
+    s3_kwargs = {
+        'region_name': S3_REGION,
+        'endpoint_url': S3_ENDPOINT_URL,
+        'config': Config(signature_version='s3v4'),
+    }
+    if S3_ACCESS_KEY and S3_SECRET_KEY:
+        s3_kwargs['aws_access_key_id'] = S3_ACCESS_KEY
+        s3_kwargs['aws_secret_access_key'] = S3_SECRET_KEY
+
+    s3 = boto3.client('s3', **s3_kwargs)
+    s3.upload_file(source, S3_BUCKET, destination)
+
+
+if S3_BUCKET:
+    upload_to_s3(os.path.join(DUMP_PATH, 'aligulac.sql'), 'aligulac.sql')
+    upload_to_s3(os.path.join(DUMP_PATH, 'aligulac.sql.gz'), 'aligulac.sql.gz')
+    upload_to_s3(os.path.join(DUMP_PATH, 'full.sql'), 'full.sql')
+    upload_to_s3(os.path.join(DUMP_PATH, 'full.sql.gz'), 'full.sql.gz')
+    # Removing local files after upload as requested "instead of to the local filesystem"
+    os.remove(os.path.join(DUMP_PATH, 'aligulac.sql'))
+    os.remove(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
+    os.remove(os.path.join(DUMP_PATH, 'full.sql'))
+    os.remove(os.path.join(DUMP_PATH, 'full.sql.gz'))
 
 # }}}

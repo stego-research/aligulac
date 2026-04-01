@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+boto3 = "*"
 beautifulsoup4 = "==4.7.1"
 ccy = "==1.0.0"
 django = "~=4.2.0"

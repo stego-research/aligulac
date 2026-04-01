@@ -155,11 +155,19 @@ dump. Called from aligulac.views.db.
         <p>{% blocktrans with span="<span style=\"color: #dd0000;\">" %}The database dump file is currently {{span}}offline</span> for reasons unknown.{% endblocktrans %}</p>
       {% else %}
         <p>
-          {% with dump="aligulac.sql"|static dumpmb=megabytes|floatformat:1 %}
-          {% with gzdump="aligulac.sql.gz"|static gzdumpmb=gz_megabytes|floatformat:1 %}
-          {% with datetime=modified|date:"DATETIME_FORMAT" tz=modified|date:"O" %}
-            {% blocktrans %}You can download a PostgreSQL dump <a href="{{dump}}">here</a> ({{dumpmb}} MiB) or <a href="{{gzdump}}">here</a> ({{gzdumpmb}} MiB gzipped), current as of {{datetime}} (UTC {{tz}}). It is free to use for non-commercial purposes if you credit this website when doing so.{% endblocktrans %}
-          {% endwith %} {% endwith %} {% endwith %}
+          {% if gzdump_url %}
+            {% with dump=dump_url gzdump=gzdump_url %}
+            {% with dumpmb=megabytes|floatformat:1 gzdumpmb=gz_megabytes|floatformat:1 %}
+            {% with datetime=modified|date:"DATETIME_FORMAT" tz=modified|date:"O" %}
+              {% blocktrans with durl=dump gzdurl=gzdump %}You can download a PostgreSQL dump <a href="{{durl}}">here</a> ({{dumpmb}} MiB) or <a href="{{gzdurl}}">here</a> ({{gzdumpmb}} MiB gzipped), current as of {{datetime}} (UTC {{tz}}). It is free to use for non-commercial purposes if you credit this website when doing so.{% endblocktrans %}
+            {% endwith %} {% endwith %} {% endwith %}
+          {% else %}
+            {% with dump="aligulac.sql"|static gzdump="aligulac.sql.gz"|static %}
+            {% with dumpmb=megabytes|floatformat:1 gzdumpmb=gz_megabytes|floatformat:1 %}
+            {% with datetime=modified|date:"DATETIME_FORMAT" tz=modified|date:"O" %}
+              {% blocktrans with durl=dump gzdurl=gzdump %}You can download a PostgreSQL dump <a href="{{durl}}">here</a> ({{dumpmb}} MiB) or <a href="{{gzdurl}}">here</a> ({{gzdumpmb}} MiB gzipped), current as of {{datetime}} (UTC {{tz}}). It is free to use for non-commercial purposes if you credit this website when doing so.{% endblocktrans %}
+            {% endwith %} {% endwith %} {% endwith %}
+          {% endif %}
         </p> 
 
         <p>{% blocktrans %}The dump contains 11 tables. Some columns are foreign keys to tables that have been removed from the dump (primarily involving user accounts). Everything given below is in terms of <strong>PostgreSQL standards</strong>.{% endblocktrans %}</p>
