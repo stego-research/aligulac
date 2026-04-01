@@ -33,31 +33,14 @@ This is the Hall of Fame template. It's called from ratings.views.records.
          text: '{% trans "Click and drag to zoom" %}'
        },
        xAxis: {
-         type: 'datetime',
-         plotLines: [
-           {% for p in patches %}
-           {
-             value: {{ p.0|milliseconds }},
-             color: '#cccccc',
-             width: 2,
-             label: {
-               text: '{{ p.1 }}',
-               verticalAlign: 'bottom',
-               textAlign: 'right',
-               y: -2,
-               style: {
-                 fontSize: '0.8em',
-               }
-             }
-           },
-           {% endfor %}]
+         type: 'datetime'
        },
        yAxis: {
          title: {
            text: '{% trans "Ranking" %}' 
          },
          min: 800,
-         max: 3500
+         max: 4000
        },
        tooltip: {
          enabled: true,

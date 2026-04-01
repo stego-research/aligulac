@@ -32,9 +32,19 @@ To use, you should define the following blocks:
     </style>
     <link rel="stylesheet" href="{{"bootstrap.min"|css}}" type="text/css">
     <link rel="stylesheet" href="{{"jquery-ui.min"|css}}" type="text/css">
-    <link rel="stylesheet" href="{{"aligulac-theme"|css}}" type="text/css">
-    <link href='http://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" id="main-theme" href="{{"aligulac-theme"|css}}" type="text/css">
+    <script type="text/javascript">
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.getElementById('main-theme').href = '{{"aligulac-dark"|css}}';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
     </script>
@@ -158,9 +168,25 @@ To use, you should define the following blocks:
             All data provided by this site is free for non-commercial use.</p>
 
 
-            <p><a href="/about/acknowledgements/">{% trans "Acknowledgements" %}</a> &nbsp;|&nbsp; <a target="_blank" href="http://twitter.com/Sc2Aligulac">Twitter</a> &nbsp;|&nbsp; <a target="_blank" href="https://discord.gg/723Df2yaaw">Discord</a></p>
+            <p><a href="/about/acknowledgements/">{% trans "Acknowledgements" %}</a> &nbsp;|&nbsp; <a target="_blank" href="https://twitter.com/Sc2Aligulac">Twitter</a> &nbsp;|&nbsp; <a target="_blank" href="https://discord.gg/723Df2yaaw">Discord</a> &nbsp;|&nbsp; <a href="#" id="theme-toggle">{% trans "Toggle Dark Mode" %}</a></p>
 
             <span id="disp_short"></span>
+            <script type="text/javascript">
+              document.getElementById('theme-toggle').addEventListener('click', function(e) {
+                e.preventDefault();
+                try {
+                  var currentTheme = localStorage.getItem('theme') || 'light';
+                  var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                  localStorage.setItem('theme', newTheme);
+                  window.location.reload();
+                } catch (err) {
+                  // Fallback if localStorage is restricted
+                  var themeLink = document.getElementById('main-theme');
+                  var isDark = themeLink.href.indexOf('aligulac-dark') !== -1;
+                  themeLink.href = isDark ? '{{"aligulac-theme"|css}}' : '{{"aligulac-dark"|css}}';
+                }
+              });
+            </script>
           </footer>
         </div>
       </div>
@@ -193,9 +219,98 @@ To use, you should define the following blocks:
      });
     </script>
     {% if charts %}
-      <script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
-      <script type="text/javascript" src="http://code.highcharts.com/modules/exporting.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/3.0.10/highcharts.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/3.0.10/modules/exporting.js"></script>
       <script type="text/javascript">
+       (function() {
+         var isDark = false;
+         try {
+           isDark = localStorage.getItem('theme') === 'dark';
+         } catch (e) {}
+         var chartTheme = {
+           colors: isDark ? ["#221133", "#00dd00", "#0000dd", "#dd0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00dd00", "#0000dd", "#dd0000", "#000000", "#ffaa00", "#FF0000"],
+           chart: {
+             backgroundColor: isDark ? '#110022' : '#FFFFFF',
+             plotBackgroundColor: isDark ? '#110022' : '#FFFFFF',
+             resetZoomButton: {
+               theme: {
+                 fill: isDark ? '#221133' : '#FFFFFF',
+                 stroke: isDark ? '#aaddbb' : '#CCCCCC',
+                 style: { color: isDark ? '#ffeeff' : '#333333' },
+                 states: {
+                   hover: {
+                     fill: isDark ? '#110022' : '#E6E6E6',
+                     style: { color: isDark ? '#aaddbb' : '#000000' }
+                   }
+                 }
+               }
+             }
+           },
+           title: { style: { color: isDark ? '#ffeeff' : '#3E576F' } },
+           subtitle: { style: { color: isDark ? '#dccbed' : '#6D869F' } },
+           xAxis: {
+             gridLineColor: isDark ? '#221133' : '#C0C0C0',
+             labels: { style: { color: isDark ? '#dccbed' : '#666' } },
+             lineColor: isDark ? '#221133' : '#C0D0E0',
+             tickColor: isDark ? '#221133' : '#C0D0E0'
+           },
+           yAxis: {
+             gridLineColor: isDark ? '#221133' : '#C0C0C0',
+             labels: { style: { color: isDark ? '#dccbed' : '#666' } },
+             lineColor: isDark ? '#221133' : '#C0D0E0',
+             tickColor: isDark ? '#221133' : '#C0D0E0',
+             title: { style: { color: isDark ? '#dccbed' : '#4d759e' } }
+           },
+           tooltip: {
+             useHTML: true,
+             backgroundColor: isDark ? '#221133' : 'rgba(255, 255, 255, 0.85)',
+             style: { color: isDark ? '#ffeeff' : '#333' }
+           },
+           legend: {
+             itemStyle: { color: isDark ? '#ffeeff' : '#333' },
+             itemHoverStyle: { color: isDark ? '#aaddbb' : '#000' },
+             itemHiddenStyle: { color: isDark ? '#444' : '#CCC' }
+           },
+           exporting: {
+             buttons: {
+               contextButton: {
+                 theme: {
+                   fill: isDark ? '#221133' : '#F7F7F7',
+                   stroke: isDark ? '#110022' : '#CCCCCC',
+                   states: {
+                     hover: {
+                       fill: isDark ? '#110022' : '#E0E0E0',
+                       stroke: isDark ? '#aaddbb' : '#AAA'
+                     }
+                   }
+                 }
+               }
+             }
+           },
+           navigation: {
+             buttonOptions: {
+               symbolStroke: isDark ? '#dccbed' : '#666',
+               theme: { fill: isDark ? '#221133' : '#F7F7F7' }
+             },
+             menuStyle: {
+               background: isDark ? '#221133' : '#FFFFFF',
+               border: isDark ? '1px solid #110022' : '1px solid #A0A0A0',
+               padding: '5px 0'
+             },
+             menuItemStyle: {
+               background: 'none',
+               color: isDark ? '#dccbed' : '#333',
+               padding: '2px 15px'
+             },
+             menuItemHoverStyle: {
+               background: isDark ? '#110022' : '#4572A7',
+               color: isDark ? '#ffeeff' : '#FFFFFF'
+             }
+           }
+         };
+         Highcharts.setOptions(chartTheme);
+       })();
+
        Highcharts.setOptions({
          lang: {
            downloadPNG: '{% trans "Download PNG image" %}',
