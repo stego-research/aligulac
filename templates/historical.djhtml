@@ -56,8 +56,7 @@ This shows the rating history of a player. It's called from ratings.views.player
                 <td class="rl_rating">{{ rating.rating|ratscale }}</td>
                 <td class="rl_icon hidden-xs">
                   {% if rating.prev %}
-                    <img src="{{ rating.rating_diff|makearrows|img }}" style="vertical-align: text-bottom;"
-                         title="{{ rating.rating_diff|ratscalediff|signify }}" />
+                    <span title="{{ rating.rating_diff|ratscalediff|signify }}">{{ rating.rating_diff|rating_arrow }}</span>
                   {% endif %}
                 </td>
                 <td class="rl_rating">
@@ -65,8 +64,7 @@ This shows the rating history of a player. It's called from ratings.views.player
                 </td>
                 <td class="rl_icon hidden-xs">
                   {% if rating.prev %}
-                    <img src="{{ rating.rating_diff_vp|makearrows|img }}" style="vertical-align: text-bottom;"
-                         title="{{ rating.rating_diff_vp|ratscalediff|signify }}" />
+                    <span title="{{ rating.rating_diff_vp|ratscalediff|signify }}">{{ rating.rating_diff_vp|rating_arrow }}</span>
                   {% endif %}
                 </td>
                 <td class="rl_rating">
@@ -74,8 +72,7 @@ This shows the rating history of a player. It's called from ratings.views.player
                 </td>
                 <td class="rl_icon hidden-xs">
                   {% if rating.prev %}
-                    <img src="{{ rating.rating_diff_vt|makearrows|img }}" style="vertical-align: text-bottom;"
-                         title="{{ rating.rating_diff_vt|ratscalediff|signify }}" />
+                    <span title="{{ rating.rating_diff_vt|ratscalediff|signify }}">{{ rating.rating_diff_vt|rating_arrow }}</span>
                   {% endif %}
                 </td>
                 <td class="rl_rating">
@@ -83,8 +80,7 @@ This shows the rating history of a player. It's called from ratings.views.player
                 </td>
                 <td class="rl_icon hidden-xs">
                   {% if rating.prev %}
-                    <img src="{{ rating.rating_diff_vz|makearrows|img }}" style="vertical-align: text-bottom;"
-                         title="{{ rating.rating_diff_vz|ratscalediff|signify }}" />
+                    <span title="{{ rating.rating_diff_vz|ratscalediff|signify }}">{{ rating.rating_diff_vz|rating_arrow }}</span>
                   {% endif %}
                 </td>
                 <td class="text-right">

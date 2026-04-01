@@ -36,7 +36,7 @@ This is the prediction page for four player Swiss groups. It's called from ratin
               <td class="rl_number">{{ forloop.counter }}.</td>
               <td class="rl_icon">
                 {% if e.player.country %}
-                  <img src="{{ e.player.country|lower|img:"flags" }}" alt="{{ e.country }}">
+                  {{ e.player.country|flag }}
                 {% endif %}
               </td>
               <td class="rl_icon">

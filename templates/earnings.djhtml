@@ -145,7 +145,7 @@ This is the template for the earnings of a player. It's called from ratings.view
                 </td>
                 <td class="ea_icon">
                   {% if e.playerobj.country %}
-                    <img src="{{ e.playerobj.country|lower|img:"flags" }}" alt="{{ e.playerobj.country }}">
+                    {{ e.playerobj.country|flag }}
                   {% endif %}
                 </td>
                 <td class="ea_icon">

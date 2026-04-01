@@ -279,9 +279,9 @@ This template shows a rating list for a given period.
               <thead>
                 <tr>
                   <th style="width: 3em;"></th>
-                  <th style="width: 35%;">{% trans "Winners" %} <img src="{{"uparrow"|img}}"></th>
+                  <th style="width: 35%;">{% trans "Winners" %} <span class="material-symbols-outlined text-success" style="vertical-align: middle;">arrow_shape_up</span></th>
                   <th style="width: 3em;"></th>
-                  <th style="width: 35%;">{% trans "Losers" %} <img src="{{"downarrow"|img}}"></th>
+                  <th style="width: 35%;">{% trans "Losers" %} <span class="material-symbols-outlined text-danger" style="vertical-align: middle; display: inline-block; transform: rotate(180deg);">arrow_shape_up</span></th>
                 </tr>
               </thead>
               {% for e in updown %}

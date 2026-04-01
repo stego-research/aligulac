@@ -24,7 +24,7 @@ This is the subroutine for printing a record list, used by records.djhtml.
         <td class="rl_number">{{forloop.counter}}</td>
         <td class="rl_icon">
           {% if h.player.country != "" %}
-            <img src="{{ h.player.country|lower|img:"flags" }}" alt="{{ h.player.country }}">
+            {{ h.player.country|flag }}
           {% endif %}
         </td>
         <td class="rl_icon">

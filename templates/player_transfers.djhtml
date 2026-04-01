@@ -28,7 +28,7 @@
             <tr>
               <td class="rl_icon">
                 {% if trade.player.country %}
-                  <img src="{{ trade.player.country|lower|img:"flags" }}" alt="{{ trade.player.country }}">
+                  {{ trade.player.country|flag }}
                 {% endif %}
               </td>
               <td class="rl_icon">

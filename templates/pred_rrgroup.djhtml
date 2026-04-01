@@ -36,7 +36,7 @@ This is the prediction page for single elimination brackets. It's called from ra
               <td class="rl_number">{{ forloop.counter }}.</td>
               <td class="rl_icon">
                 {% if p.player.country %}
-                  <img src="{{ p.player.country|lower|img:"flags" }}" alt="{{ p.country }}">
+                  {{ p.player.country|flag }}
                 {% endif %}
               </td>
               <td class="rl_icon">
@@ -83,7 +83,7 @@ This is the prediction page for single elimination brackets. It's called from ra
               <td class="rl_number">{{ forloop.counter }}.</td>
               <td class="rl_icon">
                 {% if p.player.country %}
-                  <img src="{{ p.player.country|lower|img:"flags" }}" alt="{{ p.country }}">
+                  {{ p.player.country|flag }}
                 {% endif %}
               </td>
               <td class="rl_icon">

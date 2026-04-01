@@ -49,6 +49,45 @@ def signify(value):
         return '='
 
 
+# rating_arrow: Generates a Material Icon for rating changes
+@register.filter
+def rating_arrow(value):
+    if not value or value == 0:
+        return ""
+    
+    # Thresholds from original makearrows
+    if abs(value) > 0.1:
+        icon = 'arrow_shape_up_stack_2'
+    elif abs(value) > 0.04:
+        icon = 'arrow_shape_up_stack'
+    else:
+        icon = 'arrow_shape_up'
+    
+    color = 'text-success' if value > 0 else 'text-danger'
+    style = 'vertical-align: middle; font-size: 1.2em; font-weight: bold; display: inline-block;'
+    if value < 0:
+        style += ' transform: rotate(180deg);'
+        
+    return mark_safe(f'<span class="material-symbols-outlined {color}" style="{style}">{icon}</span>')
+
+
+# rank_arrow: Generates a Material Icon for rank changes
+@register.filter
+def rank_arrow(diff):
+    if not diff or diff == 0:
+        return ""
+    
+    # diff is entry.prev.position - entry.position
+    # If positive, rank improved (up)
+    icon = 'arrow_shape_up'
+    color = 'text-success' if diff > 0 else 'text-danger'
+    style = 'vertical-align: middle; font-size: 1.2em; font-weight: bold; display: inline-block;'
+    if diff < 0:
+        style += ' transform: rotate(180deg);'
+    
+    return mark_safe(f'<span class="material-symbols-outlined {color}" style="{style}">{icon}</span>')
+
+
 # makearrows: Takes a rating difference and outputs an arrow image
 @register.filter
 def makearrows(value):
@@ -305,6 +344,24 @@ def css(value):
 @stringfilter
 def fonts(value):
     return django_static('fonts/' + value)
+
+
+# flag: Generates a flag-icon span
+@register.filter
+@stringfilter
+def flag(value):
+    if not value:
+        return ""
+    
+    # Handle special cases if necessary (e.g., 'uk' -> 'gb', 'en' -> 'gb-eng' or similar)
+    # lipis/flag-icons uses ISO 3166-1-alpha-2
+    code = value.lower()
+    if code == 'uk':
+        code = 'gb'
+    elif code == 'en':
+        code = 'gb-eng'
+    
+    return mark_safe(f'<span class="fi fi-{code}"></span>')
 
 
 # img: Generates a png-image file URL
@@ -588,10 +645,9 @@ def player(value, arg=None):
     if not isinstance(value, Player):
         return value
 
-    flag = ""
+    flag_html = ""
     if value.country is not None:
-        flag = "<img src='{flag}' />".format(
-            flag=img("flags/" + value.country.lower()))
+        flag_html = flag(value.country)
 
     return mark_safe((
                          "<span class='player'>"
@@ -602,7 +658,7 @@ def player(value, arg=None):
                      ).format(tag=value.tag,
                               safetag=urlfilter(value.tag),
                               id=value.id,
-                              flag=flag,
+                              flag=flag_html,
                               race_svg=race_icon(value.race, size=16),
                               cl=arg if arg is not None else ''))
 
@@ -612,10 +668,9 @@ def playerleft(value, arg=None):
     if not isinstance(value, Player):
         return value
 
-    flag = ""
+    flag_html = ""
     if value.country is not None:
-        flag = "<img src='{flag}' />".format(
-            flag=img("flags/" + value.country.lower()))
+        flag_html = flag(value.country)
 
     return mark_safe((
                          "<span class='playerleft'>"
@@ -626,7 +681,7 @@ def playerleft(value, arg=None):
                      ).format(tag=value.tag,
                               safetag=urlfilter(value.tag),
                               id=value.id,
-                              flag=flag,
+                              flag=flag_html,
                               race_svg=race_icon(value.race, size=16),
                               cl=arg if arg is not None else ''))
 
@@ -636,10 +691,9 @@ def player_no_race(value):
     if not isinstance(value, Player):
         return value
 
-    flag = ""
+    flag_html = ""
     if value.country is not None:
-        flag = "<img src='{flag}' />".format(
-            flag=img("flags/" + value.country.lower()))
+        flag_html = flag(value.country)
 
     return mark_safe((
         "<span class='player'>"
@@ -651,7 +705,7 @@ def player_no_race(value):
         tag=value.tag,
         safetag=urlfilter(value.tag),
         id=value.id,
-        flag=flag))
+        flag=flag_html))
 
 
 @register.filter

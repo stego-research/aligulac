@@ -119,22 +119,18 @@ example.)
               <!-- Up/down icon for rank -->
               <td class="rl_icon {% if not rl_small %}hidden-xs{% endif %}">
                 {% if entry.position and entry.prev.position and rl_pos_arrow %}
-                  {% if entry.prev.position < entry.position %}
-                    <img src="{{"downarrow"|img}}" alt="down"
-                         title="{{entry.prev.position|sub:entry.position|signify}}">
-                  {% elif entry.prev.position > entry.position %}
-                    <img src="{{"uparrow"|img}}" alt="down"
-                         title="{{entry.prev.position|sub:entry.position|signify}}">
-                  {% endif %}
+                  <span title="{{entry.prev.position|sub:entry.position|signify}}">
+                    {{ entry.prev.position|sub:entry.position|rank_arrow }}
+                  </span>
                 {% elif rl_pos_arrow %}
-                  <img src="{{"new"|img}}" alt="new">
+                  <span class="material-symbols-outlined text-info" style="vertical-align: middle; font-size: 1.2em; font-weight: bold;" title="{% trans "New" %}">fiber_new</span>
                 {% endif %}
               </td>
 
               <!-- Flag icon -->
               <td class="rl_icon">
                 {% if entry.player.country %}
-                  <img src="{{entry.player.country|lower|img:"flags"}}" alt="{{entry.player.country}}">
+                  {{entry.player.country|flag}}
                 {% endif %}
               </td>
 
@@ -167,8 +163,7 @@ example.)
               <!-- Up/down icon for rating -->
               <td class="rl_icon {% if not rl_small %}hidden-xs{% endif %}">
                 {% if entry.prev %}
-                  <img src="{{entry.rating_diff|makearrows|img}}"
-                       title="{{entry.rating_diff|ratscalediff|signify}}">
+                  <span title="{{entry.rating_diff|ratscalediff|signify}}">{{entry.rating_diff|rating_arrow}}</span>
                 {% endif %}
               </td>
 
@@ -180,8 +175,7 @@ example.)
               <!-- Up/down icon for rating vP -->
               <td class="rl_icon {% if not rl_small %}hidden-xs{% endif %}">
                 {% if entry.prev %}
-                  <img src="{{entry.rating_diff_vp|makearrows|img}}"
-                       title="{{entry.rating_diff_vp|ratscalediff|signify}}">
+                  <span title="{{entry.rating_diff_vp|ratscalediff|signify}}">{{entry.rating_diff_vp|rating_arrow}}</span>
                 {% endif %}
               </td>
 
@@ -193,8 +187,7 @@ example.)
               <!-- Up/down icon for rating vT -->
               <td class="rl_icon {% if not rl_small %}hidden-xs{% endif %}">
                 {% if entry.prev %}
-                  <img src="{{entry.rating_diff_vt|makearrows|img}}"
-                       title="{{entry.rating_diff_vt|ratscalediff|signify}}">
+                  <span title="{{entry.rating_diff_vt|ratscalediff|signify}}">{{entry.rating_diff_vt|rating_arrow}}</span>
                 {% endif %}
               </td>
 
@@ -206,8 +199,7 @@ example.)
               <!-- Up/down icon for rating vZ -->
               <td class="rl_icon {% if not rl_small %}hidden-xs{% endif %}">
                 {% if entry.prev %}
-                  <img src="{{entry.rating_diff_vz|makearrows|img}}"
-                       title="{{entry.rating_diff_vz|ratscalediff|signify}}">
+                  <span title="{{entry.rating_diff_vz|ratscalediff|signify}}">{{entry.rating_diff_vz|rating_arrow}}</span>
                 {% endif %}
               </td>
 

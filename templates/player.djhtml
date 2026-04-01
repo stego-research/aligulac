@@ -581,7 +581,7 @@ This is the template for the main player page, called from ratings.views.player.
             <td class="text-right ibox-left">{% trans "Country" %}</td>
             <td>
               {% if player.country %}
-                <img src="{{ player.country|lower|img:"flags" }}"> {{countryfull}}
+                {{ player.country|flag }} {{countryfull}}
               {% endif %}
             </td>
           </tr>

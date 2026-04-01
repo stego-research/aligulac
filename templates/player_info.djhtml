@@ -115,7 +115,7 @@
             class="info-row">
           <td class="rl_icon">
             {% if p.country %}
-            <img src="{{ p.country|lower|img:"flags"}}" alt="{{p.country}}" />
+            {{ p.country|flag }}
             {% else %}
             <span class="badge">
               None

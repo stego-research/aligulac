@@ -235,7 +235,7 @@ This shows a team page. Called from ratings.teamviews.team.
               <tr>
                 <td class="rl_icon">
                   {% if tm.player.country != "" %}
-                    <img src="{{ tm.player.country|lower|img:"flags" }}" alt="{{ tm.player.country }}">
+                    {{ tm.player.country|flag }}
                   {% endif %}
                 </td>
                 <td class="rl_icon">

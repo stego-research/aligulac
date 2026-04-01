@@ -193,7 +193,7 @@ In general, if you're trying to figure out how this works, may God have mercy on
                   </div>
                 {% endif %}
                 {% if m.pla.country %}
-                  <img src="{{ m.pla.country|lower|img:"flags" }}" alt="{{ m.pla.country }}">
+                  {{ m.pla.country|flag }}
                 {% endif %}
                 {% if m.pla.race %}
                   {% race_icon m.pla.race size=16 %}
@@ -223,7 +223,7 @@ In general, if you're trying to figure out how this works, may God have mercy on
                   {% race_icon m.plb.race size=16 %}
                 {% endif %}
                 {% if m.plb.country %}
-                  <img src="{{ m.plb.country|lower|img:"flags" }}" alt="{{ m.plb.country }}">
+                  {{ m.plb.country|flag }}
                 {% endif %}
                 {% if m.plb.id %}
                   <a href="/players/{{ m.plb.id }}-{{ m.plb.tag|urlfilter }}/">{{m.plb.tag}}</a>

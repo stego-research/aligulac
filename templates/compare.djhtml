@@ -27,7 +27,7 @@ Player comparison
                   </a>
                   <br>
                   <a href="/periods/latest/?nats={{ p.country }}" target="_blank">
-                    <img src="{{ p.country|lower|img:'flags' }}">
+                    {{ p.country|flag }}
                     {{ p.country|countryfull }}
                   </a>
                   <br>

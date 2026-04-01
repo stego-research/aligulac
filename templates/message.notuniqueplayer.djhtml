@@ -19,7 +19,7 @@
   {% endif %}
 
   {% if p.country %}
-    <img src="{{ p.country|lower|img:"flags" }}" />
+    {{ p.country|flag }}
   {% endif %}
   {% race_icon p.race size=16 %}
 
