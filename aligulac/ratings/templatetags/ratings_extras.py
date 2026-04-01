@@ -363,6 +363,7 @@ def flag(value):
         'uk': 'gb',
         'nb': 'no',
         'zh': 'cn',
+        'zh-hans': 'cn',
         'da': 'dk',
         'ko': 'kr',
         'ja': 'jp',

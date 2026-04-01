@@ -205,6 +205,7 @@ To use, you should define the following blocks:
          'uk': 'gb',
          'nb': 'no',
          'zh': 'cn',
+         'zh-hans': 'cn',
          'da': 'dk',
          'ko': 'kr',
          'ja': 'jp'
