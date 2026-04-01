@@ -177,12 +177,20 @@ This is the template for the match history of a player. It's called from ratings
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
       <p>
         {% with tag=player.tag pctg=sc_my|pctg_add:sc_op mpctg=msc_my|pctg_add:msc_op %}
-          {% blocktrans %}Under these filters, {{tag}} is <strong>{{sc_my}}–{{sc_op}}</strong> <small class="text-muted">({{pctg}}%)</small> in games and <strong>{{msc_my}}–{{msc_op}}</strong> <small class="text-muted">({{mpctg}}%)</small> in matches.{% endblocktrans %}
+          {% blocktrans count total=page_obj.paginator.count %}
+            Under these filters, {{tag}} is <strong>{{sc_my}}–{{sc_op}}</strong> <small class="text-muted">({{pctg}}%)</small> in games and <strong>{{msc_my}}–{{msc_op}}</strong> <small class="text-muted">({{mpctg}}%)</small> in matches ({{ total }} total).
+          {% plural %}
+            Under these filters, {{tag}} is <strong>{{sc_my}}–{{sc_op}}</strong> <small class="text-muted">({{pctg}}%)</small> in games and <strong>{{msc_my}}–{{msc_op}}</strong> <small class="text-muted">({{mpctg}}%)</small> in matches ({{ total }} total).
+          {% endblocktrans %}
         {% endwith %}
       </p>
     </div>
   </div>
 
+  {% include "pagination.djhtml" %}
+
   {% include "matchlist.djhtml" with lm_list=matches lm_header="partial" %}
+
+  {% include "pagination.djhtml" %}
 
 {% endblock %}
