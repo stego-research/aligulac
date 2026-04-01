@@ -60,7 +60,7 @@ The application is configured via environment variables. These can be passed to 
 To use a shared Redis cache across multiple parallel ECS instances (required for consistent page caching and session management):
 
 1. Set `CACHE_BACKEND="django_redis.cache.RedisCache"`.
-2. Set `CACHE_LOCATION="redis://prod-redis.internal.stego.ai:6379/1"`.
+2. Set `CACHE_LOCATION="redis://redis.example.internal:6379/1"`.
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
