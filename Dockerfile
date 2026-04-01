@@ -26,9 +26,10 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Install runtime dependencies (PostgreSQL lib)
+# Install runtime dependencies (PostgreSQL lib and client tools)
 RUN apt-get update && apt-get install -y \
     libpq5 \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy virtualenv and app code from builder
