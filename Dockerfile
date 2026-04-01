@@ -29,7 +29,13 @@ WORKDIR /app
 # Install runtime dependencies (PostgreSQL lib and client tools)
 RUN apt-get update && apt-get install -y \
     libpq5 \
-    postgresql-client \
+    curl \
+    ca-certificates \
+    gnupg \
+    && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg >/dev/null \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update && apt-get install -y \
+    postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy virtualenv and app code from builder
