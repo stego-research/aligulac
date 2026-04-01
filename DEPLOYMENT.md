@@ -66,6 +66,8 @@ To use a shared Redis cache across multiple parallel ECS instances (required for
 | :--- | :--- | :--- |
 | `CACHE_DB` | Redis database index. | `1` |
 | `CACHE_PREFIX` | Key prefix for the cache to avoid collisions. | `aligulac` |
+| `REDIS_PASSWORD` | Password for Redis authentication (optional). | `None` |
+| `VALKEY_PASSWORD` | Password for Valkey authentication (optional). | `None` |
 
 ### **S3 Storage (Database Dumps)**
 If `S3_BUCKET` is configured, the database dump job (`dump.py`) will upload files to S3 and remove them from the local filesystem. Download links on the database status page will generate pre-signed S3 URLs.

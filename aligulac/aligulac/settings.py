@@ -84,6 +84,7 @@ if 'redis' in local.CACHE_BACKEND.lower():
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'DB': getattr(local, 'CACHE_DB', '1'),
+            'PASSWORD': getattr(local, 'REDIS_PASSWORD', None) or getattr(local, 'VALKEY_PASSWORD', None),
         },
         'KEY_PREFIX': getattr(local, 'CACHE_PREFIX', 'aligulac'),
     })
