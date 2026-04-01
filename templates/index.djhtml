@@ -44,7 +44,7 @@ To use, you should define the following blocks:
         } catch (e) {}
       })();
     </script>    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,400i,700,700i&display=swap' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
     </script>

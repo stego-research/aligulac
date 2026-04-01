@@ -1,7 +1,7 @@
 :root {
     /* Fonts */
     --font-title: 'Marcellus SC', Times, serif;
-    --font-main: 'Roboto', sans-serif;
+    --font-main: 'IBM Plex Sans', sans-serif;
     
     /* Font sizes */
     --font-size-h1: 60px;
@@ -156,6 +156,130 @@
     --well-border: #110022;
 }
 
+/* Global Helper Overrides */
+.text-muted {
+    color: var(--fg-muted) !important;
+}
+.text-success {
+    color: var(--msg-success-fg) !important;
+}
+.text-danger {
+    color: var(--msg-error-fg) !important;
+}
+.text-warning {
+    color: var(--msg-warning-fg) !important;
+}
+.text-info {
+    color: var(--msg-info-fg) !important;
+}
+
+/* Pagination */
+.pagination > li > a,
+.pagination > li > span {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--link-color);
+}
+
+.pagination > li > a:hover,
+.pagination > li > a:focus,
+.pagination > li > span:hover,
+.pagination > li > span:focus {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--link-hover-color);
+}
+
+.pagination > .active > a,
+.pagination > .active > span,
+.pagination > .active > a:hover,
+.pagination > .active > span:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span:focus {
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+    color: var(--bg-primary);
+}
+
+.pagination > .disabled > span,
+.pagination > .disabled > span:hover,
+.pagination > .disabled > span:focus,
+.pagination > .disabled > a,
+.pagination > .disabled > a:hover,
+.pagination > .disabled > a:focus {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--fg-disabled);
+}
+
+/* Tabs */
+.nav-tabs {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-tabs > li > a {
+    color: var(--link-color);
+    border-radius: var(--btn-radius) var(--btn-radius) 0 0;
+    transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed);
+}
+
+.nav-tabs > li > a:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color) var(--border-color) transparent;
+    color: var(--link-hover-color);
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+    background-color: var(--bg-primary);
+    color: var(--fg-primary);
+    border: 1px solid var(--border-color);
+    border-bottom-color: transparent;
+}
+
+/* Game Badges */
+.game-badge {
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--fg-secondary);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.25em;
+    margin-right: 0.3em;
+    text-transform: none;
+}
+
+.game-badge-wol { border-color: rgba(0, 100, 255, 0.3); }
+.game-badge-hots { border-color: rgba(150, 0, 255, 0.3); }
+.game-badge-lotv { border-color: rgba(255, 150, 0, 0.3); }
+
+/* Online/Offline Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--fg-secondary);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.25em;
+    text-transform: lowercase;
+}
+
+.status-badge-online { border-color: rgba(0, 255, 0, 0.3); }
+.status-badge-offline { border-color: rgba(255, 0, 0, 0.3); }
+
 /* 
    BASE STYLES & LAYOUT
    --------------------
@@ -198,8 +322,9 @@ h2 {
     position: relative;
 }
 
-h2 small {
+h1 small, h2 small, h3 small {
     margin-left: 0.7em;
+    color: var(--fg-secondary);
 }
 
 /* Subheadings */
@@ -377,6 +502,10 @@ footer {
 }
 
 /* Tables */
+.table > thead > tr > th {
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
 .table > thead > tr > th,
 .table > tbody > tr > th,
 .table > tfoot > tr > th,
@@ -437,6 +566,10 @@ footer {
 .eventheader {
     background: var(--bg-tertiary);
     color: var(--fg-primary);
+}
+
+.eventheader th {
+    border-bottom: 1px solid var(--border-color) !important;
 }
 
 .eventheader-right { font-variant: small-caps; }
@@ -686,23 +819,87 @@ div.tagsinput input {
 }
 
 /* Bootstrap Button Overrides */
-.btn-default, .btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger {
+.btn-default, .btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger,
+.btn-default:focus, .btn-primary:focus, .btn-success:focus, .btn-info:focus, .btn-warning:focus, .btn-danger:focus,
+.btn-default:active, .btn-primary:active, .btn-success:active, .btn-info:active, .btn-warning:active, .btn-danger:active,
+.btn-default.active, .btn-primary.active, .btn-success.active, .btn-info.active, .btn-warning.active, .btn-danger.active {
     background-image: none !important;
     text-shadow: none !important;
     box-shadow: none !important;
+    outline: 0 !important;
     transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease, color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
 .btn-default {
-    background-color: var(--btn-default-bg);
-    color: var(--btn-default-fg);
-    border-color: var(--btn-default-border);
+    background-color: var(--btn-default-bg) !important;
+    color: var(--btn-default-fg) !important;
+    border-color: var(--btn-default-border) !important;
 }
 
-.btn-default:hover, .btn-default:focus {
-    background-color: var(--bg-primary);
-    color: var(--fg-primary);
-    border-color: var(--link-color);
+.btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active {
+    background-color: var(--bg-primary) !important;
+    color: var(--fg-primary) !important;
+    border-color: var(--link-color) !important;
+}
+
+.btn-primary {
+    background-color: var(--link-color) !important;
+    border-color: var(--link-color) !important;
+    color: var(--bg-primary) !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
+    background-color: var(--link-hover-color) !important;
+    border-color: var(--link-hover-color) !important;
+    color: var(--bg-primary) !important;
+}
+
+.btn-success {
+    background-color: var(--msg-success-bg) !important;
+    border-color: var(--msg-success-border) !important;
+    color: var(--msg-success-fg) !important;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active {
+    background-color: var(--msg-success-border) !important;
+    border-color: var(--msg-success-border) !important;
+    color: var(--msg-success-fg) !important;
+}
+
+.btn-info {
+    background-color: var(--msg-info-bg) !important;
+    border-color: var(--msg-info-border) !important;
+    color: var(--msg-info-fg) !important;
+}
+
+.btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active {
+    background-color: var(--msg-info-border) !important;
+    border-color: var(--msg-info-border) !important;
+    color: var(--msg-info-fg) !important;
+}
+
+.btn-warning {
+    background-color: var(--msg-warning-bg) !important;
+    border-color: var(--msg-warning-border) !important;
+    color: var(--msg-warning-fg) !important;
+}
+
+.btn-warning:hover, .btn-warning:focus, .btn-warning:active, .btn-warning.active {
+    background-color: var(--msg-warning-border) !important;
+    border-color: var(--msg-warning-border) !important;
+    color: var(--msg-warning-fg) !important;
+}
+
+.btn-danger {
+    background-color: var(--msg-error-bg) !important;
+    border-color: var(--msg-error-border) !important;
+    color: var(--msg-error-fg) !important;
+}
+
+.btn-danger:hover, .btn-danger:focus, .btn-danger:active, .btn-danger.active {
+    background-color: var(--msg-error-border) !important;
+    border-color: var(--msg-error-border) !important;
+    color: var(--msg-error-fg) !important;
 }
 
 /* Dark Mode specific Highcharts Overrides (moved here but wrapped in data-theme) */

@@ -269,12 +269,13 @@ In general, if you're trying to figure out how this works, may God have mercy on
                   {% if not m.treated %}
                     <img src="{{ "no"|img }}" alt="unrated" title="{% trans "unrated" %}">
                   {% endif %}
-                  <img src="{{ m.game|img }}" alt="{{ m.game }}" title="{% trans m.game %}">
+                  <span class="game-badge game-badge-{{ m.game|lower }}" title="{% trans m.game %}">{{ m.game }}</span>
                   {% comment %}Translators: No spaces{% endcomment %}
                   {% trans "offline,online" as offon %}
-                  <img src="{{ m.offline|yesno:"offline,online"|img }}" 
-                       alt="{{ m.offline|yesno:"offline,online" }}"
-                       title="{{ m.offline|yesno:offon }}">
+                  <span class="status-badge status-badge-{{ m.offline|yesno:"offline,online" }}"
+                        title="{{ m.offline|yesno:offon }}">
+                    {{ m.offline|yesno:offon }}
+                  </span>
                 {% endif %}
                 {% if lm_adm or adm %}
                   <a target="new" href="/admin/ratings/match/{{ m.match_id }}/">
