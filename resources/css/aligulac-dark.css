@@ -417,6 +417,44 @@ td.loser { color: var(--foreground-secondary-dark); opacity: 0.5; }
     color: var(--foreground-primary-dark);
 }
 
+/* Match table layout synchronization */
+.lm_date {
+    width: 17%;
+}
+
+.lm_rta {
+    text-align: right;
+    width: 3.5em;
+}
+
+.lm_pla {
+    text-align: right;
+    width: 23%;
+}
+
+.lm_score {
+    width: 7em;
+    text-align: center;
+}
+
+.lm_plb {
+    width: 23%;
+}
+
+.lm_rtb {
+    text-align: right;
+    width: 3.5em;
+}
+
+.lm_right {
+    text-align: right;
+    width: 17%;
+}
+
+.eventheader-mid {
+    text-align: center !important;
+}
+
 /* Progressive/Help components */
 .progress { background-color: var(--background-secondary-dark); }
 .hline { background: var(--background-secondary-dark); }

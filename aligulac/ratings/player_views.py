@@ -7,12 +7,13 @@ from urllib.parse import urlencode
 
 from dateutil.relativedelta import relativedelta
 from django import forms
-from django.db.models import Sum, Q
+from django.core.paginator import Paginator
+from django.db.models import Sum, Q, Case, When, F, Count, IntegerField
 from django.shortcuts import render, get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
-from aligulac.settings import INACTIVE_THRESHOLD
+from aligulac.settings import INACTIVE_THRESHOLD, SHOW_PER_LIST_PAGE
 from aligulac.tools import (
     base_ctx,
     cache_login_protect,
@@ -561,17 +562,22 @@ def results(request, player_id):
                 r"\s".join(r".*{}.*".format(term) for term in terms)
             )
         )
-    matches = matches.distinct()
+    matches = matches.distinct().order_by('-date', '-id')
     # }}}
 
     # {{{ Statistics
-    disp_matches = display_matches(matches, fix_left=player)
-    base['matches'] = disp_matches
+    stats = matches.aggregate(
+        sc_my=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0, output_field=IntegerField())),
+        sc_op=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0, output_field=IntegerField())),
+        msc_my=Count(Case(When(pla=player, sca__gt=F('scb'), then=1), When(plb=player, scb__gt=F('sca'), then=1), output_field=IntegerField())),
+        msc_op=Count(Case(When(pla=player, scb__gt=F('sca'), then=1), When(plb=player, sca__gt=F('scb'), then=1), output_field=IntegerField())),
+    )
+
     base.update({
-        'sc_my': sum(m['pla']['score'] for m in base['matches']),
-        'sc_op': sum(m['plb']['score'] for m in base['matches']),
-        'msc_my': sum(1 for m in base['matches'] if m['pla']['score'] > m['plb']['score']),
-        'msc_op': sum(1 for m in base['matches'] if m['plb']['score'] > m['pla']['score']),
+        'sc_my': stats['sc_my'] or 0,
+        'sc_op': stats['sc_op'] or 0,
+        'msc_my': stats['msc_my'] or 0,
+        'msc_op': stats['msc_op'] or 0,
     })
 
     recent = matches.filter(date__gte=(date.today() - relativedelta(months=2)))
@@ -585,6 +591,15 @@ def results(request, player_id):
         'vtf': count_matchup_player(recent, player, T),
         'vzf': count_matchup_player(recent, player, Z)
     })
+    # }}}
+
+    # {{{ Pagination
+    paginator = Paginator(matches, SHOW_PER_LIST_PAGE)
+    page_num = get_param(request, 'page', 1)
+    page = paginator.get_page(page_num)
+
+    base['matches'] = display_matches(page.object_list, fix_left=player)
+    base['page_obj'] = page
     # }}}
 
     # {{{ TL Postable
@@ -655,7 +670,7 @@ def results(request, player_id):
 
         return TL_HISTORY_MATCH_TEMPLATE.format(**d)
 
-    recent_matches = disp_matches[:min(10, len(disp_matches))]
+    recent_matches = base['matches'][:min(10, len(base['matches']))]
 
     recent = "\n".join(format_match(m) for m in recent_matches)
 

@@ -1,0 +1,67 @@
+{% comment %}
+Standard pagination template.
+Expects:
+- page_obj: The Paginator page object.
+{% endcomment %}
+
+{% load ratings_extras %}
+{% load i18n %}
+
+{% if page_obj.has_other_pages %}
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+      <nav aria-label="{% trans "Match history pagination" %}">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li>
+              <a href="?{% query_transform page=1 %}" aria-label="{% trans "First page" %}">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+              </a>
+            </li>
+            <li>
+              <a href="?{% query_transform page=page_obj.previous_page_number %}" aria-label="{% trans "Previous page" %}">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="disabled">
+              <span aria-hidden="true">&laquo;&laquo;</span>
+            </li>
+            <li class="disabled">
+              <span aria-hidden="true">&laquo;</span>
+            </li>
+          {% endif %}
+
+          <li class="active" aria-current="page">
+            <span>
+              {% blocktrans with current=page_obj.number total=page_obj.paginator.num_pages %}
+                Page {{ current }} of {{ total }}
+              {% endblocktrans %}
+            </span>
+          </li>
+
+          {% if page_obj.has_next %}
+            <li>
+              <a href="?{% query_transform page=page_obj.next_page_number %}" aria-label="{% trans "Next page" %}">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+            <li>
+              <a href="?{% query_transform page=page_obj.paginator.num_pages %}" aria-label="{% trans "Last page" %}">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="disabled">
+              <span aria-hidden="true">&raquo;</span>
+            </li>
+            <li class="disabled">
+              <span aria-hidden="true">&raquo;&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+{% endif %}
+
