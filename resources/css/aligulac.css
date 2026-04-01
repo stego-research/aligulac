@@ -89,21 +89,21 @@
 
 [data-theme='dark'] {
     /* Colors - Dark Theme Overrides */
-    --bg-primary: #110022;
-    --bg-secondary: #221133;
-    --bg-tertiary: #221133;
+    --bg-primary: #0f0c1a;
+    --bg-secondary: #1c182e;
+    --bg-tertiary: #120a1f;
     
-    --fg-primary: #ffeeff;
-    --fg-secondary: #dccbed;
-    --fg-muted: rgba(238, 221, 255, 0.6);
-    --fg-disabled: rgba(238, 221, 255, 0.4);
+    --fg-primary: #e0d8f0;
+    --fg-secondary: #9a92ac;
+    --fg-muted: rgba(224, 216, 240, 0.5);
+    --fg-disabled: rgba(224, 216, 240, 0.3);
     
-    --link-color: #aaddbb;
-    --link-hover-color: #ffeedd;
+    --link-color: #b3a9cc;
+    --link-hover-color: #dcd0ff;
     
-    --border-color: rgba(220, 203, 237, 0.1);
-    --border-dark: #110022;
-    --border-subtle: rgba(220, 203, 237, 0.05);
+    --border-color: rgba(224, 216, 240, 0.1);
+    --border-dark: #08060f;
+    --border-subtle: rgba(224, 216, 240, 0.05);
     
     --input-bg: #221133;
     --input-border: #110022;
