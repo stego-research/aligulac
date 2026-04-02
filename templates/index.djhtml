@@ -39,8 +39,13 @@ To use, you should define the following blocks:
     <script type="text/javascript">
       (function() {
         try {
-          var theme = localStorage.getItem('theme') || 'light';
-          document.documentElement.setAttribute('data-theme', theme);
+          var theme = localStorage.getItem('theme') || 'system';
+          var resolvedTheme = theme;
+          if (theme === 'system') {
+            resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', resolvedTheme);
+          document.documentElement.setAttribute('data-user-theme', theme);
         } catch (e) {}
       })();
     </script>    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
@@ -168,23 +173,49 @@ To use, you should define the following blocks:
             All data provided by this site is free for non-commercial use.</p>
 
 
-            <p><a href="/about/acknowledgements/">{% trans "Acknowledgements" %}</a> &nbsp;|&nbsp; <a target="_blank" href="https://twitter.com/Sc2Aligulac">Twitter</a> &nbsp;|&nbsp; <a target="_blank" href="https://discord.gg/723Df2yaaw">Discord</a> &nbsp;|&nbsp; <a href="#" id="theme-toggle">{% trans "Toggle Dark Mode" %}</a></p>
+            <p>
+              <a href="/about/acknowledgements/">{% trans "Acknowledgements" %}</a> &nbsp;|&nbsp; 
+              <a target="_blank" href="https://twitter.com/Sc2Aligulac">Twitter</a> &nbsp;|&nbsp; 
+              <a target="_blank" href="https://discord.gg/723Df2yaaw">Discord</a> &nbsp;|&nbsp; 
+              <span class="theme-selector">
+                {% trans "Theme" %}: 
+                <a href="#" class="theme-link" data-theme-set="light">{% trans "Light" %}</a> | 
+                <a href="#" class="theme-link" data-theme-set="dark">{% trans "Dark" %}</a> | 
+                <a href="#" class="theme-link" data-theme-set="system">{% trans "System" %}</a>
+              </span>
+            </p>
 
             <span id="disp_short"></span>
             <script type="text/javascript">
-              document.getElementById('theme-toggle').addEventListener('click', function(e) {
-                e.preventDefault();
-                try {
-                  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                  var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                  localStorage.setItem('theme', newTheme);
-                  window.location.reload();
-                } catch (err) {
-                  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                  var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                  document.documentElement.setAttribute('data-theme', newTheme);
-                }
-              });
+              (function() {
+                var userTheme = localStorage.getItem('theme') || 'system';
+                document.querySelectorAll('.theme-link').forEach(function(el) {
+                  if (el.getAttribute('data-theme-set') === userTheme) {
+                    el.classList.add('active');
+                  }
+                  el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var newTheme = this.getAttribute('data-theme-set');
+                    try {
+                      localStorage.setItem('theme', newTheme);
+                      window.location.reload();
+                    } catch (err) {
+                      var resolvedTheme = newTheme;
+                      if (newTheme === 'system') {
+                        resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                      }
+                      document.documentElement.setAttribute('data-theme', resolvedTheme);
+                      document.documentElement.setAttribute('data-user-theme', newTheme);
+                    }
+                  });
+                });
+
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                  if (localStorage.getItem('theme') === 'system' || !localStorage.getItem('theme')) {
+                    window.location.reload();
+                  }
+                });
+              })();
             </script>          </footer>
         </div>
       </div>
@@ -261,7 +292,12 @@ To use, you should define the following blocks:
        (function() {
          var isDark = false;
          try {
-           isDark = localStorage.getItem('theme') === 'dark';
+           var theme = localStorage.getItem('theme') || 'system';
+           if (theme === 'system') {
+             isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+           } else {
+             isDark = theme === 'dark';
+           }
          } catch (e) {}
          var chartTheme = {
            colors: isDark ? ["#221133", "#00dd00", "#0000dd", "#dd0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00dd00", "#0000dd", "#dd0000", "#000000", "#ffaa00", "#FF0000"],
