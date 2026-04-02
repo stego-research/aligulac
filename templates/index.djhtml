@@ -290,15 +290,7 @@ To use, you should define the following blocks:
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/3.0.10/modules/exporting.js"></script>
       <script type="text/javascript">
        (function() {
-         var isDark = false;
-         try {
-           var theme = localStorage.getItem('theme') || 'system';
-           if (theme === 'system') {
-             isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-           } else {
-             isDark = theme === 'dark';
-           }
-         } catch (e) {}
+         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
          var chartTheme = {
            colors: isDark ? ["#221133", "#00aa00", "#4c8de9", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#0066cc", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
            chart: {
