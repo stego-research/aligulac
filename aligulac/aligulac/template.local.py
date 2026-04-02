@@ -1,9 +1,15 @@
 import os
 
 
-# Helper to get env or default
+# Helper to get env or default, normalizing 'None', 'null', and empty strings to None
 def get_env(name, default=None):
-    return os.environ.get(name, default)
+    val = os.environ.get(name, default)
+    if val is None:
+        return default
+    if isinstance(val, str):
+        if val.lower() in ('none', 'null', ''):
+            return None
+    return val
 
 
 # Dynamically determine base directory

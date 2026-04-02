@@ -16,9 +16,15 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-# Helper to get env or default
+# Helper to get env or default, normalizing 'None', 'null', and empty strings to None
 def get_env(name, default=None):
-    return os.environ.get(name, default)
+    val = os.environ.get(name, default)
+    if val is None:
+        return default
+    if isinstance(val, str):
+        if val.lower() in ('none', 'null', ''):
+            return None
+    return val
 
 
 from django.utils.translation import gettext_lazy as _
@@ -243,7 +249,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
-if S3_CUSTOM_DOMAIN:
+if S3_BUCKET_STATIC and S3_CUSTOM_DOMAIN:
     STATIC_URL = f'https://{S3_CUSTOM_DOMAIN}/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
@@ -266,12 +272,21 @@ AWS_LOCATION = 'static'
 AWS_DEFAULT_ACL = S3_DEFAULT_ACL
 AWS_S3_FILE_OVERWRITE = False
 
-# Enable WhiteNoise or S3 Storage
+# Storage Configuration
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
+
 if S3_BUCKET_STATIC:
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3ManifestStaticFilesStorage'
+    STORAGES["staticfiles"] = {
+        "BACKEND": "storages.backends.s3boto3.S3ManifestStaticFilesStorage",
+    }
 else:
-    # Enable WhiteNoise's CompressedManifestStaticFilesStorage for automatic cache-busting
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STORAGES["staticfiles"] = {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    }
     WHITENOISE_KEEP_ONLY_HASHED_FILES = False
     # Max age for non-hashed files (fallback). Hashed files still get 1 year.
     WHITENOISE_MAX_AGE = 600

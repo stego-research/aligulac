@@ -95,7 +95,9 @@ If `S3_BUCKET_STATIC` is configured, `collectstatic` will upload hashed assets t
 | `S3_ACCESS_KEY` | AWS/R2 Access Key ID. | `None` |
 | `S3_SECRET_KEY` | AWS/R2 Secret Access Key. | `None` |
 | `S3_ENDPOINT_URL` | Custom S3 endpoint (required for Cloudflare R2). | `None` |
-| `S3_DEFAULT_ACL` | S3 ACL (set to `None` for Cloudflare R2). | `None` |
+| `S3_DEFAULT_ACL` | S3 ACL (leave empty/unset for Cloudflare R2). | `None` |
+
+**Note:** Environment variables like `S3_DEFAULT_ACL`, `S3_ENDPOINT_URL`, etc., are normalized: values of `None`, `null`, or an empty string are treated as Python `None`.
 
 **Important:** If `S3_BUCKET_STATIC` is **not** set, the application falls back to **WhiteNoise** to serve assets from the local filesystem with automatic cache-busting.
 
