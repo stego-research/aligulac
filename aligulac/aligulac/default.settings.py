@@ -56,6 +56,23 @@ DUMP_PATH = local.DUMP_PATH
 INTERNAL_IPS = local.INTERNAL_IPS
 EXCHANGE_ID = local.EXCHANGE_ID
 
+# S3/R2 Configuration
+# Database Dumps (AWS S3)
+S3_DB_BUCKET = getattr(local, 'S3_DB_BUCKET', getattr(local, 'S3_BUCKET', ''))
+S3_DB_ACCESS_KEY = getattr(local, 'S3_DB_ACCESS_KEY', getattr(local, 'S3_ACCESS_KEY', None))
+S3_DB_SECRET_KEY = getattr(local, 'S3_DB_SECRET_KEY', getattr(local, 'S3_SECRET_KEY', None))
+S3_DB_REGION = getattr(local, 'S3_DB_REGION', getattr(local, 'S3_REGION', 'us-east-1'))
+S3_DB_ENDPOINT_URL = getattr(local, 'S3_DB_ENDPOINT_URL', getattr(local, 'S3_ENDPOINT_URL', None))
+
+# Static Assets (Cloudflare R2)
+S3_STATIC_BUCKET = getattr(local, 'S3_STATIC_BUCKET', getattr(local, 'S3_BUCKET_STATIC', ''))
+S3_STATIC_ACCESS_KEY = getattr(local, 'S3_STATIC_ACCESS_KEY', getattr(local, 'S3_ACCESS_KEY', None))
+S3_STATIC_SECRET_KEY = getattr(local, 'S3_STATIC_SECRET_KEY', getattr(local, 'S3_SECRET_KEY', None))
+S3_STATIC_REGION = getattr(local, 'S3_STATIC_REGION', getattr(local, 'S3_REGION', 'us-east-1'))
+S3_STATIC_ENDPOINT_URL = getattr(local, 'S3_STATIC_ENDPOINT_URL', getattr(local, 'S3_ENDPOINT_URL', None))
+S3_STATIC_CUSTOM_DOMAIN = getattr(local, 'S3_STATIC_CUSTOM_DOMAIN', getattr(local, 'S3_CUSTOM_DOMAIN', None))
+S3_STATIC_DEFAULT_ACL = getattr(local, 'S3_STATIC_DEFAULT_ACL', getattr(local, 'S3_DEFAULT_ACL', None))
+
 CACHES = {
     'default': {
         'BACKEND': local.CACHE_BACKEND,
