@@ -251,7 +251,7 @@ To use, you should define the following blocks:
      }
 
      /* Optimized: Inline SVGs only where needed (via block race_svgs) */
-     var race_svgs = {% block race_svgs %}{}{% endblock %};
+     var race_svgs = {% block race_svgs %}{% race_icons_js %}{% endblock %};
      function getRaceIcon(race, size) {
        race = race ? race.toUpperCase() : "";
        if (!race_svgs[race]) {

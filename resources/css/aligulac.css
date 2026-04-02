@@ -173,11 +173,11 @@
     --well-bg: #221133;
     --well-border: #110022;
 
-    --race-t: #2196F3;
+    --race-t: #4db6ac;
     --race-z: #CC0000;
     --race-p: #00AA00;
 
-    --race-t-bg: rgba(33, 150, 243, 0.3);
+    --race-t-bg: rgba(77, 182, 172, 0.3);
     --race-z-bg: rgba(204, 0, 0, 0.3);
     --race-p-bg: rgba(0, 170, 0, 0.3);
 }
@@ -532,22 +532,49 @@ footer {
 
 /* Autocomplete styles */
 .ui-autocomplete {
-    padding: 0.3em;
-    font-family: var(--font-main);
-    background-color: var(--bg-secondary);
-    color: var(--fg-secondary);
-    border: 1px solid var(--border-dark);
+    padding: 0.3em !important;
+    font-family: var(--font-main) !important;
+    background-color: var(--bg-secondary) !important;
+    background-image: none !important;
+    color: var(--fg-secondary) !important;
+    border: 1px solid var(--border-dark) !important;
+    z-index: 1050 !important; /* Above navbar */
+}
+
+.ui-menu .ui-menu-item {
+    background-color: var(--bg-secondary) !important;
+    background-image: none !important;
+    color: var(--fg-secondary) !important;
+    border: none !important;
 }
 
 .ui-menu .ui-menu-item a {
-    border-radius: 0;
-    color: var(--fg-secondary);
+    display: block !important;
+    border-radius: 0 !important;
+    color: var(--fg-secondary) !important;
+    padding: 3px 10px !important;
+    background-color: var(--bg-secondary) !important;
+    background-image: none !important;
+    border: none !important;
 }
 
 .ui-menu .ui-menu-item a.ui-state-focus,
+.ui-menu .ui-menu-item a.ui-state-active,
+.ui-menu .ui-menu-item a.ui-state-hover,
 .ui-menu .ui-menu-item a:hover {
-    background-color: var(--bg-primary);
-    color: var(--fg-primary);
+    background-color: var(--navbar-link-active-bg) !important;
+    background-image: none !important;
+    color: var(--fg-primary) !important;
+    text-decoration: none !important;
+    border: none !important;
+    margin: 0 !important;
+}
+
+/* Ensure the widget content background is also correct */
+.ui-widget-content {
+    background-color: var(--bg-secondary) !important;
+    background-image: none !important;
+    color: var(--fg-secondary) !important;
 }
 
 .autocomp-team {
