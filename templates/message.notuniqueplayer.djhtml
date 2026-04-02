@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load ratings_extras %}
+{% load race_icons %}
 
 {% comment %}Translators: matches as in search matches, not SC2 matches{% endcomment %}
 {% trans "Possible matches:" %}
@@ -18,9 +19,9 @@
   {% endif %}
 
   {% if p.country %}
-    <img src="{{ p.country|lower|img:"flags" }}" />
+    {{ p.country|flag }}
   {% endif %}
-  <img src="{{ p.race|img }}" />
+  {% race_icon p.race size=16 %}
 
   {% if not update %}
     <a href="{{ p|player_url }}" target="_blank">{{ p.tag }}</a>

@@ -3,6 +3,7 @@ This file is a part of eventres.djhtml
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load humanize %}
 {% load sniplates %}
 {% load i18n %}
@@ -78,11 +79,11 @@ This file is a part of eventres.djhtml
         </td>
         <td class="pp_icon">
           {% if entry.player.country %}
-            <img src="{{ entry.player.country|lower|img:"flags" }}" alt="{{ entry.player.country }}"/>
+            {{ entry.player.country|flag }}
           {% endif %}
         </td>
         <td class="pp_icon">
-          <img src="{{entry.player.race|img}}" alt="{{entry.player.race}}"/>
+          {% race_icon entry.player.race size=16 %}
         </td>
         <td>
           <a href="/players/{{entry.player.id}}-{{entry.player.tag|urlfilter}}/">
@@ -118,11 +119,11 @@ This file is a part of eventres.djhtml
         </td>
         <td class="pp_icon">
           {% if entry.player.country %}
-          <img src="{{ entry.player.country|lower|img:"flags" }}" alt="{{ entry.player.country }}"/>
+          {{ entry.player.country|flag }}
           {% endif %}
         </td>
         <td class="pp_icon">
-          <img src="{{entry.player.race|img}}" alt="{{entry.player.race}}"/>
+          {% race_icon entry.player.race size=16 %}
         </td>
         <td>
           <a href="/players/{{entry.player.id}}-{{entry.player.tag|urlfilter}}/">

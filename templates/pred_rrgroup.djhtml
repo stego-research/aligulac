@@ -5,6 +5,7 @@ This is the prediction page for single elimination brackets. It's called from ra
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load humanize %}
 {% load i18n %}
 
@@ -35,11 +36,11 @@ This is the prediction page for single elimination brackets. It's called from ra
               <td class="rl_number">{{ forloop.counter }}.</td>
               <td class="rl_icon">
                 {% if p.player.country %}
-                  <img src="{{ p.player.country|lower|img:"flags" }}" alt="{{ p.country }}">
+                  {{ p.player.country|flag }}
                 {% endif %}
               </td>
               <td class="rl_icon">
-                <img src="{{ p.player.race|img }}" alt="{{ p.player.race }}" class="btm">
+                {% race_icon p.player.race size=16 cls="btm" %}
               </td>
               <td>
                 <a href="/players/{{p.player.id}}-{{p.player.tag|urlfilter}}/">{{ p.player.tag }}</a>
@@ -82,11 +83,11 @@ This is the prediction page for single elimination brackets. It's called from ra
               <td class="rl_number">{{ forloop.counter }}.</td>
               <td class="rl_icon">
                 {% if p.player.country %}
-                  <img src="{{ p.player.country|lower|img:"flags" }}" alt="{{ p.country }}">
+                  {{ p.player.country|flag }}
                 {% endif %}
               </td>
               <td class="rl_icon">
-                <img src="{{ p.player.race|img }}" alt="{{ p.player.race }}" class="btm" />
+                {% race_icon p.player.race size=16 cls="btm" %}
               </td>
               <td>
                 <a href="/players/{{p.player.id}}-{{p.player.tag|urlfilter}}/">{{ p.player.tag }}</a>

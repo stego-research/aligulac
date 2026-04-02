@@ -5,6 +5,7 @@ This template shows a rating list for a given period.
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% block title %}{% blocktrans with n=period.id %}List {{n}}{% endblocktrans %}{% endblock %}
@@ -278,9 +279,9 @@ This template shows a rating list for a given period.
               <thead>
                 <tr>
                   <th style="width: 3em;"></th>
-                  <th style="width: 35%;">{% trans "Winners" %} <img src="{{"uparrow"|img}}"></th>
+                  <th style="width: 35%;">{% trans "Winners" %} <span class="material-symbols-outlined text-success" style="vertical-align: middle;">arrow_shape_up</span></th>
                   <th style="width: 3em;"></th>
-                  <th style="width: 35%;">{% trans "Losers" %} <img src="{{"downarrow"|img}}"></th>
+                  <th style="width: 35%;">{% trans "Losers" %} <span class="material-symbols-outlined text-danger" style="vertical-align: middle; display: inline-block; transform: rotate(180deg);">arrow_shape_up</span></th>
                 </tr>
               </thead>
               {% for e in updown %}
@@ -335,15 +336,15 @@ This template shows a rating list for a given period.
           <tr class="small">
             <td class="text-right ibox-left">{% trans "Leading race" %}</td>
             <td>
-              <img src="{{ period|oprace|img }}" alt="{{ period|oprace|racefull }}" /> 
-              {{ period|oprace|racefull }} ({{ period|oppctg }}%)
+              {% race_icon period|oprace size=16 %} 
+              {{ period|oprace|racefull }} ({{ period|oppctg }}%)
             </td>
           </tr>
           <tr class="small">
             <td class="text-right ibox-left">{% trans "Lagging race" %}</td>
             <td>
-              <img src="{{ period|uprace|img }}" alt="{{ period|uprace|racefull }}" /> 
-              {{ period|uprace|racefull }} ({{ period|uppctg }}%)
+              {% race_icon period|uprace size=16 %} 
+              {{ period|uprace|racefull }} ({{ period|uppctg }}%)
             </td>
           </tr>
           <tr class="small">

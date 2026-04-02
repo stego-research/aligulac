@@ -3,6 +3,7 @@ This is the subroutine for printing a record list, used by records.djhtml.
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 <div class="table-responsive">
@@ -23,11 +24,11 @@ This is the subroutine for printing a record list, used by records.djhtml.
         <td class="rl_number">{{forloop.counter}}</td>
         <td class="rl_icon">
           {% if h.player.country != "" %}
-            <img src="{{ h.player.country|lower|img:"flags" }}" alt="{{ h.player.country }}">
+            {{ h.player.country|flag }}
           {% endif %}
         </td>
         <td class="rl_icon">
-          <img src="{{ h.player.race|img }}">
+          {% race_icon h.player.race size=16 %}
         </td>
         <td>
           <a href="/players/{{ h.player.id }}-{{ h.player.tag|urlfilter }}/">{{ h.player.tag }}</a>

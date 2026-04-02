@@ -7,7 +7,13 @@
       the middle 10 columns on a medium display,
       or the full display for smaller devices. -->
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 message m-{{m.type}}">
-        <img class="pull-left" src="{{ m.type|img }}">
+        <span class="material-symbols-outlined">
+          {% if m.type == "info" %}info
+          {% elif m.type == "error" %}error
+          {% elif m.type == "warning" %}warning
+          {% elif m.type == "success" %}check_circle
+          {% else %}info{% endif %}
+        </span>
         <p>
           <strong>{% if m.title %}{{m.title}}{% else %}{{m.type|capfirst}}{% endif %}</strong><br>
           {{ m.text|safe }}

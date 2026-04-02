@@ -1,6 +1,7 @@
 {% extends "index.djhtml" %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load sniplates %}
 {% load i18n %}
 
@@ -114,7 +115,7 @@
             class="info-row">
           <td class="rl_icon">
             {% if p.country %}
-            <img src="{{ p.country|lower|img:"flags"}}" alt="{{p.country}}" />
+            {{ p.country|flag }}
             {% else %}
             <span class="badge">
               None
@@ -123,7 +124,7 @@
           </td>
 
           <td class="rl_icon">
-            <img src="{{p.race|img}}" alt="{{p.race}}" />
+            {% race_icon p.race size=16 %}
           </td>
 
           <td>

@@ -12,15 +12,14 @@ from django import template
 from django.template.defaultfilters import (
     stringfilter,
 )
+from django.templatetags.static import static as django_static
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-from django.templatetags.static import static as django_static
 
 from aligulac.settings import (
     PRF_NA,
     PRF_INF,
     PRF_MININF,
-    DEBUG,
 )
 from countries import (
     transformations,
@@ -47,6 +46,45 @@ def signify(value):
         return '+' + str(value)
     else:
         return '='
+
+
+# rating_arrow: Generates a Material Icon for rating changes
+@register.filter
+def rating_arrow(value):
+    if not value or value == 0:
+        return ""
+
+    # Thresholds from original makearrows
+    if abs(value) > 0.1:
+        icon = 'arrow_shape_up_stack_2'
+    elif abs(value) > 0.04:
+        icon = 'arrow_shape_up_stack'
+    else:
+        icon = 'arrow_shape_up'
+
+    color = 'text-success' if value > 0 else 'text-danger'
+    style = 'vertical-align: middle; font-size: 1.2em; font-weight: bold; display: inline-block;'
+    if value < 0:
+        style += ' transform: rotate(180deg);'
+
+    return mark_safe(f'<span class="material-symbols-outlined {color}" style="{style}">{icon}</span>')
+
+
+# rank_arrow: Generates a Material Icon for rank changes
+@register.filter
+def rank_arrow(diff):
+    if not diff or diff == 0:
+        return ""
+
+    # diff is entry.prev.position - entry.position
+    # If positive, rank improved (up)
+    icon = 'arrow_shape_up'
+    color = 'text-success' if diff > 0 else 'text-danger'
+    style = 'vertical-align: middle; font-size: 1.2em; font-weight: bold; display: inline-block;'
+    if diff < 0:
+        style += ' transform: rotate(180deg);'
+
+    return mark_safe(f'<span class="material-symbols-outlined {color}" style="{style}">{icon}</span>')
 
 
 # makearrows: Takes a rating difference and outputs an arrow image
@@ -307,6 +345,36 @@ def fonts(value):
     return django_static('fonts/' + value)
 
 
+# flag: Generates a flag-icon span
+@register.filter
+@stringfilter
+def flag(value):
+    if not value:
+        return ""
+
+    # Normalize: try full code first, then base language
+    full_code = value.lower()
+    base_code = full_code.split('-')[0].split('_')[0]
+
+    # lipis/flag-icons uses ISO 3166-1-alpha-2 country codes.
+    # We map some common language codes to their representative country flags.
+    mapping = {
+        'en': 'gb',
+        'uk': 'gb',
+        'nb': 'no',
+        'zh': 'cn',
+        'zh-hans': 'cn',
+        'da': 'dk',
+        'ko': 'kr',
+        'ja': 'jp',
+    }
+
+    final_code = mapping.get(full_code, mapping.get(base_code, base_code))
+
+    # Use the value as the label for accessibility
+    label = value.upper()
+    return mark_safe(f'<span class="fi fi-{final_code}" role="img" aria-label="{label}" title="{label}"></span>')
+
 # img: Generates a png-image file URL
 @register.filter
 @stringfilter
@@ -344,7 +412,7 @@ def imgdir(value):
     value = str(value)
     if not value.startswith('/'):
         value = '/' + value
-    
+
     # Strip leading slash because django_static adds it or STATIC_URL does
     val = value[1:] if value.startswith('/') else value
     return django_static('img/' + val)
@@ -579,27 +647,31 @@ def eventlistend(value, N=None):
 
 # Model display filters
 
+from ratings.templatetags.race_icons import race_icon
+
+
+# ... (rest of imports remains the same)
+
 @register.filter
 def player(value, arg=None):
     if not isinstance(value, Player):
         return value
 
-    flag = ""
+    flag_html = ""
     if value.country is not None:
-        flag = "<img src='{flag}' />".format(
-            flag=img("flags/" + value.country.lower()))
+        flag_html = flag(value.country)
 
     return mark_safe((
                          "<span class='player'>"
                          "<a href='/players/{id}-{safetag}/' class='{cl}'>"
-                         "{flag}<img src='{race}' />{tag}"
+                         "{flag}{race_svg}{tag}"
                          "</a>"
                          "</span>"
                      ).format(tag=value.tag,
                               safetag=urlfilter(value.tag),
                               id=value.id,
-                              flag=flag,
-                              race=img(value.race),
+                              flag=flag_html,
+                              race_svg=race_icon(value.race, size=16),
                               cl=arg if arg is not None else ''))
 
 
@@ -608,22 +680,21 @@ def playerleft(value, arg=None):
     if not isinstance(value, Player):
         return value
 
-    flag = ""
+    flag_html = ""
     if value.country is not None:
-        flag = "<img src='{flag}' />".format(
-            flag=img("flags/" + value.country.lower()))
+        flag_html = flag(value.country)
 
     return mark_safe((
                          "<span class='playerleft'>"
                          "<a href='/players/{id}-{safetag}/' class='{cl}'>"
-                         "{tag}<img src='{race}'>{flag}"
+                         "{tag}{race_svg}{flag}"
                          "</a>"
                          "</span>"
                      ).format(tag=value.tag,
                               safetag=urlfilter(value.tag),
                               id=value.id,
-                              flag=flag,
-                              race=img(value.race),
+                              flag=flag_html,
+                              race_svg=race_icon(value.race, size=16),
                               cl=arg if arg is not None else ''))
 
 
@@ -632,10 +703,9 @@ def player_no_race(value):
     if not isinstance(value, Player):
         return value
 
-    flag = ""
+    flag_html = ""
     if value.country is not None:
-        flag = "<img src='{flag}' />".format(
-            flag=img("flags/" + value.country.lower()))
+        flag_html = flag(value.country)
 
     return mark_safe((
         "<span class='player'>"
@@ -647,7 +717,7 @@ def player_no_race(value):
         tag=value.tag,
         safetag=urlfilter(value.tag),
         id=value.id,
-        flag=flag))
+        flag=flag_html))
 
 
 @register.filter

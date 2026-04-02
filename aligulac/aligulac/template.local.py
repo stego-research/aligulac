@@ -1,8 +1,10 @@
 import os
 
+
 # Helper to get env or default
 def get_env(name, default=None):
     return os.environ.get(name, default)
+
 
 # Dynamically determine base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,7 +41,6 @@ S3_ACCESS_KEY = get_env('S3_ACCESS_KEY', None)
 S3_SECRET_KEY = get_env('S3_SECRET_KEY', None)
 S3_REGION = get_env('S3_REGION', 'us-east-1')
 S3_ENDPOINT_URL = get_env('S3_ENDPOINT_URL', None)
-
 
 # Host names this server accepts connections to
 ALLOWED_HOSTS = get_env('ALLOWED_HOSTS', '.aligulac.com,localhost').split(',')

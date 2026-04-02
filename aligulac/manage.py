@@ -7,6 +7,7 @@ if __name__ == "__main__":
     # and causes issues in Python 3.12 even with Django 2.2
     try:
         import six
+
         # Use getattr for lazy attributes to avoid static analysis issues in IDEs
         sys.modules['django.utils.six'] = six
         moves = getattr(six, 'moves')

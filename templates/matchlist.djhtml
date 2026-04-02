@@ -27,6 +27,7 @@ In general, if you're trying to figure out how this works, may God have mercy on
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 
 {% if not lm_notable %}
@@ -192,10 +193,10 @@ In general, if you're trying to figure out how this works, may God have mercy on
                   </div>
                 {% endif %}
                 {% if m.pla.country %}
-                  <img src="{{ m.pla.country|lower|img:"flags" }}" alt="{{ m.pla.country }}">
+                  {{ m.pla.country|flag }}
                 {% endif %}
                 {% if m.pla.race %}
-                  <img src="{{ m.pla.race|img }}" alt="{{ m.pla.race }}">
+                  {% race_icon m.pla.race size=16 %}
                 {% endif %}
               </td>
               <td class="lm_score" style="vertical-align: middle;">
@@ -219,10 +220,10 @@ In general, if you're trying to figure out how this works, may God have mercy on
               </td>
               <td class="lm_plb {% if m.plb.score >= m.pla.score %}winner{% else %}loser{% endif %}" style="vertical-align: middle;">
                 {% if m.plb.race %}
-                  <img src="{{ m.plb.race|img }}" alt="{{ m.plb.race }}">
+                  {% race_icon m.plb.race size=16 %}
                 {% endif %}
                 {% if m.plb.country %}
-                  <img src="{{ m.plb.country|lower|img:"flags" }}" alt="{{ m.plb.country }}">
+                  {{ m.plb.country|flag }}
                 {% endif %}
                 {% if m.plb.id %}
                   <a href="/players/{{ m.plb.id }}-{{ m.plb.tag|urlfilter }}/">{{m.plb.tag}}</a>
@@ -261,19 +262,26 @@ In general, if you're trying to figure out how this works, may God have mercy on
                 {% elif not lm_noright %}
                   {% if m.messages %}
                     {% for msg in m.messages %}
-                      <img src="{{ msg.type|img }}" title="{{ msg.text }}">
+                      <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.2em;" title="{{ msg.text }}">
+                        {% if msg.type == "info" %}info
+                        {% elif msg.type == "error" %}error
+                        {% elif msg.type == "warning" %}warning
+                        {% elif msg.type == "success" %}check_circle
+                        {% else %}info{% endif %}
+                      </span>
                     {% endfor %}
                   {% endif %}
 
                   {% if not m.treated %}
                     <img src="{{ "no"|img }}" alt="unrated" title="{% trans "unrated" %}">
                   {% endif %}
-                  <img src="{{ m.game|img }}" alt="{{ m.game }}" title="{% trans m.game %}">
+                  <span class="game-badge game-badge-{{ m.game|lower }}" title="{% trans m.game %}">{{ m.game }}</span>
                   {% comment %}Translators: No spaces{% endcomment %}
                   {% trans "offline,online" as offon %}
-                  <img src="{{ m.offline|yesno:"offline,online"|img }}" 
-                       alt="{{ m.offline|yesno:"offline,online" }}"
-                       title="{{ m.offline|yesno:offon }}">
+                  <span class="status-badge status-badge-{{ m.offline|yesno:"offline,online" }}"
+                        title="{{ m.offline|yesno:offon }}">
+                    {{ m.offline|yesno:offon }}
+                  </span>
                 {% endif %}
                 {% if lm_adm or adm %}
                   <a target="new" href="/admin/ratings/match/{{ m.match_id }}/">

@@ -14,6 +14,7 @@ To use, you should define the following blocks:
 {% endcomment %}
 
 {% load ratings_extras %}
+{% load race_icons %}
 {% load i18n %}
 {% load sniplates %}
 {% load_widgets common="forms.djhtml" %}
@@ -32,19 +33,18 @@ To use, you should define the following blocks:
     </style>
     <link rel="stylesheet" href="{{"bootstrap.min"|css}}" type="text/css">
     <link rel="stylesheet" href="{{"jquery-ui.min"|css}}" type="text/css">
-    <link rel="stylesheet" id="main-theme" href="{{"aligulac-theme"|css}}" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" id="main-theme" href="{{"aligulac"|css}}" type="text/css">
     <script type="text/javascript">
       (function() {
         try {
-          var theme = localStorage.getItem('theme');
-          if (theme === 'dark') {
-            document.getElementById('main-theme').href = '{{"aligulac-dark"|css}}';
-          }
+          var theme = localStorage.getItem('theme') || 'light';
+          document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {}
       })();
-    </script>
-    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    </script>    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,400i,700,700i&display=swap' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
     </script>
@@ -122,7 +122,7 @@ To use, you should define the following blocks:
         <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-muted">
           <form action="/language/" method="POST">
             {% trans "Language" %}:
-            <a href="#" class="langbtn"><img src="{{ lang|img:"flags/langs" }}"></a>
+            <a href="#" class="langbtn">{{ lang|flag }}</a>
             <input type="hidden" name="return" value="{{ cur_path }}" />
           </form>
         </div>
@@ -175,19 +175,17 @@ To use, you should define the following blocks:
               document.getElementById('theme-toggle').addEventListener('click', function(e) {
                 e.preventDefault();
                 try {
-                  var currentTheme = localStorage.getItem('theme') || 'light';
+                  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
                   var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                   localStorage.setItem('theme', newTheme);
                   window.location.reload();
                 } catch (err) {
-                  // Fallback if localStorage is restricted
-                  var themeLink = document.getElementById('main-theme');
-                  var isDark = themeLink.href.indexOf('aligulac-dark') !== -1;
-                  themeLink.href = isDark ? '{{"aligulac-theme"|css}}' : '{{"aligulac-dark"|css}}';
+                  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                  var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                  document.documentElement.setAttribute('data-theme', newTheme);
                 }
               });
-            </script>
-          </footer>
+            </script>          </footer>
         </div>
       </div>
     </div>
@@ -198,8 +196,45 @@ To use, you should define the following blocks:
     <script type="text/javascript" src="{{"jquery.tagsInput"|js}}"></script>
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
+     /* Legacy globals for production aligulac.min.js */
+     var races_dir = '{{"races/"|imgdir}}';
      var flags_dir = '{{"flags/"|imgdir}}';
-     var races_dir = '{{"/"|imgdir}}';
+
+     function getFlag(code) {
+       if (!code) return "";
+       var fullCode = code.toLowerCase();
+       var baseCode = fullCode.split('-')[0].split('_')[0];
+       var mapping = {
+         'en': 'gb',
+         'uk': 'gb',
+         'nb': 'no',
+         'zh': 'cn',
+         'zh-hans': 'cn',
+         'da': 'dk',
+         'ko': 'kr',
+         'ja': 'jp'
+       };
+       var finalCode = mapping[fullCode] || mapping[baseCode] || baseCode;
+       return '<span class="fi fi-' + finalCode + '"></span>';
+     }
+
+     /* Optimized: Inline SVGs only where needed (via block race_svgs) */
+     var race_svgs = {% block race_svgs %}{}{% endblock %};
+     function getRaceIcon(race, size) {
+       race = race ? race.toUpperCase() : "";
+       if (!race_svgs[race]) {
+         /* Fallback to legacy img if SVGs aren't loaded in this page's block */
+         return '<img src="' + races_dir + race + '.png" width="' + size + '" height="' + size + '" />';
+       }
+       var data = race_svgs[race];
+       var width = size || 16;
+       var height = size || 16;
+       if (race === 'P') {
+         width = Math.round(width * 0.85);
+         height = Math.round(height * 1.2);
+       }
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;">' + data.path + '</svg>';
+     }
      var autocomp_strings = {
        'Players': '{% trans "Players" %}',
        'Teams': '{% trans "Teams" %}',
