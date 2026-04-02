@@ -337,14 +337,14 @@ This template shows a rating list for a given period.
             <td class="text-right ibox-left">{% trans "Leading race" %}</td>
             <td>
               {% race_icon period|oprace size=16 %} 
-              {{ period|oprace|racefullÂ }} ({{ period|oppctg }}%)
+              {{ period|oprace|racefullÂ }} ({{ period|oppctg }}%)
             </td>
           </tr>
           <tr class="small">
             <td class="text-right ibox-left">{% trans "Lagging race" %}</td>
             <td>
               {% race_icon period|uprace size=16 %} 
-              {{ period|uprace|racefullÂ }} ({{ period|uppctg }}%)
+              {{ period|uprace|racefullÂ }} ({{ period|uppctg }}%)
             </td>
           </tr>
           <tr class="small">

@@ -196,10 +196,14 @@ To use, you should define the following blocks:
     <script type="text/javascript" src="{{"jquery.tagsInput"|js}}"></script>
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
+     /* Legacy globals for production aligulac.min.js */
+     var races_dir = '{{"races/"|imgdir}}';
      var flags_dir = '{{"flags/"|imgdir}}';
+
      function getFlag(code) {
        if (!code) return "";
-       code = code.toLowerCase().split('-')[0].split('_')[0];
+       var fullCode = code.toLowerCase();
+       var baseCode = fullCode.split('-')[0].split('_')[0];
        var mapping = {
          'en': 'gb',
          'uk': 'gb',
@@ -210,13 +214,18 @@ To use, you should define the following blocks:
          'ko': 'kr',
          'ja': 'jp'
        };
-       if (mapping[code]) code = mapping[code];
-       return '<span class="fi fi-' + code + '"></span>';
+       var finalCode = mapping[fullCode] || mapping[baseCode] || baseCode;
+       return '<span class="fi fi-' + finalCode + '"></span>';
      }
-     var race_svgs = {% race_icons_js %};
+
+     /* Optimized: Inline SVGs only where needed (via block race_svgs) */
+     var race_svgs = {% block race_svgs %}{}{% endblock %};
      function getRaceIcon(race, size) {
        race = race ? race.toUpperCase() : "";
-       if (!race_svgs[race]) return "";
+       if (!race_svgs[race]) {
+         /* Fallback to legacy img if SVGs aren't loaded in this page's block */
+         return '<img src="' + races_dir + race + '.png" width="' + size + '" height="' + size + '" />';
+       }
        var data = race_svgs[race];
        var width = size || 16;
        var height = size || 16;

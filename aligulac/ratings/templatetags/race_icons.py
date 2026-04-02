@@ -32,6 +32,10 @@ def race_icon(race, size=24, cls=""):
         return ""
 
     data = RACE_SVGS[race]
+    
+    # Map code to full name for title/aria-label
+    names = {'T': 'Terran', 'Z': 'Zerg', 'P': 'Protoss'}
+    name = names.get(race, race)
 
     # Scale Protoss slightly differently to match visual weight, like in REPLAYMAN
     width = size
@@ -48,7 +52,10 @@ def race_icon(race, size=24, cls=""):
     fill="currentColor"
     class="race-icon race-{race.lower()} {cls}"
     style="vertical-align: middle;"
+    role="img"
+    aria-label="{name}"
 >
+    <title>{name}</title>
     {data['path']}
 </svg>"""
     return mark_safe(svg)

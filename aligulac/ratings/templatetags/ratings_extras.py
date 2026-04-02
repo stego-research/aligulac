@@ -352,8 +352,9 @@ def flag(value):
     if not value:
         return ""
 
-    # Normalize: take first part of locale if present (e.g. en-us -> en)
-    code = value.lower().split('-')[0].split('_')[0]
+    # Normalize: try full code first, then base language
+    full_code = value.lower()
+    base_code = full_code.split('-')[0].split('_')[0]
 
     # lipis/flag-icons uses ISO 3166-1-alpha-2 country codes.
     # We map some common language codes to their representative country flags.
@@ -367,10 +368,12 @@ def flag(value):
         'ko': 'kr',
         'ja': 'jp',
     }
-    code = mapping.get(code, code)
 
-    return mark_safe(f'<span class="fi fi-{code}"></span>')
+    final_code = mapping.get(full_code, mapping.get(base_code, base_code))
 
+    # Use the value as the label for accessibility
+    label = value.upper()
+    return mark_safe(f'<span class="fi fi-{final_code}" role="img" aria-label="{label}" title="{label}"></span>')
 
 # img: Generates a png-image file URL
 @register.filter
