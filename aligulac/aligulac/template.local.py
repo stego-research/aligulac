@@ -41,15 +41,22 @@ DB_PASSWORD = get_env('DB_PASSWORD', '')
 # Folder where the templates are stored
 TEMPLATE_DIRS = (get_env('TEMPLATE_DIRS', os.path.join(BASE_DIR, 'templates/')),)
 
-# S3 settings
-S3_BUCKET_DB = get_env('S3_BUCKET_DB', get_env('S3_BUCKET', ''))
-S3_BUCKET_STATIC = get_env('S3_BUCKET_STATIC', '')
-S3_ACCESS_KEY = get_env('S3_ACCESS_KEY', None)
-S3_SECRET_KEY = get_env('S3_SECRET_KEY', None)
-S3_REGION = get_env('S3_REGION', 'us-east-1')
-S3_ENDPOINT_URL = get_env('S3_ENDPOINT_URL', None)
-S3_CUSTOM_DOMAIN = get_env('S3_CUSTOM_DOMAIN', None)
-S3_DEFAULT_ACL = get_env('S3_DEFAULT_ACL', None)
+# S3/R2 settings
+# Use S3_DB_* for database dumps (e.g. AWS S3)
+S3_DB_BUCKET = get_env('S3_DB_BUCKET', get_env('S3_BUCKET', ''))
+S3_DB_ACCESS_KEY = get_env('S3_DB_ACCESS_KEY', get_env('S3_ACCESS_KEY', None))
+S3_DB_SECRET_KEY = get_env('S3_DB_SECRET_KEY', get_env('S3_SECRET_KEY', None))
+S3_DB_REGION = get_env('S3_DB_REGION', get_env('S3_REGION', 'us-east-1'))
+S3_DB_ENDPOINT_URL = get_env('S3_DB_ENDPOINT_URL', get_env('S3_ENDPOINT_URL', None))
+
+# Use S3_STATIC_* for static assets (e.g. Cloudflare R2)
+S3_STATIC_BUCKET = get_env('S3_STATIC_BUCKET', get_env('S3_BUCKET_STATIC', ''))
+S3_STATIC_ACCESS_KEY = get_env('S3_STATIC_ACCESS_KEY', get_env('S3_ACCESS_KEY', None))
+S3_STATIC_SECRET_KEY = get_env('S3_STATIC_SECRET_KEY', get_env('S3_SECRET_KEY', None))
+S3_STATIC_REGION = get_env('S3_STATIC_REGION', get_env('S3_REGION', 'us-east-1'))
+S3_STATIC_ENDPOINT_URL = get_env('S3_STATIC_ENDPOINT_URL', get_env('S3_ENDPOINT_URL', None))
+S3_STATIC_CUSTOM_DOMAIN = get_env('S3_STATIC_CUSTOM_DOMAIN', get_env('S3_CUSTOM_DOMAIN', None))
+S3_STATIC_DEFAULT_ACL = get_env('S3_STATIC_DEFAULT_ACL', get_env('S3_DEFAULT_ACL', None))
 
 # Host names this server accepts connections to
 ALLOWED_HOSTS = get_env('ALLOWED_HOSTS', '.aligulac.com,localhost').split(',')

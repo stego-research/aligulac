@@ -30,11 +30,11 @@ from aligulac.cache import cache_page
 from aligulac.settings import (
     PROJECT_PATH,
     DEBUG,
-    S3_BUCKET_DB,
-    S3_ACCESS_KEY,
-    S3_SECRET_KEY,
-    S3_REGION,
-    S3_ENDPOINT_URL,
+    S3_DB_BUCKET,
+    S3_DB_ACCESS_KEY,
+    S3_DB_SECRET_KEY,
+    S3_DB_REGION,
+    S3_DB_ENDPOINT_URL,
 )
 from ratings.models import (
     Event,
@@ -53,25 +53,25 @@ logger = logging.getLogger(__name__)
 
 # {{{ get_s3_info: Returns metadata and a pre-signed URL for an S3 object.
 def get_s3_info(key, expiration=3600):
-    if not S3_BUCKET_DB:
+    if not S3_DB_BUCKET:
         return None
 
     s3_kwargs = {
-        'region_name': S3_REGION,
-        'endpoint_url': S3_ENDPOINT_URL,
+        'region_name': S3_DB_REGION,
+        'endpoint_url': S3_DB_ENDPOINT_URL,
         'config': Config(signature_version='s3v4'),
     }
-    if S3_ACCESS_KEY and S3_SECRET_KEY:
-        s3_kwargs['aws_access_key_id'] = S3_ACCESS_KEY
-        s3_kwargs['aws_secret_access_key'] = S3_SECRET_KEY
+    if S3_DB_ACCESS_KEY and S3_DB_SECRET_KEY:
+        s3_kwargs['aws_access_key_id'] = S3_DB_ACCESS_KEY
+        s3_kwargs['aws_secret_access_key'] = S3_DB_SECRET_KEY
 
     s3 = boto3.client('s3', **s3_kwargs)
 
     try:
-        response = s3.head_object(Bucket=S3_BUCKET_DB, Key=key)
+        response = s3.head_object(Bucket=S3_DB_BUCKET, Key=key)
         url = s3.generate_presigned_url(
             'get_object',
-            Params={'Bucket': S3_BUCKET_DB, 'Key': key},
+            Params={'Bucket': S3_DB_BUCKET, 'Key': key},
             ExpiresIn=expiration
         )
         return {

@@ -22,7 +22,7 @@ docker run -d \
   -e DB_NAME="aligulac" \
   -e DB_USER="postgres" \
   -e DB_PASSWORD="your-password" \
-  -e S3_BUCKET_DB="your-aligulac-dumps-bucket" \
+  -e S3_DB_BUCKET="your-aligulac-dumps-bucket" \
   --name aligulac-app \
   aligulac-app:latest
 ```
@@ -73,33 +73,37 @@ Replace `<redis-host>` with the hostname or IP address of your own Redis or Valk
 | `REDIS_PASSWORD` | Password for Redis authentication (optional). | `None` |
 | `VALKEY_PASSWORD` | Password for Valkey authentication (optional). | `None` |
 
-### **S3/CDN Storage**
-The application supports separate buckets for database dumps and static assets. This allows for high-performance delivery via a CDN (CloudFront/Cloudflare).
+### **S3/R2 Storage**
+The application supports separate buckets for database dumps and static assets. This prevents configuration conflicts when using different providers (e.g. AWS for dumps and Cloudflare R2 for assets).
 
-#### **Database Dumps**
-If `S3_BUCKET_DB` is configured, the database dump job (`dump.py`) will upload files to S3.
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `S3_BUCKET_DB` | The name of the S3 bucket for database dumps. | `""` (Disabled) |
-| `S3_BUCKET` | Legacy variable for `S3_BUCKET_DB` (backwards compatible). | `""` |
-
-#### **Static Assets & CDN**
-If `S3_BUCKET_STATIC` is configured, `collectstatic` will upload hashed assets to S3/R2 during the build. These assets can then be served via a CDN.
+#### **Database Dumps (AWS S3)**
+If `S3_DB_BUCKET` is configured, the database dump job (`dump.py`) will upload files to S3.
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `S3_BUCKET_STATIC`| The name of the S3/R2 bucket for static assets. | `""` (Use WhiteNoise) |
-| `S3_CUSTOM_DOMAIN`| Your CDN domain (e.g. `static.aligulac.com` or `d123.cloudfront.net`). | `None` |
-| `S3_REGION` | AWS region for the S3 bucket. | `us-east-1` |
-| `S3_ACCESS_KEY` | AWS/R2 Access Key ID. | `None` |
-| `S3_SECRET_KEY` | AWS/R2 Secret Access Key. | `None` |
-| `S3_ENDPOINT_URL` | Custom S3 endpoint (required for Cloudflare R2). | `None` |
-| `S3_DEFAULT_ACL` | S3 ACL (leave empty/unset for Cloudflare R2). | `None` |
+| `S3_DB_BUCKET` | The name of the S3 bucket for database dumps. | `""` (Disabled) |
+| `S3_DB_REGION` | AWS region for the DB bucket. | `us-east-1` |
+| `S3_DB_ACCESS_KEY` | AWS Access Key ID (Optional if using IAM roles). | `None` |
+| `S3_DB_SECRET_KEY` | AWS Secret Access Key (Optional if using IAM roles). | `None` |
+| `S3_DB_ENDPOINT_URL`| Custom S3 endpoint URL. | `None` |
+| `S3_BUCKET` | Legacy variable for `S3_DB_BUCKET` (backwards compatible). | `""` |
 
-**Note:** Environment variables like `S3_DEFAULT_ACL`, `S3_ENDPOINT_URL`, etc., are normalized: values of `None`, `null`, or an empty string are treated as Python `None`.
+#### **Static Assets & CDN (Cloudflare R2 / Cloudfront)**
+If `S3_STATIC_BUCKET` is configured, `collectstatic` will upload hashed assets to S3/R2 during the build. These assets can then be served via a CDN.
 
-**Important:** If `S3_BUCKET_STATIC` is **not** set, the application falls back to **WhiteNoise** to serve assets from the local filesystem with automatic cache-busting.
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `S3_STATIC_BUCKET`| The name of the S3/R2 bucket for static assets. | `""` (Use WhiteNoise) |
+| `S3_STATIC_CUSTOM_DOMAIN`| Your CDN domain (e.g. `cdn.aligulac.com`). | `None` |
+| `S3_STATIC_REGION` | Region for the static bucket (use `auto` for R2). | `us-east-1` |
+| `S3_STATIC_ACCESS_KEY`| AWS/R2 Access Key ID. | `None` |
+| `S3_STATIC_SECRET_KEY`| AWS/R2 Secret Access Key. | `None` |
+| `S3_STATIC_ENDPOINT_URL`| Custom S3 endpoint (required for Cloudflare R2). | `None` |
+| `S3_STATIC_DEFAULT_ACL`| S3 ACL (leave empty/unset for Cloudflare R2). | `None` |
+
+**Note:** Environment variables like `S3_STATIC_DEFAULT_ACL`, `S3_STATIC_ENDPOINT_URL`, etc., are normalized: values of `None`, `null`, or an empty string are treated as Python `None`.
+
+**Important:** If `S3_STATIC_BUCKET` is **not** set, the application falls back to **WhiteNoise** to serve assets from the local filesystem with automatic cache-busting.
 
 ---
 
