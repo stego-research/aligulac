@@ -16,13 +16,13 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-# Helper to get env or default, normalizing 'None', 'null', and empty strings to None
-# ONLY if the variable is actually set in the environment.
+# Helper to get env or default, normalizing 'None' and 'null' to None.
+# Empty strings are kept as '' to avoid breaking downstream .split()/.lower() calls.
 def get_env(name, default=None):
     if name not in os.environ:
         return default
     val = os.environ[name]
-    if val.lower() in ('none', 'null', ''):
+    if val.lower() in ('none', 'null'):
         return None
     return val
 

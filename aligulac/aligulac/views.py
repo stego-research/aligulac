@@ -24,7 +24,6 @@ from aligulac.settings import (
     PROJECT_PATH,
     LANGUAGES,
     STATIC_ROOT,
-    STATIC_URL,
     S3_DB_BUCKET,
 )
 from aligulac.tools import (
