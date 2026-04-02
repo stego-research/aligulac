@@ -300,7 +300,7 @@ To use, you should define the following blocks:
            }
          } catch (e) {}
          var chartTheme = {
-           colors: isDark ? ["#221133", "#00dd00", "#0000dd", "#dd0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00dd00", "#0000dd", "#dd0000", "#000000", "#ffaa00", "#FF0000"],
+           colors: isDark ? ["#221133", "#00aa00", "#4c8de9", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#0066cc", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
            chart: {
              backgroundColor: isDark ? '#110022' : '#FFFFFF',
              plotBackgroundColor: isDark ? '#110022' : '#FFFFFF',
