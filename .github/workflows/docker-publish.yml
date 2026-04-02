@@ -46,5 +46,16 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+<<<<<<< Updated upstream
+=======
+          build-args: |
+            S3_STATIC_BUCKET=${{ vars.S3_STATIC_BUCKET }}
+            S3_STATIC_ENDPOINT_URL=${{ vars.S3_STATIC_ENDPOINT_URL }}
+            S3_STATIC_REGION=${{ vars.S3_STATIC_REGION }}
+            S3_STATIC_CUSTOM_DOMAIN=${{ vars.S3_STATIC_CUSTOM_DOMAIN }}
+          secrets: |
+            "S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }}"
+            "S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }}"
+>>>>>>> Stashed changes
           cache-from: type=gha
           cache-to: type=gha,mode=max
