@@ -258,7 +258,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 if S3_STATIC_CUSTOM_DOMAIN:
-    STATIC_URL = f'https://{S3_STATIC_CUSTOM_DOMAIN}/static/'
+    STATIC_URL = f'https://{S3_STATIC_CUSTOM_DOMAIN}/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
@@ -276,7 +276,7 @@ AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=31536000, public, immutable',
 }
-AWS_LOCATION = 'static'
+AWS_LOCATION = ''
 AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
 AWS_S3_FILE_OVERWRITE = True
 AWS_QUERYSTRING_AUTH = False
