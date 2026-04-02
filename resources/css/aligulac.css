@@ -337,6 +337,23 @@
    --------------------
 */
 
+pre, code {
+    background-color: var(--bg-secondary);
+    color: var(--fg-primary);
+    border: 1px solid var(--border-color);
+}
+
+pre {
+    padding: 1em;
+    border-radius: var(--btn-radius);
+}
+
+code {
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: inherit;
+}
+
 body {
     background-color: var(--bg-primary);
     color: var(--fg-secondary);
