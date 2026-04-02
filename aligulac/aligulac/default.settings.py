@@ -212,6 +212,56 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+if S3_STATIC_CUSTOM_DOMAIN:
+    STATIC_URL = f'https://{S3_STATIC_CUSTOM_DOMAIN}/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '..', 'resources'),
+]
+
+# AWS/R2 Storage Settings for Static Files
+AWS_ACCESS_KEY_ID = S3_STATIC_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = S3_STATIC_SECRET_KEY
+AWS_STORAGE_BUCKET_NAME = S3_STATIC_BUCKET
+AWS_S3_REGION_NAME = S3_STATIC_REGION
+AWS_S3_ENDPOINT_URL = S3_STATIC_ENDPOINT_URL
+AWS_S3_CUSTOM_DOMAIN = S3_STATIC_CUSTOM_DOMAIN
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=31536000, public, immutable',
+}
+AWS_LOCATION = 'static'
+AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
+AWS_S3_FILE_OVERWRITE = True
+AWS_QUERYSTRING_AUTH = False
+
+# Storage Configuration
+if S3_STATIC_BUCKET:
+    from storages.backends.s3boto3 import S3Boto3Storage
+    from django.contrib.staticfiles.storage import ManifestFilesMixin
+
+    class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
+        file_overwrite = True
+        querystring_auth = False
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
+
+if S3_STATIC_BUCKET:
+    STORAGES["staticfiles"] = {
+        "BACKEND": "aligulac.settings.StaticS3Storage",
+    }
+else:
+    STORAGES["staticfiles"] = {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    }
+    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+    # Max age for non-hashed files (fallback). Hashed files still get 1 year.
+    WHITENOISE_MAX_AGE = 600
 
 TEMPLATES = [
     {
