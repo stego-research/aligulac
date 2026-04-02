@@ -281,6 +281,13 @@ AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
 AWS_S3_FILE_OVERWRITE = False
 
 # Storage Configuration
+if S3_STATIC_BUCKET:
+    from storages.backends.s3boto3 import S3Boto3Storage
+    from django.contrib.staticfiles.storage import ManifestFilesMixin
+
+    class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
+        pass
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -289,7 +296,7 @@ STORAGES = {
 
 if S3_STATIC_BUCKET:
     STORAGES["staticfiles"] = {
-        "BACKEND": "storages.backends.s3boto3.S3ManifestStaticFilesStorage",
+        "BACKEND": "aligulac.settings.StaticS3Storage",
     }
 else:
     STORAGES["staticfiles"] = {
