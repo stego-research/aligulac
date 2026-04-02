@@ -11,11 +11,11 @@ from botocore.config import Config
 from aligulac.settings import (
     DATABASES,
     DUMP_PATH,
-    S3_BUCKET,
-    S3_ACCESS_KEY,
-    S3_SECRET_KEY,
-    S3_REGION,
-    S3_ENDPOINT_URL,
+    S3_DB_BUCKET,
+    S3_DB_ACCESS_KEY,
+    S3_DB_SECRET_KEY,
+    S3_DB_REGION,
+    S3_DB_ENDPOINT_URL,
 )
 
 public_tables = [
@@ -107,21 +107,21 @@ decompress_file(full_path)
 # {{{ Upload to S3
 
 def upload_to_s3(source, destination):
-    info("Uploading {} to S3://{}/{}".format(source, S3_BUCKET, destination))
+    info("Uploading {} to S3://{}/{}".format(source, S3_DB_BUCKET, destination))
     s3_kwargs = {
-        'region_name': S3_REGION,
-        'endpoint_url': S3_ENDPOINT_URL,
+        'region_name': S3_DB_REGION,
+        'endpoint_url': S3_DB_ENDPOINT_URL,
         'config': Config(signature_version='s3v4'),
     }
-    if S3_ACCESS_KEY and S3_SECRET_KEY:
-        s3_kwargs['aws_access_key_id'] = S3_ACCESS_KEY
-        s3_kwargs['aws_secret_access_key'] = S3_SECRET_KEY
+    if S3_DB_ACCESS_KEY and S3_DB_SECRET_KEY:
+        s3_kwargs['aws_access_key_id'] = S3_DB_ACCESS_KEY
+        s3_kwargs['aws_secret_access_key'] = S3_DB_SECRET_KEY
 
     s3 = boto3.client('s3', **s3_kwargs)
-    s3.upload_file(source, S3_BUCKET, destination)
+    s3.upload_file(source, S3_DB_BUCKET, destination)
 
 
-if S3_BUCKET:
+if S3_DB_BUCKET:
     upload_to_s3(os.path.join(DUMP_PATH, 'aligulac.sql'), 'aligulac.sql')
     upload_to_s3(os.path.join(DUMP_PATH, 'aligulac.sql.gz'), 'aligulac.sql.gz')
     upload_to_s3(os.path.join(DUMP_PATH, 'full.sql'), 'full.sql')

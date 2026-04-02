@@ -26,6 +26,7 @@ six = "==1.17.0"
 setuptools = "*"
 django-tastypie = ">=0.14.5"
 django-sniplates = "*"
+django-storages = {extras = ["boto3"], version = "*"}
 certifi = "*"
 gunicorn = "*"
 whitenoise = "*"

@@ -24,8 +24,7 @@ from aligulac.settings import (
     PROJECT_PATH,
     LANGUAGES,
     STATIC_ROOT,
-    STATIC_URL,
-    S3_BUCKET,
+    S3_DB_BUCKET,
 )
 from aligulac.tools import (
     base_ctx,
@@ -420,7 +419,7 @@ def db(request):
         'dbtables': DBTABLES,
     })
 
-    if S3_BUCKET:
+    if S3_DB_BUCKET:
         sql_info = get_s3_info('aligulac.sql.gz')
         if sql_info:
             base.update({
@@ -451,7 +450,7 @@ def db(request):
                 base.update({
                     'megabytes': stat.st_size / 1048576,
                     'modified': datetime.fromtimestamp(stat.st_mtime),
-                    'dump_url': STATIC_URL + 'aligulac.sql',
+                    'dump_url': '/static/aligulac.sql',
                 })
             except (FileNotFoundError, OSError):
                 pass
@@ -463,7 +462,7 @@ def db(request):
                 stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
                 base.update({
                     'gz_megabytes': stat.st_size / 1048576,
-                    'gzdump_url': STATIC_URL + 'aligulac.sql.gz',
+                    'gzdump_url': '/static/aligulac.sql.gz',
                 })
                 if not base.get('modified'):
                     base['modified'] = datetime.fromtimestamp(stat.st_mtime)

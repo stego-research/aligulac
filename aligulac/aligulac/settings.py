@@ -16,9 +16,15 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-# Helper to get env or default
+# Helper to get env or default, normalizing 'None' and 'null' to None.
+# Empty strings are kept as '' to avoid breaking downstream .split()/.lower() calls.
 def get_env(name, default=None):
-    return os.environ.get(name, default)
+    if name not in os.environ:
+        return default
+    val = os.environ[name]
+    if val.lower() in ('none', 'null'):
+        return None
+    return val
 
 
 from django.utils.translation import gettext_lazy as _
@@ -68,11 +74,22 @@ DUMP_PATH = local.DUMP_PATH
 INTERNAL_IPS = local.INTERNAL_IPS
 EXCHANGE_ID = local.EXCHANGE_ID
 
-S3_BUCKET = getattr(local, 'S3_BUCKET', '')
-S3_ACCESS_KEY = getattr(local, 'S3_ACCESS_KEY', None)
-S3_SECRET_KEY = getattr(local, 'S3_SECRET_KEY', None)
-S3_REGION = getattr(local, 'S3_REGION', 'us-east-1')
-S3_ENDPOINT_URL = getattr(local, 'S3_ENDPOINT_URL', None)
+# S3/R2 Configuration
+# Database Dumps (AWS S3)
+S3_DB_BUCKET = getattr(local, 'S3_DB_BUCKET', getattr(local, 'S3_BUCKET', ''))
+S3_DB_ACCESS_KEY = getattr(local, 'S3_DB_ACCESS_KEY', getattr(local, 'S3_ACCESS_KEY', None))
+S3_DB_SECRET_KEY = getattr(local, 'S3_DB_SECRET_KEY', getattr(local, 'S3_SECRET_KEY', None))
+S3_DB_REGION = getattr(local, 'S3_DB_REGION', getattr(local, 'S3_REGION', 'us-east-1'))
+S3_DB_ENDPOINT_URL = getattr(local, 'S3_DB_ENDPOINT_URL', getattr(local, 'S3_ENDPOINT_URL', None))
+
+# Static Assets (Cloudflare R2)
+S3_STATIC_BUCKET = getattr(local, 'S3_STATIC_BUCKET', getattr(local, 'S3_BUCKET_STATIC', ''))
+S3_STATIC_ACCESS_KEY = getattr(local, 'S3_STATIC_ACCESS_KEY', getattr(local, 'S3_ACCESS_KEY', None))
+S3_STATIC_SECRET_KEY = getattr(local, 'S3_STATIC_SECRET_KEY', getattr(local, 'S3_SECRET_KEY', None))
+S3_STATIC_REGION = getattr(local, 'S3_STATIC_REGION', getattr(local, 'S3_REGION', 'us-east-1'))
+S3_STATIC_ENDPOINT_URL = getattr(local, 'S3_STATIC_ENDPOINT_URL', getattr(local, 'S3_ENDPOINT_URL', None))
+S3_STATIC_CUSTOM_DOMAIN = getattr(local, 'S3_STATIC_CUSTOM_DOMAIN', getattr(local, 'S3_CUSTOM_DOMAIN', None))
+S3_STATIC_DEFAULT_ACL = getattr(local, 'S3_STATIC_DEFAULT_ACL', getattr(local, 'S3_DEFAULT_ACL', None))
 
 CACHES = {
     'default': {
@@ -240,13 +257,47 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+if S3_STATIC_CUSTOM_DOMAIN:
+    STATIC_URL = f'https://{S3_STATIC_CUSTOM_DOMAIN}/static/'
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '..', 'resources'),
 ]
 
-# Enable WhiteNoise's CompressedManifestStaticFilesStorage for automatic cache-busting
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# AWS/R2 Storage Settings for Static Files
+AWS_ACCESS_KEY_ID = S3_STATIC_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = S3_STATIC_SECRET_KEY
+AWS_STORAGE_BUCKET_NAME = S3_STATIC_BUCKET
+AWS_S3_REGION_NAME = S3_STATIC_REGION
+AWS_S3_ENDPOINT_URL = S3_STATIC_ENDPOINT_URL
+AWS_S3_CUSTOM_DOMAIN = S3_STATIC_CUSTOM_DOMAIN
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=31536000, public, immutable',
+}
+AWS_LOCATION = 'static'
+AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
+AWS_S3_FILE_OVERWRITE = False
+
+# Storage Configuration
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
+
+if S3_STATIC_BUCKET:
+    STORAGES["staticfiles"] = {
+        "BACKEND": "storages.backends.s3boto3.S3ManifestStaticFilesStorage",
+    }
+else:
+    STORAGES["staticfiles"] = {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    }
+    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+    # Max age for non-hashed files (fallback). Hashed files still get 1 year.
+    WHITENOISE_MAX_AGE = 600
 
 TEMPLATES = [
     {

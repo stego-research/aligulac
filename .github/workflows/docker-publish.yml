@@ -12,6 +12,7 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment: prod-builds
     permissions:
       contents: read
       packages: write
@@ -46,5 +47,13 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            S3_STATIC_BUCKET=${{ secrets.S3_STATIC_BUCKET }}
+            S3_STATIC_ENDPOINT_URL=${{ secrets.S3_STATIC_ENDPOINT_URL }}
+            S3_STATIC_REGION=${{ secrets.S3_STATIC_REGION }}
+            S3_STATIC_CUSTOM_DOMAIN=${{ secrets.S3_STATIC_CUSTOM_DOMAIN }}
+          secrets: |
+            "S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }}"
+            "S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
