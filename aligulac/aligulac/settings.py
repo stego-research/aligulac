@@ -278,7 +278,8 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 AWS_LOCATION = 'static'
 AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
-AWS_S3_FILE_OVERWRITE = False
+AWS_S3_FILE_OVERWRITE = True
+AWS_QUERYSTRING_AUTH = False
 
 # Storage Configuration
 if S3_STATIC_BUCKET:
@@ -286,7 +287,8 @@ if S3_STATIC_BUCKET:
     from django.contrib.staticfiles.storage import ManifestFilesMixin
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
-        pass
+        file_overwrite = True
+        querystring_auth = False
 
 STORAGES = {
     "default": {

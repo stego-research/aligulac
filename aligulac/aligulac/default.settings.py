@@ -215,6 +215,11 @@ STATIC_URL = '/static/'
 if S3_STATIC_CUSTOM_DOMAIN:
     STATIC_URL = f'https://{S3_STATIC_CUSTOM_DOMAIN}/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '..', 'resources'),
+]
+
 # AWS/R2 Storage Settings for Static Files
 AWS_ACCESS_KEY_ID = S3_STATIC_ACCESS_KEY
 AWS_SECRET_ACCESS_KEY = S3_STATIC_SECRET_KEY
@@ -228,7 +233,8 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 AWS_LOCATION = 'static'
 AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
-AWS_S3_FILE_OVERWRITE = False
+AWS_S3_FILE_OVERWRITE = True
+AWS_QUERYSTRING_AUTH = False
 
 # Storage Configuration
 if S3_STATIC_BUCKET:
@@ -236,7 +242,8 @@ if S3_STATIC_BUCKET:
     from django.contrib.staticfiles.storage import ManifestFilesMixin
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
-        pass
+        file_overwrite = True
+        querystring_auth = False
 
 STORAGES = {
     "default": {
