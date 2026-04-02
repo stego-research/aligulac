@@ -485,6 +485,13 @@ a.blacklink:hover {
     color: var(--navbar-link-active);
 }
 
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+    background-color: var(--navbar-link-active-bg) !important;
+    color: var(--navbar-link-active) !important;
+}
+
 /* Menu hovering */
 @media (min-width: 768px) {
     .dropdown:hover .dropdown-menu {
