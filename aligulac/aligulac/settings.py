@@ -244,6 +244,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '..', 'resources'),
 ]
 
+# Enable WhiteNoise's CompressedManifestStaticFilesStorage for automatic cache-busting
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

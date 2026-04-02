@@ -215,7 +215,8 @@ To use, you should define the following blocks:
          'ja': 'jp'
        };
        var finalCode = mapping[fullCode] || mapping[baseCode] || baseCode;
-       return '<span class="fi fi-' + finalCode + '"></span>';
+       var label = (fullCode || baseCode).toUpperCase();
+       return '<span class="fi fi-' + finalCode + '" role="img" aria-label="' + label + '" title="' + label + '"></span>';
      }
 
      /* Optimized: Inline SVGs only where needed (via block race_svgs) */
