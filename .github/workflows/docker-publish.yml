@@ -48,10 +48,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            S3_STATIC_BUCKET=${{ secrets.S3_STATIC_BUCKET }}
-            S3_STATIC_ENDPOINT_URL=${{ secrets.S3_STATIC_ENDPOINT_URL }}
-            S3_STATIC_REGION=${{ secrets.S3_STATIC_REGION }}
-            S3_STATIC_CUSTOM_DOMAIN=${{ secrets.S3_STATIC_CUSTOM_DOMAIN }}
+            S3_STATIC_BUCKET=${{ vars.S3_STATIC_BUCKET }}
+            S3_STATIC_ENDPOINT_URL=${{ vars.S3_STATIC_ENDPOINT_URL }}
+            S3_STATIC_REGION=${{ vars.S3_STATIC_REGION }}
+            S3_STATIC_CUSTOM_DOMAIN=${{ vars.S3_STATIC_CUSTOM_DOMAIN }}
           secrets: |
             "S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }}"
             "S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }}"
