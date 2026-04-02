@@ -280,6 +280,7 @@ def base_ctx(section=None, subpage=None, request=None, context=None):
         'cur_path': request.get_full_path(),
         'messages': [],
         'lang': request.LANGUAGE_CODE,
+        'datepicker_lang': request.LANGUAGE_CODE.split('-')[0].split('_')[0] if request.LANGUAGE_CODE != 'zh-hans' else 'zh-hans',
         'menu': [{
             'id': 'Ranking',
             'name': _('Ranking'),

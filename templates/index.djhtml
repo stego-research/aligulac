@@ -192,7 +192,7 @@ To use, you should define the following blocks:
 
     <script type="text/javascript" src="{{"jquery-1.10.2.min"|js}}"></script>
     <script type="text/javascript" src="{{"jquery-ui.min"|js}}"></script>
-    <script type="text/javascript" src="{{"jquery.ui.datepicker-"|add:lang|js}}"></script>
+    <script type="text/javascript" src="{{"jquery.ui.datepicker-"|add:datepicker_lang|js}}"></script>
     <script type="text/javascript" src="{{"jquery.tagsInput"|js}}"></script>
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
