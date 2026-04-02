@@ -134,7 +134,7 @@ This is the template for the main player page, called from ratings.views.player.
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Protoss" %}',
-           lineWidth: isDark ? 1.5 : 1,
+           lineWidth: 1.5,
            dashStyle: 'Dash',
            enableMouseTracking: false,
            yAxis: 0,
@@ -146,7 +146,7 @@ This is the template for the main player page, called from ratings.views.player.
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Terran" %}',
-           lineWidth: isDark ? 1.5 : 1,
+           lineWidth: 1.5,
            dashStyle: 'Dash',
            enableMouseTracking: false,
            yAxis: 0,
@@ -158,7 +158,7 @@ This is the template for the main player page, called from ratings.views.player.
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Zerg" %}',
-           lineWidth: isDark ? 1.5 : 1,
+           lineWidth: 1.5,
            dashStyle: 'Dash',
            enableMouseTracking: false,
            yAxis: 0,
@@ -171,7 +171,7 @@ This is the template for the main player page, called from ratings.views.player.
          }, {
            {% comment %}Translators: General rating{% endcomment %}
            name: '{% trans "General" %}',
-           lineWidth: isDark ? 2 : 3,
+           lineWidth: 2,
            enableMouseTracking: false,
            yAxis: 0,
            color: isDark ? '#ffeeff' : '#000000',
