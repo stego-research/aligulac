@@ -11,7 +11,7 @@ from botocore.config import Config
 from aligulac.settings import (
     DATABASES,
     DUMP_PATH,
-    S3_BUCKET,
+    S3_BUCKET_DB,
     S3_ACCESS_KEY,
     S3_SECRET_KEY,
     S3_REGION,
@@ -107,7 +107,7 @@ decompress_file(full_path)
 # {{{ Upload to S3
 
 def upload_to_s3(source, destination):
-    info("Uploading {} to S3://{}/{}".format(source, S3_BUCKET, destination))
+    info("Uploading {} to S3://{}/{}".format(source, S3_BUCKET_DB, destination))
     s3_kwargs = {
         'region_name': S3_REGION,
         'endpoint_url': S3_ENDPOINT_URL,
@@ -118,10 +118,10 @@ def upload_to_s3(source, destination):
         s3_kwargs['aws_secret_access_key'] = S3_SECRET_KEY
 
     s3 = boto3.client('s3', **s3_kwargs)
-    s3.upload_file(source, S3_BUCKET, destination)
+    s3.upload_file(source, S3_BUCKET_DB, destination)
 
 
-if S3_BUCKET:
+if S3_BUCKET_DB:
     upload_to_s3(os.path.join(DUMP_PATH, 'aligulac.sql'), 'aligulac.sql')
     upload_to_s3(os.path.join(DUMP_PATH, 'aligulac.sql.gz'), 'aligulac.sql.gz')
     upload_to_s3(os.path.join(DUMP_PATH, 'full.sql'), 'full.sql')

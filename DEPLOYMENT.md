@@ -22,7 +22,7 @@ docker run -d \
   -e DB_NAME="aligulac" \
   -e DB_USER="postgres" \
   -e DB_PASSWORD="your-password" \
-  -e S3_BUCKET="your-aligulac-dumps-bucket" \
+  -e S3_BUCKET_DB="your-aligulac-dumps-bucket" \
   --name aligulac-app \
   aligulac-app:latest
 ```
@@ -63,6 +63,9 @@ To use a shared Redis cache across multiple parallel ECS instances (recommended 
 2. Set `CACHE_LOCATION="redis://<redis-host>:6379"`.
 
 Replace `<redis-host>` with the hostname or IP address of your own Redis or Valkey instance (for example, `redis://localhost:6379` for a single-instance deployment).
+
+**Note:** Cache durations for dynamic views (homepage, player profiles, etc.) have been reduced to **15 minutes** to ensure content stays fresh.
+
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `CACHE_DB` | Redis database index (Source of truth). | `1` |
@@ -70,16 +73,31 @@ Replace `<redis-host>` with the hostname or IP address of your own Redis or Valk
 | `REDIS_PASSWORD` | Password for Redis authentication (optional). | `None` |
 | `VALKEY_PASSWORD` | Password for Valkey authentication (optional). | `None` |
 
-### **S3 Storage (Database Dumps)**
-If `S3_BUCKET` is configured, the database dump job (`dump.py`) will upload files to S3 and remove them from the local filesystem. Download links on the database status page will generate pre-signed S3 URLs.
+### **S3/CDN Storage**
+The application supports separate buckets for database dumps and static assets. This allows for high-performance delivery via a CDN (CloudFront/Cloudflare).
+
+#### **Database Dumps**
+If `S3_BUCKET_DB` is configured, the database dump job (`dump.py`) will upload files to S3.
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `S3_BUCKET` | The name of the S3 bucket for database dumps. | `""` (Disabled) |
+| `S3_BUCKET_DB` | The name of the S3 bucket for database dumps. | `""` (Disabled) |
+| `S3_BUCKET` | Legacy variable for `S3_BUCKET_DB` (backwards compatible). | `""` |
+
+#### **Static Assets & CDN**
+If `S3_BUCKET_STATIC` is configured, `collectstatic` will upload hashed assets to S3/R2 during the build. These assets can then be served via a CDN.
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `S3_BUCKET_STATIC`| The name of the S3/R2 bucket for static assets. | `""` (Use WhiteNoise) |
+| `S3_CUSTOM_DOMAIN`| Your CDN domain (e.g. `static.aligulac.com` or `d123.cloudfront.net`). | `None` |
 | `S3_REGION` | AWS region for the S3 bucket. | `us-east-1` |
-| `S3_ACCESS_KEY` | AWS Access Key ID (Optional if using IAM roles). | `None` |
-| `S3_SECRET_KEY` | AWS Secret Access Key (Optional if using IAM roles). | `None` |
-| `S3_ENDPOINT_URL` | Custom S3 endpoint URL (e.g., for MinIO or S3-compatible APIs). | `None` |
+| `S3_ACCESS_KEY` | AWS/R2 Access Key ID. | `None` |
+| `S3_SECRET_KEY` | AWS/R2 Secret Access Key. | `None` |
+| `S3_ENDPOINT_URL` | Custom S3 endpoint (required for Cloudflare R2). | `None` |
+| `S3_DEFAULT_ACL` | S3 ACL (set to `None` for Cloudflare R2). | `None` |
+
+**Important:** If `S3_BUCKET_STATIC` is **not** set, the application falls back to **WhiteNoise** to serve assets from the local filesystem with automatic cache-busting.
 
 ---
 
@@ -119,7 +137,7 @@ If `S3_BUCKET` is configured, the database dump job (`dump.py`) will upload file
 ## 4. Production Best Practices
 
 ### **Reverse Proxy (Nginx)**
-Always run Aligulac behind a reverse proxy like Nginx to handle SSL (HTTPS) and serve static files efficiently.
+Always run Aligulac behind a reverse proxy like Nginx to handle SSL (HTTPS) and serve static files efficiently (if not using S3/CDN).
 
 **Example Nginx Snippet:**
 ```nginx

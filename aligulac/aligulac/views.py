@@ -25,7 +25,7 @@ from aligulac.settings import (
     LANGUAGES,
     STATIC_ROOT,
     STATIC_URL,
-    S3_BUCKET,
+    S3_BUCKET_DB,
 )
 from aligulac.tools import (
     base_ctx,
@@ -420,7 +420,7 @@ def db(request):
         'dbtables': DBTABLES,
     })
 
-    if S3_BUCKET:
+    if S3_BUCKET_DB:
         sql_info = get_s3_info('aligulac.sql.gz')
         if sql_info:
             base.update({
