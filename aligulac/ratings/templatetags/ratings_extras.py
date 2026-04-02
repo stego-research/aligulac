@@ -342,7 +342,14 @@ def css(value):
 @register.filter
 @stringfilter
 def fonts(value):
-    return django_static('fonts/' + value)
+    # Handle cases with query strings or fragments (e.g., ?#iefix)
+    import urllib.parse
+    parts = urllib.parse.urlparse(value)
+    clean_path = parts.path
+    query = ('?' + parts.query) if parts.query else ''
+    fragment = ('#' + parts.fragment) if parts.fragment else ''
+    
+    return django_static('fonts/' + clean_path) + query + fragment
 
 
 # flag: Generates a flag-icon span
