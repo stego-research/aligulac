@@ -213,7 +213,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 if S3_STATIC_CUSTOM_DOMAIN:
-    STATIC_URL = f'https://{S3_STATIC_CUSTOM_DOMAIN}/'
+    STATIC_URL = f'//{S3_STATIC_CUSTOM_DOMAIN}/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
@@ -244,6 +244,11 @@ if S3_STATIC_BUCKET:
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
         file_overwrite = True
         querystring_auth = False
+        manifest_strict = False
+else:
+    from whitenoise.storage import CompressedManifestStaticFilesStorage
+    class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
+        manifest_strict = False
 
 STORAGES = {
     "default": {
@@ -257,7 +262,7 @@ if S3_STATIC_BUCKET:
     }
 else:
     STORAGES["staticfiles"] = {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "aligulac.settings.SafeWhiteNoiseStorage",
     }
     WHITENOISE_KEEP_ONLY_HASHED_FILES = False
     # Max age for non-hashed files (fallback). Hashed files still get 1 year.
