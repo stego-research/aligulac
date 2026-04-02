@@ -349,7 +349,13 @@ def fonts(value):
     query = ('?' + parts.query) if parts.query else ''
     fragment = ('#' + parts.fragment) if parts.fragment else ''
     
-    return django_static('fonts/' + clean_path) + query + fragment
+    try:
+        url = django_static('fonts/' + clean_path)
+    except (ValueError, Exception):
+        # Fallback to absolute local path if static resolution fails
+        url = '/static/fonts/' + clean_path
+        
+    return url + query + fragment
 
 
 # flag: Generates a flag-icon span
