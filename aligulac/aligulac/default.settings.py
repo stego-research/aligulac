@@ -65,13 +65,13 @@ S3_DB_REGION = getattr(local, 'S3_DB_REGION', getattr(local, 'S3_REGION', 'us-ea
 S3_DB_ENDPOINT_URL = getattr(local, 'S3_DB_ENDPOINT_URL', getattr(local, 'S3_ENDPOINT_URL', None))
 
 # Static Assets (Cloudflare R2)
-S3_STATIC_BUCKET = getattr(local, 'S3_STATIC_BUCKET', getattr(local, 'S3_BUCKET_STATIC', ''))
-S3_STATIC_ACCESS_KEY = getattr(local, 'S3_STATIC_ACCESS_KEY', getattr(local, 'S3_ACCESS_KEY', None))
-S3_STATIC_SECRET_KEY = getattr(local, 'S3_STATIC_SECRET_KEY', getattr(local, 'S3_SECRET_KEY', None))
-S3_STATIC_REGION = getattr(local, 'S3_STATIC_REGION', getattr(local, 'S3_REGION', 'us-east-1'))
-S3_STATIC_ENDPOINT_URL = getattr(local, 'S3_STATIC_ENDPOINT_URL', getattr(local, 'S3_ENDPOINT_URL', None))
-S3_STATIC_CUSTOM_DOMAIN = getattr(local, 'S3_STATIC_CUSTOM_DOMAIN', getattr(local, 'S3_CUSTOM_DOMAIN', None))
-S3_STATIC_DEFAULT_ACL = getattr(local, 'S3_STATIC_DEFAULT_ACL', getattr(local, 'S3_DEFAULT_ACL', None))
+S3_STATIC_BUCKET = get_env('S3_STATIC_BUCKET', getattr(local, 'S3_STATIC_BUCKET', get_env('S3_BUCKET_STATIC', getattr(local, 'S3_BUCKET_STATIC', ''))))
+S3_STATIC_ACCESS_KEY = get_env('S3_STATIC_ACCESS_KEY', getattr(local, 'S3_STATIC_ACCESS_KEY', None))
+S3_STATIC_SECRET_KEY = get_env('S3_STATIC_SECRET_KEY', getattr(local, 'S3_STATIC_SECRET_KEY', None))
+S3_STATIC_REGION = get_env('S3_STATIC_REGION', getattr(local, 'S3_STATIC_REGION', 'us-east-1'))
+S3_STATIC_ENDPOINT_URL = get_env('S3_STATIC_ENDPOINT_URL', getattr(local, 'S3_STATIC_ENDPOINT_URL', None))
+S3_STATIC_CUSTOM_DOMAIN = get_env('S3_STATIC_CUSTOM_DOMAIN', getattr(local, 'S3_STATIC_CUSTOM_DOMAIN', get_env('S3_CUSTOM_DOMAIN', getattr(local, 'S3_CUSTOM_DOMAIN', None))))
+S3_STATIC_DEFAULT_ACL = get_env('S3_STATIC_DEFAULT_ACL', getattr(local, 'S3_STATIC_DEFAULT_ACL', None))
 
 CACHES = {
     'default': {
@@ -260,10 +260,22 @@ else:
                 return super().hashed_name(name, content, filename)
             except (ValueError, Exception):
                 return name
+        @property
+        def base_url(self):
+            if S3_STATIC_CUSTOM_DOMAIN:
+                return f'//{S3_STATIC_CUSTOM_DOMAIN}/'
+            return super().base_url
         def url(self, name, force=False):
             url = super().url(name, force)
-            if S3_STATIC_CUSTOM_DOMAIN and url.startswith('/static/'):
-                return f'//{S3_STATIC_CUSTOM_DOMAIN}{url[7:]}'
+            if S3_STATIC_CUSTOM_DOMAIN:
+                # If it's already an absolute URL (from CDN), return it
+                if url.startswith('http') or url.startswith('//'):
+                    return url
+                # Otherwise, ensure it starts with our CDN domain
+                path = url[7:] if url.startswith('/static/') else url
+                if path.startswith('/'):
+                    path = path[1:]
+                return f'//{S3_STATIC_CUSTOM_DOMAIN}/{path}'
             return url
 
 WHITENOISE_USE_FINDERS = False
