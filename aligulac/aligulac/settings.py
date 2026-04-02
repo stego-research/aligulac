@@ -280,6 +280,10 @@ AWS_LOCATION = ''
 AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
 AWS_S3_FILE_OVERWRITE = True
 AWS_QUERYSTRING_AUTH = False
+# Optimization: Increase memory buffer and reduce redundant metadata calls
+AWS_S3_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
+AWS_S3_CHECKSUM_MODE = None
+AWS_S3_USE_THREADS = True
 
 # Storage Configuration
 if S3_STATIC_BUCKET:
@@ -294,6 +298,21 @@ else:
     from whitenoise.storage import CompressedManifestStaticFilesStorage
     class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
         manifest_strict = False
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+        def hashed_name(self, name, content=None, filename=None):
+            try:
+                return super().hashed_name(name, content, filename)
+            except (ValueError, Exception):
+                return name
+        def url(self, name, force=False):
+            url = super().url(name, force)
+            if S3_STATIC_CUSTOM_DOMAIN and url.startswith('/static/'):
+                return f'//{S3_STATIC_CUSTOM_DOMAIN}{url[7:]}'
+            return url
+
+WHITENOISE_USE_FINDERS = False
+WHITENOISE_MANIFEST_STRICT = False
 
 STORAGES = {
     "default": {
