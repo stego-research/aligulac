@@ -228,7 +228,7 @@ To use, you should define the following blocks:
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
      /* Legacy globals for production aligulac.min.js */
-     var races_dir = '{{"races/"|imgdir}}';
+     var races_dir = '{{"/"|imgdir}}';
      var flags_dir = '{{"flags/"|imgdir}}';
 
      function getFlag(code) {
@@ -254,16 +254,17 @@ To use, you should define the following blocks:
      var race_svgs = {% block race_svgs %}{% race_icons_js %}{% endblock %};
      function getRaceIcon(race, size) {
        race = race ? race.toUpperCase() : "";
+       var iconSize = size || 16;
        if (!race_svgs[race]) {
          /* Fallback to legacy img if SVGs aren't loaded in this page's block */
-         return '<img src="' + races_dir + race + '.png" width="' + size + '" height="' + size + '" />';
+         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" />';
        }
        var data = race_svgs[race];
-       var width = size || 16;
-       var height = size || 16;
+       var width = iconSize;
+       var height = iconSize;
        if (race === 'P') {
-         width = Math.round(width * 0.85);
-         height = Math.round(height * 1.2);
+         width = Math.round(iconSize * 0.85);
+         height = Math.round(iconSize * 1.2);
        }
        return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;">' + data.path + '</svg>';
      }

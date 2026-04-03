@@ -59,12 +59,19 @@ aligulac_autocomplete_templates = (obj) ->
                     ''
             )
             flag = (
-                if obj.country
+                if typeof getFlag is 'function'
+                    getFlag(obj.country)
+                else if obj.country
                     "<img src='#{flags_dir + obj.country.toLowerCase()}.png' />"
                 else
                     ''
             )
-            race = "<img src='#{races_dir + obj.race.toUpperCase()}.png' />"
+            race = (
+                if typeof getRaceIcon is 'function'
+                    getRaceIcon(obj.race, 16)
+                else
+                    "<img src='#{races_dir + obj.race.toUpperCase()}.png' />"
+            )
             name = "<span>#{obj.tag}</span>"
             return "<a>#{flag}#{race}#{name}#{team}</a>"
         when 'team'

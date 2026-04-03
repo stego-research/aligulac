@@ -6,13 +6,14 @@ TAG = latest
 # Detect container tool (docker or podman)
 CONTAINER_TOOL := $(shell command -v docker 2> /dev/null || command -v podman 2> /dev/null)
 
-.PHONY: build-image setup-dev run-dev clean help
+.PHONY: build-image setup-dev setup-node build-js run-dev clean help
 
 help:
 	@echo "Aligulac Makefile"
 	@echo "-----------------"
 	@echo "build-image : Build the production image using $(notdir $(CONTAINER_TOOL))"
-	@echo "setup-dev   : Install development dependencies (pipenv)"
+	@echo "setup-dev   : Install development dependencies (pipenv and node)"
+	@echo "build-js    : Compile coffeescript to javascript"
 	@echo "run-dev     : Run the development server locally (pipenv)"
 	@echo "clean       : Remove temporary files and virtualenv"
 
@@ -23,8 +24,14 @@ build-image:
 	fi
 	$(CONTAINER_TOOL) build -t $(IMAGE_NAME):$(TAG) .
 
-setup-dev:
+setup-node:
+	cd resources/js-src && npm install
+
+setup-dev: setup-node
 	pipenv install
+
+build-js: setup-node
+	cd resources/js-src && npx cake deploy
 
 run-dev: setup-dev
 	pipenv run python aligulac/manage.py runserver
