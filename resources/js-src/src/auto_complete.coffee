@@ -67,8 +67,8 @@ aligulac_autocomplete_templates = (obj) ->
                     ''
             )
             race = (
-                if typeof getRaceIcon is 'function'
-                    getRaceIcon(obj.race, 16)
+                if typeof window.getRaceIcon is 'function'
+                    window.getRaceIcon(obj.race, 16)
                 else
                     "<img src='#{races_dir + obj.race.toUpperCase()}.png' />"
             )

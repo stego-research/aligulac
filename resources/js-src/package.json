@@ -4,7 +4,7 @@
   "description": "CoffeeScript source for Aligulac",
   "main": "Cakefile",
   "dependencies": {
-    "coffeescript": "^2.7.0",
+    "coffee-script": "^1.12.7",
     "stitch": "0.3.3",
     "ncp": "^2.0.0",
     "uglify-js": "^3.19.3"

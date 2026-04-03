@@ -4,14 +4,8 @@ from aligulac import settings
 
 
 def cache_page(view):
-    fname = view.__module__ + '.' + view.__name__
-
-    try:
-        seconds = settings.CACHE_TIMES[fname]
-    except:
-        seconds = 60
-
-    if seconds is None:
-        return view
-
-    return django_cache_page(seconds)(view)
+    """
+    Disabled Aligulac cache wrapper.
+    Returning the original view directly to rely on edge/browser caching.
+    """
+    return view

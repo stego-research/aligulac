@@ -257,7 +257,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
-if S3_STATIC_CUSTOM_DOMAIN:
+if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
     STATIC_URL = f'//{S3_STATIC_CUSTOM_DOMAIN}/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
@@ -307,12 +307,12 @@ else:
                 return name
         @property
         def base_url(self):
-            if S3_STATIC_CUSTOM_DOMAIN:
+            if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
                 return f'//{S3_STATIC_CUSTOM_DOMAIN}/'
             return super().base_url
         def url(self, name, force=False):
             url = super().url(name, force)
-            if S3_STATIC_CUSTOM_DOMAIN:
+            if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
                 # If it's already an absolute URL (from CDN), return it
                 if url.startswith('http') or url.startswith('//'):
                     return url

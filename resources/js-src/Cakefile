@@ -6,6 +6,7 @@
 
 fs = require 'fs'
 stitch  = require('stitch');
+require('coffee-script/register');
 
 {spawn} = require 'child_process'
 {ncp} = require 'ncp'
@@ -13,23 +14,32 @@ stitch  = require('stitch');
 target_dir = '../js/'
 deploy_dir = 'deploy/'
 build_dir = 'build/'
-src_dir = 'src/'
+src_dir = __dirname + '/src'
 
 target_file_name = 'aligulac'
 
 
-create_package = () ->
+create_package = (callback) ->
     if not fs.existsSync deploy_dir
         fs.mkdirSync deploy_dir
+    
+    console.log "Source directory: #{src_dir}"
     pckage = stitch.createPackage({
-      paths: [__dirname + '/src']
+      paths: [src_dir]
     })
 
     pckage.compile (err, source) ->
+        if err
+            console.error "Stitch error: #{err}"
+            callback(err) if callback
+            return
         fs.writeFile("#{deploy_dir}#{target_file_name}.js", source, (err) ->
             if err
-                throw err
+                console.error "Write error: #{err}"
+                callback(err) if callback
+                return
             console.log "Compiled #{target_file_name}.js package"
+            callback() if callback
         )
 
 js_file_regex = ///.*\.js$///
@@ -42,21 +52,25 @@ log = (msg) ->
 
 build = (callback) ->
     log "Building..."
-    create_package()
+    create_package(callback)
 
-deploy = (callback) ->
-    invoke 'build'
-    "Deploying..."
-    if not fs.existsSync deploy_dir
-        fs.mkdirSync deploy_dir
+deploy = () ->
+    build () ->
+        log "Deploying..."
+        if not fs.existsSync deploy_dir
+            fs.mkdirSync deploy_dir
 
-    f = deploy_dir + target_file_name
-    uglify = spawn 'uglifyjs', ['-m', '-c', '-o', f + '.min.js', f + '.js']
-    uglify.stderr.on 'data', (data) ->
-        process.stderr.write data.toString()
-    uglify.on 'exit', (code) ->
-        log "Uglyify done."
-        invoke 'copy'
+        f = deploy_dir + target_file_name
+        # Use npx if available, or assume it's in path
+        uglify = spawn 'npx', ['uglify-js', '-m', '-c', '-o', f + '.min.js', f + '.js']
+        uglify.stderr.on 'data', (data) ->
+            process.stderr.write data.toString()
+        uglify.on 'exit', (code) ->
+            if code is 0
+                log "Uglyify done."
+                copy()
+            else
+                log "Uglyify failed with code #{code}"
 
 copy = () ->
     log "Copying..."
