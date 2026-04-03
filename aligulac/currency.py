@@ -22,19 +22,20 @@ class ExchangeRates(object):
         date_str = self._date.strftime('%Y-%m-%d')
         cache_key = f'exchangerates:{date_str}'
         cached_data = cache.get(cache_key)
-        if cached_data:
+        if cached_data is not None:
             return cached_data
 
         url = 'https://openexchangerates.org/api/historical/' + date_str + '.json?app_id=' + settings.EXCHANGE_ID
         try:
-            jsonfile = urllib.request.urlopen(url)
-        except urllib.error.HTTPError as err:
-            # API limit reached for the month or other error
+            with urllib.request.urlopen(url, timeout=10) as response:
+                content = response.read()
+                data = json.loads(content.decode('utf-8'))
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+            return False
+        except (json.JSONDecodeError, UnicodeDecodeError):
             return False
         except Exception:
             return False
-
-        data = json.loads(jsonfile.read().decode())
 
         if not data or 'rates' not in data:
             return False
@@ -42,7 +43,7 @@ class ExchangeRates(object):
         # ccy use XBT instead
         try:
             data['rates']['XBT'] = data['rates']['BTC']
-        except:
+        except Exception:
             # Bitcoin transfer rates not available at this time.
             pass
 
