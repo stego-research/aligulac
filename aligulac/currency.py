@@ -54,7 +54,7 @@ class ExchangeRates(object):
 
     def _tobase(self, amount, currency):
         if not self._data or 'rates' not in self._data:
-             raise RateNotFoundError(currency, self._date)
+            raise RateNotFoundError(currency, self._date)
         return amount * Decimal(self.rates[currency])
 
     @property
