@@ -5,7 +5,7 @@
 #   ncp           (npm install ncp)
 fs = require 'fs'
 stitch  = require('stitch');
-require('coffeescript/register');
+require('coffee-script/register');
 
 {spawn} = require 'child_process'
 {ncp} = require 'ncp'
@@ -92,7 +92,9 @@ copy = () ->
             log "Done!"
 
 task 'build', 'build all coffee files', (options) ->
-    build()
+    build (err) ->
+        if err
+            process.exit(1)
 
 task 'copy', 'copies files from deploy to target', (options) ->
     copy()
