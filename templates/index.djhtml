@@ -84,6 +84,9 @@ To use, you should define the following blocks:
        if (race === 'RANDOM') race = 'R';
        if (race === 'SWITCHER') race = 'S';
 
+       var names = {'T': 'Terran', 'Z': 'Zerg', 'P': 'Protoss', 'R': 'Random', 'S': 'Switcher'};
+       var raceName = names[race] || race;
+
        var iconSize = size || 16;
        if (!race_svgs || !race_svgs[race]) {
          /* Fallback to legacy img if SVGs aren't loaded */
@@ -96,7 +99,7 @@ To use, you should define the following blocks:
          width = Math.round(iconSize * 0.85);
          height = Math.round(iconSize * 1.2);
        }
-       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;" role="img" aria-label="' + race + '"><title>' + race + '</title>' + data.path + '</svg>';
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
      }
      window.getFlag = getFlag;
     </script>

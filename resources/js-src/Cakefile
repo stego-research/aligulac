@@ -3,10 +3,9 @@
 #   uglifyjs      (installed and in PATH)
 #   stitch        (npm install stitch)
 #   ncp           (npm install ncp)
-
 fs = require 'fs'
 stitch  = require('stitch');
-require('coffee-script/register');
+require('coffeescript/register');
 
 {spawn} = require 'child_process'
 {ncp} = require 'ncp'
@@ -22,7 +21,7 @@ target_file_name = 'aligulac'
 create_package = (callback) ->
     if not fs.existsSync deploy_dir
         fs.mkdirSync deploy_dir
-    
+
     console.log "Source directory: #{src_dir}"
     pckage = stitch.createPackage({
       paths: [src_dir]
@@ -31,11 +30,13 @@ create_package = (callback) ->
     pckage.compile (err, source) ->
         if err
             console.error "Stitch error: #{err}"
+            process.exitCode = 1
             callback(err) if callback
             return
         fs.writeFile("#{deploy_dir}#{target_file_name}.js", source, (err) ->
             if err
                 console.error "Write error: #{err}"
+                process.exitCode = 1
                 callback(err) if callback
                 return
             console.log "Compiled #{target_file_name}.js package"
@@ -52,10 +53,19 @@ log = (msg) ->
 
 build = (callback) ->
     log "Building..."
-    create_package(callback)
+    create_package (err) ->
+        if err
+            console.error "Build failed"
+            process.exitCode = 1
+        callback(err) if callback
 
 deploy = () ->
-    build () ->
+    build (err) ->
+        if err
+            console.error "Deploy stopped due to build error"
+            process.exit(1)
+            return
+
         log "Deploying..."
         if not fs.existsSync deploy_dir
             fs.mkdirSync deploy_dir
@@ -70,6 +80,8 @@ deploy = () ->
                 copy()
             else
                 log "Uglyify failed with code #{code}"
+                process.exit(1)
+
 
 copy = () ->
     log "Copying..."

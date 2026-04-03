@@ -30,7 +30,7 @@ setup-node:
 setup-dev: setup-node
 	pipenv install
 
-build-js:
+build-js: setup-node
 	cd resources/js-src && npm run deploy
 
 run-dev: setup-dev
