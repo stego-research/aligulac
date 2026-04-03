@@ -226,17 +226,9 @@ init_predictions = () ->
 # Make sure the players input is styled like the rest of the form elements
 init_other = () ->
     $('input#id_players_tag').focus ->
-        $(this).parent().parent().css(
-            'box-shadow',         'inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px rgba(0,0,0,.4)'
-        ).css(
-            '-webkit-box-shadow', 'inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px rgba(0,0,0,.4)'
-        ).css('border-color', '#000000')
+        $(this).closest('.tagsinput').addClass('focused')
     .focusout ->
-        $(this).parent().parent().css(
-            'box-shadow',         'inset 0 1px 1px rgba(0,0,0,.075)'
-        ).css(
-            '-webkit-box-shadow', 'inset 0 1px 1px rgba(0,0,0,.075)'
-        ).css('border-color', '#cccccc')
+        $(this).closest('.tagsinput').removeClass('focused')
 
 exports.AutoComplete = AutoComplete =
     init: () ->

@@ -917,6 +917,13 @@ div.tagsinput {
     overflow-y: auto;
 }
 
+div.tagsinput.focused {
+    border-color: var(--input-focus-border);
+    outline: 0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
+    box-shadow:         inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
+}
+
 div.tagsinput span.tag {
     display: block;
     float: left;

@@ -363,9 +363,9 @@
 
   init_other = function() {
     return $('input#id_players_tag').focus(function() {
-      return $(this).parent().parent().css('box-shadow', 'inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px rgba(0,0,0,.4)').css('-webkit-box-shadow', 'inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px rgba(0,0,0,.4)').css('border-color', '#000000');
+      return $(this).closest('.tagsinput').addClass('focused');
     }).focusout(function() {
-      return $(this).parent().parent().css('box-shadow', 'inset 0 1px 1px rgba(0,0,0,.075)').css('-webkit-box-shadow', 'inset 0 1px 1px rgba(0,0,0,.075)').css('border-color', '#cccccc');
+      return $(this).closest('.tagsinput').removeClass('focused');
     });
   };
 
