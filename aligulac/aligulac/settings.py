@@ -262,8 +262,14 @@ if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
     STATIC_URL = f'//{S3_STATIC_CUSTOM_DOMAIN}/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+
+# Only include the compiled assets in collectstatic.
+# This explicitly skips js-src and node_modules, reducing file count by 1000+.
 STATICFILES_DIRS = [
-    os.path.abspath(os.path.join(BASE_DIR, '..', 'resources')),
+    ('css', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'css'))),
+    ('fonts', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'fonts'))),
+    ('img', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'img'))),
+    ('js', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'js'))),
 ]
 
 # AWS/R2 Storage Settings for Static Files
