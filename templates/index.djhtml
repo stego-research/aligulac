@@ -70,7 +70,7 @@ To use, you should define the following blocks:
        };
        var finalCode = mapping[fullCode] || mapping[baseCode] || baseCode;
        var label = (fullCode || baseCode).toUpperCase();
-       return '<span class="fi fi-' + finalCode + '" role="img" aria-label="' + label + '" title="' + label + '"></span>';
+       return '<span class="fi fi-' + finalCode + '" role="img" aria-label="' + label + '" title="' + label + '" style="margin-right: 0.25em;"></span>';
      }
 
      /* Optimized: Inline SVGs always available for JS */
@@ -90,7 +90,7 @@ To use, you should define the following blocks:
        var iconSize = size || 16;
        if (!race_svgs || !race_svgs[race]) {
          /* Fallback to legacy img if SVGs aren't loaded */
-         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" />';
+         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" style="margin-right: 0.25em;" />';
        }
        var data = race_svgs[race];
        var width = iconSize;
@@ -99,7 +99,7 @@ To use, you should define the following blocks:
          width = Math.round(iconSize * 0.85);
          height = Math.round(iconSize * 1.2);
        }
-       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle; margin-right: 0.25em;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
 
      }
      window.getFlag = getFlag;
