@@ -386,7 +386,7 @@ def flag(value):
 
     # Use the value as the label for accessibility
     label = value.upper()
-    return mark_safe(f'<span class="fi fi-{final_code}" role="img" aria-label="{label}" title="{label}"></span>')
+    return mark_safe(f'<span class="fi fi-{final_code}" role="img" aria-label="{label}" title="{label}" style="margin-right: 0.25em;"></span>')
 
 # img: Generates a png-image file URL
 @register.filter

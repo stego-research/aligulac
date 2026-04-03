@@ -164,8 +164,8 @@
       case 'player':
         obj.key = obj.tag + " " + obj.id;
         team = (obj.teams && obj.teams.length > 0 ? "<span class='autocomp-team pull-right'>" + obj.teams[0][0] + "</span>" : '');
-        flag = (typeof getFlag === 'function' ? getFlag(obj.country) : obj.country ? "<img src='" + (flags_dir + obj.country.toLowerCase()) + ".png' />" : '');
-        race = (typeof window.getRaceIcon === 'function' ? window.getRaceIcon(obj.race, 16) : "<img src='" + (races_dir + obj.race.toUpperCase()) + ".png' />");
+        flag = (typeof getFlag === 'function' ? getFlag(obj.country) : obj.country ? "<img src='" + (flags_dir + obj.country.toLowerCase()) + ".png' style='margin-right: 0.25em;' />" : '');
+        race = (typeof window.getRaceIcon === 'function' ? window.getRaceIcon(obj.race, 16) : "<img src='" + (races_dir + obj.race.toUpperCase()) + ".png' style='margin-right: 0.25em;' />");
         name = "<span>" + obj.tag + "</span>";
         return "<a>" + flag + race + name + team + "</a>";
       case 'team':
