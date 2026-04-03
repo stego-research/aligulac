@@ -59,20 +59,11 @@ RUN mkdir -p /app/aligulac/untracked /app/aligulac/static_root /var/log/aligulac
 # Compile translation files
 RUN cd /app/aligulac && PYTHONPATH=/app/aligulac/aligulac /app/.venv/bin/python /app/aligulac/aligulac/manage.py compilemessages
 
-# Run collectstatic to gather all assets for whitenoise/S3/R2
-ARG S3_STATIC_BUCKET
-ARG S3_STATIC_ENDPOINT_URL
-ARG S3_STATIC_REGION
-ARG S3_STATIC_CUSTOM_DOMAIN
-RUN --mount=type=secret,id=S3_STATIC_ACCESS_KEY \
-    --mount=type=secret,id=S3_STATIC_SECRET_KEY \
-    SECRET_KEY=build-time-only-key \
-    S3_STATIC_BUCKET=$S3_STATIC_BUCKET \
-    S3_STATIC_ACCESS_KEY=$(cat /run/secrets/S3_STATIC_ACCESS_KEY) \
-    S3_STATIC_SECRET_KEY=$(cat /run/secrets/S3_STATIC_SECRET_KEY) \
-    S3_STATIC_ENDPOINT_URL=$S3_STATIC_ENDPOINT_URL \
-    S3_STATIC_REGION=$S3_STATIC_REGION \
-    S3_STATIC_CUSTOM_DOMAIN=$S3_STATIC_CUSTOM_DOMAIN \
+# Run collectstatic locally to gather all assets into the container image.
+# This makes the Docker build instant and ensures the image is self-contained.
+# S3 upload is handled as a separate step in CI.
+RUN SECRET_KEY=build-time-only-key \
+    S3_STATIC_BUCKET="" \
     PYTHONPATH=/app/aligulac/aligulac /app/.venv/bin/python /app/aligulac/aligulac/manage.py collectstatic --noinput
 
 # Set environment variables for the app

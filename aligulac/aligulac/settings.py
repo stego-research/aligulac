@@ -305,10 +305,10 @@ if S3_STATIC_BUCKET:
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
         def __init__(self, *args, **kwargs):
-            # Instantiate manifest_storage lazily to avoid accessing settings 
-            # during module import.
-            self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
             super().__init__(*args, **kwargs)
+            # Ensure the manifest is ALWAYS stored locally in the container
+            # so WhiteNoise and Django can find it at runtime.
+            self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
 
         file_overwrite = True  # Mandatory for manifest updates
         querystring_auth = False
