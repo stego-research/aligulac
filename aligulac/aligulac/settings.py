@@ -262,7 +262,7 @@ if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'resources'),
+    os.path.join(os.path.dirname(BASE_DIR), 'resources'),
 ]
 
 # AWS/R2 Storage Settings for Static Files
