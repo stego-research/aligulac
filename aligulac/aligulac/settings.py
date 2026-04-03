@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from django.core.files.storage import FileSystemStorage
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -261,8 +262,14 @@ if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
     STATIC_URL = f'//{S3_STATIC_CUSTOM_DOMAIN}/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+
+# Only include the compiled assets in collectstatic.
+# This explicitly skips js-src and node_modules, reducing file count by 1000+.
 STATICFILES_DIRS = [
-    os.path.join(os.path.dirname(BASE_DIR), 'resources'),
+    ('css', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'css'))),
+    ('fonts', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'fonts'))),
+    ('img', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'img'))),
+    ('js', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'js'))),
 ]
 
 # AWS/R2 Storage Settings for Static Files
@@ -278,7 +285,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 AWS_LOCATION = ''
 AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
-AWS_S3_FILE_OVERWRITE = False
+AWS_S3_FILE_OVERWRITE = True
 AWS_S3_GZIP = True
 AWS_QUERYSTRING_AUTH = False
 # Optimization: Increase memory buffer and reduce redundant metadata calls
@@ -291,22 +298,27 @@ AWS_S3_USE_THREADS = True
 if S3_STATIC_BUCKET:
     from storages.backends.s3boto3 import S3Boto3Storage
     from django.contrib.staticfiles.storage import ManifestFilesMixin
-    from django.core.files.storage import FileSystemStorage
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
-        # Store the manifest file LOCALLY in the Docker image to avoid massive
-        # S3 round-trip overhead during hashing. This makes collectstatic take
-        # seconds instead of 20 minutes.
-        manifest_storage = FileSystemStorage(location=STATIC_ROOT)
+        def __init__(self, *args, **kwargs):
+            # Instantiate manifest_storage lazily to avoid accessing settings 
+            # during module import.
+            self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
+            super().__init__(*args, **kwargs)
+
         file_overwrite = True  # Mandatory for manifest updates
         querystring_auth = False
         manifest_strict = False
 else:
     from whitenoise.storage import CompressedManifestStaticFilesStorage
+
     class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
-        manifest_strict = False
         def __init__(self, *args, **kwargs):
+            # Ensure consistency with the S3 storage manifest location
+            self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
             super().__init__(*args, **kwargs)
+
+        manifest_strict = False
         def hashed_name(self, name, content=None, filename=None):
             try:
                 return super().hashed_name(name, content, filename)
