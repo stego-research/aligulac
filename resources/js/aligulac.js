@@ -164,8 +164,8 @@
       case 'player':
         obj.key = obj.tag + " " + obj.id;
         team = (obj.teams && obj.teams.length > 0 ? "<span class='autocomp-team pull-right'>" + obj.teams[0][0] + "</span>" : '');
-        flag = (obj.country ? getFlag(obj.country) : '');
-        race = getRaceIcon(obj.race);
+        flag = (typeof getFlag === 'function' ? getFlag(obj.country) : obj.country ? "<img src='" + (flags_dir + obj.country.toLowerCase()) + ".png' alt='Flag of " + obj.country + "' />" : '');
+        race = (typeof window.getRaceIcon === 'function' ? window.getRaceIcon(obj.race, 16) : "<img src='" + (races_dir + obj.race.toUpperCase()) + ".png' alt='Race: " + obj.race + "' />");
         name = "<span>" + obj.tag + "</span>";
         return "<a>" + flag + race + name + team + "</a>";
       case 'team':
@@ -280,7 +280,7 @@
       }).data('ui-autocomplete')._renderItem = function(ul, item) {
         return $('<li></li>').append(aligulac_autocomplete_templates(item)).appendTo(ul);
       };
-    } catch (_error) {}
+    } catch (error) {}
   };
 
   add_extra_functions = function() {

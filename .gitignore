@@ -194,6 +194,7 @@ pip-log.txt
 aligulac/update
 resources/js-src/build
 resources/js-src/deploy
+node_modules/
 resources/js/general.min.js
 resources/js/general.js
 

@@ -48,7 +48,62 @@ To use, you should define the following blocks:
           document.documentElement.setAttribute('data-user-theme', theme);
         } catch (e) {}
       })();
-    </script>    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
+    </script>
+    <script type="text/javascript">
+     /* Legacy globals for production aligulac.min.js */
+     var races_dir = '{{"/"|imgdir}}';
+     var flags_dir = '{{"flags/"|imgdir}}';
+
+     function getFlag(code) {
+       if (!code) return "";
+       var fullCode = code.toLowerCase();
+       var baseCode = fullCode.split('-')[0].split('_')[0];
+       var mapping = {
+         'en': 'gb',
+         'uk': 'gb',
+         'nb': 'no',
+         'zh': 'cn',
+         'zh-hans': 'cn',
+         'da': 'dk',
+         'ko': 'kr',
+         'ja': 'jp'
+       };
+       var finalCode = mapping[fullCode] || mapping[baseCode] || baseCode;
+       var label = (fullCode || baseCode).toUpperCase();
+       return '<span class="fi fi-' + finalCode + '" role="img" aria-label="' + label + '" title="' + label + '"></span>';
+     }
+
+     /* Optimized: Inline SVGs always available for JS */
+     var race_svgs = {% race_icons_js %};
+     window.getRaceIcon = function(race, size) {
+       if (!race) return "";
+       race = race.toUpperCase();
+       if (race === 'PROTOSS') race = 'P';
+       if (race === 'TERRAN') race = 'T';
+       if (race === 'ZERG') race = 'Z';
+       if (race === 'RANDOM') race = 'R';
+       if (race === 'SWITCHER') race = 'S';
+
+       var names = {'T': 'Terran', 'Z': 'Zerg', 'P': 'Protoss', 'R': 'Random', 'S': 'Switcher'};
+       var raceName = names[race] || race;
+
+       var iconSize = size || 16;
+       if (!race_svgs || !race_svgs[race]) {
+         /* Fallback to legacy img if SVGs aren't loaded */
+         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" />';
+       }
+       var data = race_svgs[race];
+       var width = iconSize;
+       var height = iconSize;
+       if (race === 'P') {
+         width = Math.round(iconSize * 0.85);
+         height = Math.round(iconSize * 1.2);
+       }
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
+     }
+     window.getFlag = getFlag;
+    </script>
+    <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,400i,700,700i&display=swap' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
@@ -227,46 +282,6 @@ To use, you should define the following blocks:
     <script type="text/javascript" src="{{"jquery.tagsInput"|js}}"></script>
     <script type="text/javascript" src="{{"bootstrap.min"|js}}"></script>
     <script type="text/javascript">
-     /* Legacy globals for production aligulac.min.js */
-     var races_dir = '{{"races/"|imgdir}}';
-     var flags_dir = '{{"flags/"|imgdir}}';
-
-     function getFlag(code) {
-       if (!code) return "";
-       var fullCode = code.toLowerCase();
-       var baseCode = fullCode.split('-')[0].split('_')[0];
-       var mapping = {
-         'en': 'gb',
-         'uk': 'gb',
-         'nb': 'no',
-         'zh': 'cn',
-         'zh-hans': 'cn',
-         'da': 'dk',
-         'ko': 'kr',
-         'ja': 'jp'
-       };
-       var finalCode = mapping[fullCode] || mapping[baseCode] || baseCode;
-       var label = (fullCode || baseCode).toUpperCase();
-       return '<span class="fi fi-' + finalCode + '" role="img" aria-label="' + label + '" title="' + label + '"></span>';
-     }
-
-     /* Optimized: Inline SVGs only where needed (via block race_svgs) */
-     var race_svgs = {% block race_svgs %}{% race_icons_js %}{% endblock %};
-     function getRaceIcon(race, size) {
-       race = race ? race.toUpperCase() : "";
-       if (!race_svgs[race]) {
-         /* Fallback to legacy img if SVGs aren't loaded in this page's block */
-         return '<img src="' + races_dir + race + '.png" width="' + size + '" height="' + size + '" />';
-       }
-       var data = race_svgs[race];
-       var width = size || 16;
-       var height = size || 16;
-       if (race === 'P') {
-         width = Math.round(width * 0.85);
-         height = Math.round(height * 1.2);
-       }
-       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;">' + data.path + '</svg>';
-     }
      var autocomp_strings = {
        'Players': '{% trans "Players" %}',
        'Teams': '{% trans "Teams" %}',
