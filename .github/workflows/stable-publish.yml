@@ -5,6 +5,10 @@ on:
     tags:
       - 'stable'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   call-reusable-workflow:
     uses: ./.github/workflows/reusable-docker-publish.yml

@@ -75,7 +75,7 @@ jobs:
             S3_STATIC_REGION=${{ vars.S3_STATIC_REGION }}
             S3_STATIC_CUSTOM_DOMAIN=${{ vars.S3_STATIC_CUSTOM_DOMAIN }}
           secrets: |
-            "S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }}"
-            "S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }}"
+            S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }}
+            S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
