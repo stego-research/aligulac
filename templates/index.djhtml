@@ -100,6 +100,7 @@ To use, you should define the following blocks:
          height = Math.round(iconSize * 1.2);
        }
        return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
+
      }
      window.getFlag = getFlag;
     </script>
