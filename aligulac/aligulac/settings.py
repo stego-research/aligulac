@@ -14,7 +14,10 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 from django.core.files.storage import FileSystemStorage
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# BASE_DIR is the Django project root (containing manage.py)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# REPO_ROOT is the repository root (containing resources/ and static_root/)
+REPO_ROOT = os.path.dirname(BASE_DIR)
 
 
 # Helper to get env or default, normalizing 'None' and 'null' to None.
@@ -261,15 +264,16 @@ STATIC_URL = '/static/'
 if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
     STATIC_URL = f'//{S3_STATIC_CUSTOM_DOMAIN}/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+# Static root is in the Repo folder, consistent with global asset location
+STATIC_ROOT = os.path.join(REPO_ROOT, 'static_root')
 
 # Only include the compiled assets in collectstatic.
 # This explicitly skips js-src and node_modules, reducing file count by 1000+.
 STATICFILES_DIRS = [
-    ('css', os.path.join(BASE_DIR, 'resources', 'css')),
-    ('fonts', os.path.join(BASE_DIR, 'resources', 'fonts')),
-    ('img', os.path.join(BASE_DIR, 'resources', 'img')),
-    ('js', os.path.join(BASE_DIR, 'resources', 'js')),
+    ('css', os.path.join(REPO_ROOT, 'resources', 'css')),
+    ('fonts', os.path.join(REPO_ROOT, 'resources', 'fonts')),
+    ('img', os.path.join(REPO_ROOT, 'resources', 'img')),
+    ('js', os.path.join(REPO_ROOT, 'resources', 'js')),
 ]
 
 # AWS/R2 Storage Settings for Static Files
