@@ -90,7 +90,7 @@ To use, you should define the following blocks:
        var iconSize = size || 16;
        if (!race_svgs || !race_svgs[race]) {
          /* Fallback to legacy img if SVGs aren't loaded */
-         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" />';
+         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" />';
        }
        var data = race_svgs[race];
        var width = iconSize;
