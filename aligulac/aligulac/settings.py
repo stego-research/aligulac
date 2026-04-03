@@ -292,7 +292,6 @@ AWS_S3_USE_THREADS = True
 if S3_STATIC_BUCKET:
     from storages.backends.s3boto3 import S3Boto3Storage
     from django.contrib.staticfiles.storage import ManifestFilesMixin
-    from django.core.files.storage import FileSystemStorage
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
         # Store the manifest file LOCALLY in the Docker image to avoid massive
@@ -306,6 +305,8 @@ else:
     from whitenoise.storage import CompressedManifestStaticFilesStorage
 
     class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
+        # Ensure consistency with the S3 storage manifest location
+        manifest_storage = FileSystemStorage(location=STATIC_ROOT)
         manifest_strict = False
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
