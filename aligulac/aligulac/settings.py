@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from django.core.files.storage import FileSystemStorage
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -262,7 +263,7 @@ if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
-    os.path.join(os.path.dirname(BASE_DIR), 'resources'),
+    os.path.abspath(os.path.join(BASE_DIR, '..', 'resources')),
 ]
 
 # AWS/R2 Storage Settings for Static Files
@@ -278,7 +279,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 AWS_LOCATION = ''
 AWS_DEFAULT_ACL = S3_STATIC_DEFAULT_ACL
-AWS_S3_FILE_OVERWRITE = False
+AWS_S3_FILE_OVERWRITE = True
 AWS_S3_GZIP = True
 AWS_QUERYSTRING_AUTH = False
 # Optimization: Increase memory buffer and reduce redundant metadata calls
@@ -296,13 +297,14 @@ if S3_STATIC_BUCKET:
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
         # Store the manifest file LOCALLY in the Docker image to avoid massive
         # S3 round-trip overhead during hashing. This makes collectstatic take
-        # seconds instead of 20 minutes.
+        # seconds instead of 20 minutes and ensures manifest reliability.
         manifest_storage = FileSystemStorage(location=STATIC_ROOT)
-        file_overwrite = True  # Mandatory for manifest updates
+        file_overwrite = True
         querystring_auth = False
         manifest_strict = False
 else:
     from whitenoise.storage import CompressedManifestStaticFilesStorage
+
     class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
         manifest_strict = False
         def __init__(self, *args, **kwargs):
