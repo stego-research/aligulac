@@ -236,6 +236,7 @@
 					var $this = $(this);
 					if ($this.val()==$this.attr('data-default')) {
 						$this.val('');
+						$this.css('color', '');
 					}
 				});						
 				if (settings.autocomplete_url != undefined) {
