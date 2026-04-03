@@ -63,7 +63,7 @@ def race_icon(race, size=24, cls=""):
     xmlns="http://www.w3.org/2000/svg"
     fill="currentColor"
     class="race-icon race-{race.lower()} {cls}"
-    style="vertical-align: middle;"
+    style="vertical-align: middle; margin-right: 0.25em;"
     role="img"
     aria-label="{name}"
 >
