@@ -234,12 +234,11 @@
 			
 				$fake_input.bind('focus',data,function(event) {
 					var $this = $(this);
-					if ($this.val()==$this.attr('data-default')) { 
+					if ($this.val()==$this.attr('data-default')) {
 						$this.val('');
+						$this.css('color', '');
 					}
-					$this.css('color','#000000');		
-				});
-						
+				});						
 				if (settings.autocomplete_url != undefined) {
 				    settings.autocomplete_opt.source = settings.autocomplete_url;
 				    var autocomplete_options = settings.autocomplete_opt;
