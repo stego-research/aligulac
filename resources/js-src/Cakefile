@@ -61,8 +61,7 @@ deploy = () ->
             fs.mkdirSync deploy_dir
 
         f = deploy_dir + target_file_name
-        # Use npx if available, or assume it's in path
-        uglify = spawn 'npx', ['uglify-js', '-m', '-c', '-o', f + '.min.js', f + '.js']
+        uglify = spawn 'uglifyjs', ['-m', '-c', '-o', f + '.min.js', f + '.js']
         uglify.stderr.on 'data', (data) ->
             process.stderr.write data.toString()
         uglify.on 'exit', (code) ->

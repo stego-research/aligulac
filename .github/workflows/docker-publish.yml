@@ -26,18 +26,17 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: resources/js-src/package.json
+          cache-dependency-path: resources/js-src/package-lock.json
 
       - name: Install Node.js dependencies
         run: |
           cd resources/js-src
-          npm install
-          npm install -g coffeescript uglify-js
+          npm ci
 
       - name: Build JS from CoffeeScript
         run: |
           cd resources/js-src
-          npx cake deploy
+          npm run deploy
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

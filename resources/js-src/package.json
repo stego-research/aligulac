@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "CoffeeScript source for Aligulac",
   "main": "Cakefile",
-  "dependencies": {
+  "scripts": {
+    "build": "cake build",
+    "deploy": "cake deploy"
+  },
+  "devDependencies": {
     "coffee-script": "^1.12.7",
     "stitch": "0.3.3",
     "ncp": "^2.0.0",
     "uglify-js": "^3.19.3"
-  },
-  "scripts": {
-    "build": "cake build",
-    "deploy": "cake deploy"
   }
 }

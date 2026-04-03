@@ -195,7 +195,6 @@ aligulac/update
 resources/js-src/build
 resources/js-src/deploy
 node_modules/
-package-lock.json
 resources/js/general.min.js
 resources/js/general.js
 

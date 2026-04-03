@@ -25,13 +25,13 @@ build-image:
 	$(CONTAINER_TOOL) build -t $(IMAGE_NAME):$(TAG) .
 
 setup-node:
-	cd resources/js-src && npm install
+	cd resources/js-src && npm ci
 
 setup-dev: setup-node
 	pipenv install
 
-build-js: setup-node
-	cd resources/js-src && npx cake deploy
+build-js:
+	cd resources/js-src && npm run deploy
 
 run-dev: setup-dev
 	pipenv run python aligulac/manage.py runserver
