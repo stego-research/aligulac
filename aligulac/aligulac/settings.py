@@ -291,8 +291,13 @@ AWS_S3_USE_THREADS = True
 if S3_STATIC_BUCKET:
     from storages.backends.s3boto3 import S3Boto3Storage
     from django.contrib.staticfiles.storage import ManifestFilesMixin
+    from django.core.files.storage import FileSystemStorage
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
+        # Store the manifest file LOCALLY in the Docker image to avoid massive
+        # S3 round-trip overhead during hashing. This makes collectstatic take
+        # seconds instead of 20 minutes.
+        manifest_storage = FileSystemStorage(location=STATIC_ROOT)
         file_overwrite = True  # Mandatory for manifest updates
         querystring_auth = False
         manifest_strict = False
