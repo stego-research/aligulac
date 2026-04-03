@@ -52,9 +52,9 @@ RUN if [ ! -f /app/aligulac/aligulac/aligulac/local.py ]; then \
 
 # Create untracked directory for cache and standard log directory
 # This must happen BEFORE collectstatic because Django initializes logging on startup
-RUN mkdir -p /app/aligulac/untracked /var/log/aligulac && \
+RUN mkdir -p /app/aligulac/untracked /app/aligulac/static_root /var/log/aligulac && \
     touch /var/log/aligulac/error.log && \
-    chmod -R 777 /app/aligulac/untracked /var/log/aligulac
+    chmod -R 777 /app/aligulac/untracked /app/aligulac/static_root /var/log/aligulac
 
 # Compile translation files
 RUN cd /app/aligulac && PYTHONPATH=/app/aligulac/aligulac /app/.venv/bin/python /app/aligulac/aligulac/manage.py compilemessages
