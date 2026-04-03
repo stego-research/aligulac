@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 from django.core.files.storage import FileSystemStorage
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Helper to get env or default, normalizing 'None' and 'null' to None.
@@ -266,10 +266,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 # Only include the compiled assets in collectstatic.
 # This explicitly skips js-src and node_modules, reducing file count by 1000+.
 STATICFILES_DIRS = [
-    ('css', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'css'))),
-    ('fonts', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'fonts'))),
-    ('img', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'img'))),
-    ('js', os.path.abspath(os.path.join(BASE_DIR, '..', 'resources', 'js'))),
+    ('css', os.path.join(BASE_DIR, 'resources', 'css')),
+    ('fonts', os.path.join(BASE_DIR, 'resources', 'fonts')),
+    ('img', os.path.join(BASE_DIR, 'resources', 'img')),
+    ('js', os.path.join(BASE_DIR, 'resources', 'js')),
 ]
 
 # AWS/R2 Storage Settings for Static Files
