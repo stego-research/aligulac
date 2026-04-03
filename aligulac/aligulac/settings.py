@@ -294,7 +294,7 @@ AWS_S3_GZIP = True
 AWS_QUERYSTRING_AUTH = False
 # Optimization: Increase memory buffer and reduce redundant metadata calls
 AWS_S3_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB
-AWS_S3_PRELOAD_METADATA = True
+AWS_S3_PRELOAD_METADATA = False
 AWS_S3_CHECKSUM_MODE = None
 AWS_S3_USE_THREADS = True
 
@@ -304,15 +304,15 @@ if S3_STATIC_BUCKET:
     from django.contrib.staticfiles.storage import ManifestFilesMixin
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
+        file_overwrite = True
+        querystring_auth = False
+        manifest_strict = False
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             # Ensure the manifest is ALWAYS stored locally in the container
             # so WhiteNoise and Django can find it at runtime.
             self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
-
-        file_overwrite = True  # Mandatory for manifest updates
-        querystring_auth = False
-        manifest_strict = False
 else:
     from whitenoise.storage import CompressedManifestStaticFilesStorage
 
