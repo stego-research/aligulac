@@ -69,13 +69,23 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            S3_STATIC_BUCKET=${{ vars.S3_STATIC_BUCKET }}
-            S3_STATIC_ENDPOINT_URL=${{ vars.S3_STATIC_ENDPOINT_URL }}
-            S3_STATIC_REGION=${{ vars.S3_STATIC_REGION }}
-            S3_STATIC_CUSTOM_DOMAIN=${{ vars.S3_STATIC_CUSTOM_DOMAIN }}
-          secrets: |
-            S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }}
-            S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Sync static files to S3
+        run: |
+          # Use the newly built image to sync files to S3.
+          # This is much faster because files are already hashed and gathered.
+          # We use the short SHA tag which was just pushed.
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+          docker run --rm \
+            -e S3_STATIC_BUCKET=${{ vars.S3_STATIC_BUCKET }} \
+            -e S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }} \
+            -e S3_STATIC_SECRET_KEY=${{ secrets.S3_STATIC_SECRET_KEY }} \
+            -e S3_STATIC_ENDPOINT_URL=${{ vars.S3_STATIC_ENDPOINT_URL }} \
+            -e S3_STATIC_REGION=${{ vars.S3_STATIC_REGION }} \
+            -e S3_STATIC_CUSTOM_DOMAIN=${{ vars.S3_STATIC_CUSTOM_DOMAIN }} \
+            -e SECRET_KEY="build-time-only-key" \
+            -e DEBUG="False" \
+            $IMAGE_TAG \
+            python aligulac/manage.py collectstatic --noinput

@@ -14,9 +14,9 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import os
 from django.core.files.storage import FileSystemStorage
 
-# BASE_DIR is the Django project root (containing manage.py)
+# BASE_DIR is the Django project root (where manage.py lives)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# REPO_ROOT is the repository root (containing resources/ and static_root/)
+# REPO_ROOT is the repository root (where resources/ lives)
 REPO_ROOT = os.path.dirname(BASE_DIR)
 
 
@@ -264,7 +264,6 @@ STATIC_URL = '/static/'
 if S3_STATIC_CUSTOM_DOMAIN and not DEBUG:
     STATIC_URL = f'//{S3_STATIC_CUSTOM_DOMAIN}/'
 
-# Static root is in the Repo folder, consistent with global asset location
 STATIC_ROOT = os.path.join(REPO_ROOT, 'static_root')
 
 # Only include the compiled assets in collectstatic.
@@ -305,10 +304,10 @@ if S3_STATIC_BUCKET:
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
         def __init__(self, *args, **kwargs):
-            # Instantiate manifest_storage lazily to avoid accessing settings 
-            # during module import.
-            self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
             super().__init__(*args, **kwargs)
+            # Ensure the manifest is ALWAYS stored locally in the container
+            # so WhiteNoise and Django can find it at runtime.
+            self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
 
         file_overwrite = True  # Mandatory for manifest updates
         querystring_auth = False
@@ -318,9 +317,9 @@ else:
 
     class SafeWhiteNoiseStorage(CompressedManifestStaticFilesStorage):
         def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             # Ensure consistency with the S3 storage manifest location
             self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
-            super().__init__(*args, **kwargs)
 
         manifest_strict = False
         def hashed_name(self, name, content=None, filename=None):
