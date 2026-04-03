@@ -1,8 +1,10 @@
 import json
-import urllib
-from datetime import timedelta
+import urllib.request
+import urllib.error
+from datetime import timedelta, date as dt_date
 from decimal import Decimal
 
+from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _
 
 from aligulac import settings
@@ -17,17 +19,25 @@ class ExchangeRates(object):
         self._data = self._loadjson(date)
 
     def _loadjson(self, date):
-        date = self._date.strftime('%Y-%m-%d')
-        url = 'http://openexchangerates.org/api/historical/' + date + '.json?app_id=' + settings.EXCHANGE_ID
+        date_str = self._date.strftime('%Y-%m-%d')
+        cache_key = f'exchangerates:{date_str}'
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
+        url = 'https://openexchangerates.org/api/historical/' + date_str + '.json?app_id=' + settings.EXCHANGE_ID
         try:
             jsonfile = urllib.request.urlopen(url)
-        except urllib.error.HTTPerror as err:
+        except urllib.error.HTTPError as err:
             # API limit reached for the month or other error
+            return False
+        except Exception:
             return False
 
         data = json.loads(jsonfile.read().decode())
 
-        # print(sorted(data['rates'].keys()))
+        if not data or 'rates' not in data:
+            return False
 
         # ccy use XBT instead
         try:
@@ -36,13 +46,21 @@ class ExchangeRates(object):
             # Bitcoin transfer rates not available at this time.
             pass
 
+        # Cache the results: 24 hours for current date, 30 days for historical.
+        ttl = 86400 if self._date >= dt_date.today() else 2592000
+        cache.set(cache_key, data, ttl)
+
         return data
 
     def _tobase(self, amount, currency):
+        if not self._data or 'rates' not in self._data:
+             raise RateNotFoundError(currency, self._date)
         return amount * Decimal(self.rates[currency])
 
     @property
     def rates(self):
+        if not self._data:
+            return {}
         return self._data['rates']
 
     def convert(self, amount, currencyfrom, currencyto='USD'):
