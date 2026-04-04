@@ -74,7 +74,7 @@ for player in Player.objects.all():
     # }}}
 
     player.dom_val = dom
-    player.dom_start_id = init + FIRST_PERIOD
-    player.dom_end_id = fin + FIRST_PERIOD + 1
+    player.dom_start_id = ratings[init]['period__id']
+    player.dom_end_id = ratings[fin]['period__id']
     player.save()
 # }}}
