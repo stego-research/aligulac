@@ -1,5 +1,14 @@
 (function($) {
 
+	function htmlEscape(str) {
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
 	var delimiter = new Array();
 	var tags_callbacks = new Array();
 	$.fn.doAutosize = function(o){
@@ -207,7 +216,7 @@
 			var markup = '<div id="'+id+'_tagsinput" class="tagsinput"><div id="'+id+'_addTag">';
 			
 			if (settings.interactive) {
-				markup = markup + '<input id="'+id+'_tag" value="" data-default="'+settings.defaultText+'" />';
+				markup = markup + '<input id="'+id+'_tag" value="" data-default="'+htmlEscape(settings.defaultText)+'" />';
 			}
 			
 			markup = markup + '</div><div class="tags_clear"></div></div>';
