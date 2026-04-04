@@ -737,3 +737,7 @@ def acknowledgements(request):
 
     base.update({'submitters': submitters})
     return render(request, 'acknowledgements.djhtml', base)
+
+
+def sentry_debug(request):
+    division_by_zero = 1 / 0
