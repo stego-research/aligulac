@@ -392,7 +392,7 @@ if SENTRY_DSN:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
-    # Default to 1% in production (500k req/day), 100% in debug/dev
+    # Default to 1% in production, 100% in debug/dev
     default_sample_rate = 0.01 if not DEBUG else 1.0
     # Allow override via environment variable
     sample_rate = float(getattr(local, 'SENTRY_TRACES_SAMPLE_RATE', None) or default_sample_rate)
