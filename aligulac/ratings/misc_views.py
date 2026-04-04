@@ -8,6 +8,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
@@ -397,7 +398,10 @@ def compare_search(request):
         base["messages"] += form.get_messages()
         return render(request, 'compare.search.djhtml', base)
 
-    return redirect(form.generate_url())
+    url = form.generate_url()
+    if not url_has_allowed_host_and_scheme(url, allowed_hosts=None, require_https=request.is_secure()):
+        url = '/misc/compare/'
+    return redirect(url)
 
 
 @cache_page

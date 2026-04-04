@@ -80,5 +80,6 @@ VALKEY_PASSWORD = get_env('VALKEY_PASSWORD', None)
 DEBUG = get_env('DEBUG', 'True').lower() == 'true'
 DEBUG_TOOLBAR = get_env('DEBUG_TOOLBAR', 'True').lower() == 'true'
 
-# Log file for errors
+# Log settings
 ERROR_LOG_FILE = get_env('ERROR_LOG_FILE', '/var/log/aligulac/error.log')
+LOG_FORMAT = get_env('LOG_FORMAT', 'verbose')

@@ -162,7 +162,10 @@ class PredictForm(forms.Form):
 
     # {{{ Combined validation of format, bestof and players
     def clean(self):
-        self.cleaned_data['format'] = min(max(int(self.cleaned_data['format']), 0), len(FORMATS))
+        if 'format' not in self.cleaned_data:
+            return self.cleaned_data
+
+        self.cleaned_data['format'] = min(max(int(self.cleaned_data['format']), 0), len(FORMATS) - 1)
         fmt = FORMATS[self.cleaned_data['format']]
 
         if 'players' in self.cleaned_data and not fmt['np-check'](len(self.cleaned_data['players'])):
@@ -250,7 +253,7 @@ def predict(request):
 
     url = base['form'].generate_url()
     # Validate that the generated URL is a safe local URL before redirecting.
-    if not url_has_allowed_host_and_scheme(url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+    if not url_has_allowed_host_and_scheme(url, allowed_hosts=None, require_https=request.is_secure()):
         url = '/inference/'
     return redirect(url)
 
