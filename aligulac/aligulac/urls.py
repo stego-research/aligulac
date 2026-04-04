@@ -137,8 +137,6 @@ urlpatterns = [
     path('404/', aligulac.views.h404, kwargs={'exception': None}),
     path('500/', aligulac.views.h500),
 
-    path('sentry-debug/', aligulac.views.sentry_debug),
-
     path('admin/', admin.site.urls),
 
     # Tastypie
@@ -163,4 +161,8 @@ if settings.DEBUG:
         urlpatterns += [
             path('__debug__/', include(debug_toolbar.urls)),
         ]
+
+    urlpatterns += [
+        path('sentry-debug/', aligulac.views.sentry_debug),
+    ]
 # }}}

@@ -740,4 +740,7 @@ def acknowledgements(request):
 
 
 def sentry_debug(request):
+    from aligulac.settings import DEBUG
+    if not DEBUG:
+        return HttpResponseNotFound()
     division_by_zero = 1 / 0

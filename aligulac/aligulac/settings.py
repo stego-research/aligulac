@@ -394,8 +394,18 @@ if SENTRY_DSN:
 
     # Default to 1% in production, 100% in debug/dev
     default_sample_rate = 0.01 if not DEBUG else 1.0
-    # Allow override via environment variable
-    sample_rate = float(getattr(local, 'SENTRY_TRACES_SAMPLE_RATE', None) or default_sample_rate)
+    
+    # Safely parse and validate the sample rate
+    try:
+        raw_sample_rate = getattr(local, 'SENTRY_TRACES_SAMPLE_RATE', None)
+        if raw_sample_rate is not None:
+            sample_rate = float(raw_sample_rate)
+            # Clamp between 0.0 and 1.0
+            sample_rate = max(0.0, min(1.0, sample_rate))
+        else:
+            sample_rate = default_sample_rate
+    except (ValueError, TypeError):
+        sample_rate = default_sample_rate
 
     sentry_sdk.init(
         dsn=SENTRY_DSN,
