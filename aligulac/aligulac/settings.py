@@ -37,7 +37,7 @@ from . import local as local
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = local.SECRET_KEY
-SENTRY_DSN = local.SENTRY_DSN
+SENTRY_DSN = getattr(local, 'SENTRY_DSN', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = local.DEBUG
@@ -395,7 +395,7 @@ if SENTRY_DSN:
     # Default to 1% in production (500k req/day), 100% in debug/dev
     default_sample_rate = 0.01 if not DEBUG else 1.0
     # Allow override via environment variable
-    sample_rate = float(local.SENTRY_TRACES_SAMPLE_RATE or default_sample_rate)
+    sample_rate = float(getattr(local, 'SENTRY_TRACES_SAMPLE_RATE', None) or default_sample_rate)
 
     sentry_sdk.init(
         dsn=SENTRY_DSN,
