@@ -10,6 +10,7 @@ from django.shortcuts import (
     redirect,
     render,
 )
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import (
     gettext_lazy as _,
     gettext
@@ -248,8 +249,9 @@ def predict(request):
         return render(request, 'predict.djhtml', base)
 
     url = base['form'].generate_url()
-    # Ensure the URL is treated as a relative path by the redirect function
-    # to prevent any potential open-redirect vulnerabilities.
+    # Validate that the generated URL is a safe local URL before redirecting.
+    if not url_has_allowed_host_and_scheme(url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        url = '/inference/'
     return redirect(url)
 
 
