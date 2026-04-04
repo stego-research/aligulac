@@ -161,4 +161,8 @@ if settings.DEBUG:
         urlpatterns += [
             path('__debug__/', include(debug_toolbar.urls)),
         ]
+
+    urlpatterns += [
+        path('sentry-debug/', aligulac.views.sentry_debug),
+    ]
 # }}}

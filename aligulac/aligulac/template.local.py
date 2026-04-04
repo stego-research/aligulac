@@ -27,6 +27,10 @@ LOCALE_PATHS = (get_env('LOCALE_PATHS', os.path.join(BASE_DIR, 'locale/')),)
 # Secret Key
 SECRET_KEY = get_env('SECRET_KEY', '')
 
+# Sentry DSN
+SENTRY_DSN = get_env('SENTRY_DSN', '')
+SENTRY_TRACES_SAMPLE_RATE = get_env('SENTRY_TRACES_SAMPLE_RATE', None)
+
 # API key to openexchangerates.org
 EXCHANGE_ID = get_env('EXCHANGE_ID', '')
 

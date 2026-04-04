@@ -30,6 +30,7 @@ django-storages = {extras = ["boto3"], version = "*"}
 certifi = "*"
 gunicorn = "*"
 whitenoise = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 

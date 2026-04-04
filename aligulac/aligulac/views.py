@@ -4,6 +4,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.db.models import (
@@ -737,3 +738,9 @@ def acknowledgements(request):
 
     base.update({'submitters': submitters})
     return render(request, 'acknowledgements.djhtml', base)
+
+
+def sentry_debug(request):
+    if not settings.DEBUG:
+        return HttpResponseNotFound()
+    division_by_zero = 1 / 0

@@ -37,6 +37,7 @@ from . import local as local
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = local.SECRET_KEY
+SENTRY_DSN = getattr(local, 'SENTRY_DSN', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = local.DEBUG
@@ -385,3 +386,32 @@ TEMPLATES = [
 
 SHOW_PER_LIST_PAGE = 40
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Sentry Configuration
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    # Default to 1% in production, 100% in debug/dev
+    default_sample_rate = 0.01 if not DEBUG else 1.0
+    
+    # Safely parse and validate the sample rate
+    try:
+        raw_sample_rate = getattr(local, 'SENTRY_TRACES_SAMPLE_RATE', None)
+        if raw_sample_rate is not None:
+            sample_rate = float(raw_sample_rate)
+            # Clamp between 0.0 and 1.0
+            sample_rate = max(0.0, min(1.0, sample_rate))
+        else:
+            sample_rate = default_sample_rate
+    except (ValueError, TypeError):
+        sample_rate = default_sample_rate
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        # Add data like request headers and IP for users
+        send_default_pii=True,
+        # Set traces_sample_rate to capture transactions for performance monitoring.
+        traces_sample_rate=sample_rate,
+    )
