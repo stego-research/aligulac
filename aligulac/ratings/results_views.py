@@ -22,6 +22,7 @@ from django.shortcuts import (
     redirect,
     get_object_or_404,
 )
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext_lazy
 
@@ -973,7 +974,10 @@ def results(request):
 def events(request, event_id=None):
     # {{{ Get base context, redirect if necessary
     if 'goto' in request.GET:
-        return redirect('/results/events/' + request.GET['goto'])
+        url = '/results/events/' + request.GET['goto']
+        if not url_has_allowed_host_and_scheme(url, allowed_hosts=None, require_https=request.is_secure()):
+            url = '/results/events/'
+        return redirect(url)
 
     base = base_ctx('Results', 'By Event', request)
     # }}}
