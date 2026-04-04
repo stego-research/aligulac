@@ -150,9 +150,18 @@ for p in players.values():
     )
 
     p.update({
-        'new_ratings': {'M': new_ratings[0], 'P': new_ratings[1], 'T': new_ratings[2], 'Z': new_ratings[3]},
-        'new_devs': {'M': new_devs[0], 'P': new_devs[1], 'T': new_devs[2], 'Z': new_devs[3]},
-        'perfs': {'M': perfs[0], 'P': perfs[1], 'T': perfs[2], 'Z': perfs[3]},
+        'new_ratings': {
+            'M': float(new_ratings[0]), 'P': float(new_ratings[1]),
+            'T': float(new_ratings[2]), 'Z': float(new_ratings[3]),
+        },
+        'new_devs': {
+            'M': float(new_devs[0]), 'P': float(new_devs[1]),
+            'T': float(new_devs[2]), 'Z': float(new_devs[3]),
+        },
+        'perfs': {
+            'M': float(perfs[0]), 'P': float(perfs[1]),
+            'T': float(perfs[2]), 'Z': float(perfs[3]),
+        },
     })
 # }}}
 
