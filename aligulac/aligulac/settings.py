@@ -227,15 +227,11 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
-        'json': {
-            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
-        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': getattr(local, 'LOG_FORMAT', 'verbose'),
+            'formatter': 'verbose',
         },
     },
     'root': {

@@ -82,4 +82,3 @@ DEBUG_TOOLBAR = get_env('DEBUG_TOOLBAR', 'True').lower() == 'true'
 
 # Log settings
 ERROR_LOG_FILE = get_env('ERROR_LOG_FILE', '/var/log/aligulac/error.log')
-LOG_FORMAT = get_env('LOG_FORMAT', 'verbose')

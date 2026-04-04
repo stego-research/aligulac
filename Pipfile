@@ -31,7 +31,6 @@ certifi = "*"
 gunicorn = "*"
 whitenoise = "*"
 sentry-sdk = "*"
-python-json-logger = "*"
 
 [dev-packages]
 
