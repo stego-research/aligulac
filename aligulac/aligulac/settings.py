@@ -219,6 +219,7 @@ DATABASES = {
         'PORT': local.DB_PORT,
         'OPTIONS': {
             'sslmode': getattr(local, 'DB_SSLMODE', 'prefer'),
+            'options': f'-c search_path={get_env("DB_SCHEMA", getattr(local, "DB_SCHEMA", "public"))}',
         }
     }
 }

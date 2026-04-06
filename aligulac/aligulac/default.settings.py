@@ -15,6 +15,16 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+# Helper to get env or default, normalizing 'None' and 'null' to None.
+# Empty strings are kept as '' to avoid breaking downstream .split()/.lower() calls.
+def get_env(name, default=None):
+    if name not in os.environ:
+        return default
+    val = os.environ[name]
+    if val.lower() in ('none', 'null'):
+        return None
+    return val
+
 import aligulac.local as local
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -173,6 +183,9 @@ DATABASES = {
         'USER': local.DB_USER,
         'PASSWORD': local.DB_PASSWORD,
         'HOST': 'localhost',
+        'OPTIONS': {
+            'options': f'-c search_path={get_env("DB_SCHEMA", getattr(local, "DB_SCHEMA", "public"))}',
+        }
     }
 }
 
