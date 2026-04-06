@@ -20,9 +20,14 @@ class ETagMiddleware:
         if response.has_header('ETag'):
             return response
 
-        # Only hash if the response has content (e.g. not a streaming response)
-        if hasattr(response, 'content') and response.content:
-            etag = '"%s"' % hashlib.md5(force_bytes(response.content)).hexdigest()
-            response['ETag'] = etag
+        # Explicitly skip streaming responses (they don't have .content)
+        if getattr(response, 'streaming', False):
+            return response
+
+        # Hash the content (even if it's an empty byte string)
+        # We use usedforsecurity=False to avoid issues in FIPS environments
+        content = getattr(response, 'content', b'')
+        etag = '"%s"' % hashlib.md5(force_bytes(content), usedforsecurity=False).hexdigest()
+        response['ETag'] = etag
             
         return response
