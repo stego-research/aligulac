@@ -28,14 +28,16 @@ class ETagMiddleware:
         # We use usedforsecurity=False to avoid issues in FIPS environments
         content = getattr(response, 'content', b'')
         
-        # Use a Weak ETag (W/") which is more likely to survive CDN transcoding
+        # Use a Weak ETag (W/") which is more likely to survive intermediary transcoding
         etag = 'W/"%s"' % hashlib.md5(force_bytes(content), usedforsecurity=False).hexdigest()
         response['ETag'] = etag
         response['X-Aligulac-ETag'] = 'active; %s' % etag
 
-        # Tell downstream caches (proxies, CDNs, and browsers) to cache this, 
-        # but always revalidate. This allows 304 Not Modified to work for dynamic content.
+        # Tell downstream caches and browsers to cache this, but always revalidate.
+        # Since Aligulac uses cookie-based language switching, we use 'private' 
+        # to ensure that shared proxies (like corporate firewalls) do not 
+        # cache one user's language for another.
         if not response.has_header('Cache-Control'):
-            response['Cache-Control'] = 'public, max-age=0, must-revalidate'
+            response['Cache-Control'] = 'private, no-cache, must-revalidate, no-transform'
             
         return response
