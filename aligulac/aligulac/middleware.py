@@ -34,6 +34,7 @@ class ETagMiddleware:
         # Use a Weak ETag (W/") which is more likely to survive intermediary transcoding
         etag = 'W/"%s"' % hashlib.md5(force_bytes(content), usedforsecurity=False).hexdigest()
         response['ETag'] = etag
+        # Project-specific debug header
         response['X-Aligulac-ETag'] = 'active; %s' % etag
 
         # Tell downstream caches and browsers to cache this, but always revalidate.
