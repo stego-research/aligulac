@@ -29,7 +29,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f stable "$tag_name"
-          git push origin stable --force
+          git push origin refs/tags/stable --force
 
   call-reusable-workflow:
     needs: [update-stable-tag]
