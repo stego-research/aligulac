@@ -5,7 +5,7 @@ on:
     tags:
       - 'stable'
   release:
-    types: [published]
+    types: [released]
 
 permissions:
   contents: read
