@@ -27,9 +27,11 @@ class ETagMiddleware:
         # Hash the content (even if it's an empty byte string)
         # We use usedforsecurity=False to avoid issues in FIPS environments
         content = getattr(response, 'content', b'')
-        etag = '"%s"' % hashlib.md5(force_bytes(content), usedforsecurity=False).hexdigest()
+        
+        # Use a Weak ETag (W/") which is more likely to survive CDN transcoding
+        etag = 'W/"%s"' % hashlib.md5(force_bytes(content), usedforsecurity=False).hexdigest()
         response['ETag'] = etag
-        response['X-Aligulac-ETag'] = 'active'
+        response['X-Aligulac-ETag'] = 'active; %s' % etag
 
         # Tell downstream caches (proxies, CDNs, and browsers) to cache this, 
         # but always revalidate. This allows 304 Not Modified to work for dynamic content.
