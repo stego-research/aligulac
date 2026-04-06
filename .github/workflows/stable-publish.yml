@@ -8,12 +8,14 @@ on:
     types: [published]
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 jobs:
   update-stable-tag:
     if: github.event_name == 'release'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
