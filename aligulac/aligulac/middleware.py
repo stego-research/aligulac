@@ -29,5 +29,11 @@ class ETagMiddleware:
         content = getattr(response, 'content', b'')
         etag = '"%s"' % hashlib.md5(force_bytes(content), usedforsecurity=False).hexdigest()
         response['ETag'] = etag
+        response['X-Aligulac-ETag'] = 'active'
+
+        # Tell downstream caches (proxies, CDNs, and browsers) to cache this, 
+        # but always revalidate. This allows 304 Not Modified to work for dynamic content.
+        if not response.has_header('Cache-Control'):
+            response['Cache-Control'] = 'public, max-age=0, must-revalidate'
             
         return response
