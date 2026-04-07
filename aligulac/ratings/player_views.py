@@ -416,8 +416,8 @@ def player(request, player_id):
         if res['charts']:
             # Fetch ratings using .values() to minimize object unpickling overhead
             ratings_query = (
-                total_ratings(player.rating_set.filter(period_id__lte=recent_update.period_id))
-                .values('id', 'period_id', 'period__start', 'period__end', 'rating', 'tot_vp', 'tot_vt', 'tot_vz', 
+                player.rating_set.filter(period_id__lte=recent_update.period_id)
+                .values('id', 'period_id', 'period__start', 'period__end', 'rating', 
                         'bf_rating', 'bf_rating_vp', 'bf_rating_vt', 'bf_rating_vz', 'prev_id')
                 .order_by('period_id')
             )
@@ -936,7 +936,6 @@ def historical(request, player_id):
         player.rating_set.filter(period_id__lte=latest.period_id)
         .values('id', 'period_id', 'period__start', 'period__end',
                 'rating', 'rating_vp', 'rating_vt', 'rating_vz',
-                'tot_vp', 'tot_vt', 'tot_vz', 
                 'bf_rating', 'bf_rating_vp', 'bf_rating_vt', 'bf_rating_vz', 'dev', 'decay', 'position', 
                 'position_vp', 'position_vt', 'position_vz', 'prev_id')
         .order_by('-period_id')
