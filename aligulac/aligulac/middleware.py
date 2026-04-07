@@ -41,8 +41,9 @@ class ETagMiddleware:
         # Since Aligulac uses cookie-based language switching, we use 'private' 
         # to ensure that shared proxies (like corporate firewalls) do not 
         # cache one user's language for another.
-        # We use 'no-transform' to prevent intermediaries from stripping the ETag 
-        # during compression transcoding or minification.
+        # We omit 'no-transform' to allow intermediaries (like Cloudflare or 
+        # cloudflared) to compress and optimize the response, which is 
+        # critical for reducing NAT Gateway egress fees.
         if not response.has_header('Cache-Control'):
             response['Cache-Control'] = 'private, no-cache, must-revalidate'
             
