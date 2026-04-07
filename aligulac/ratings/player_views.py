@@ -276,7 +276,6 @@ def player(request, player_id):
 
     # {{{ Various easy data
     from aligulac.cache import cached_query
-    from django.conf import settings
 
     def get_player_stats():
         matches = player.get_matchset()
@@ -423,7 +422,7 @@ def player(request, player_id):
             )
             
             # Optimized match count fetching
-            match_stats = player.get_matchset().values('period_id').annotate(
+            match_stats = player.get_matchset().order_by().values('period_id').annotate(
                 nmatches=Count('id'),
                 ngames=Sum(F('sca') + F('scb'))
             )
@@ -942,7 +941,7 @@ def historical(request, player_id):
     )
 
     # Bulk fetch match stats
-    match_stats = player.get_matchset().values('period_id').annotate(
+    match_stats = player.get_matchset().order_by().values('period_id').annotate(
         nmatches=Count('id'),
         ngames=Sum(F('sca') + F('scb'))
     )
