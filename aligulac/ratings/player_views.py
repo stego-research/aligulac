@@ -934,7 +934,7 @@ def historical(request, player_id):
     latest = player.rating_set.filter(period__computed=True, decay=0).latest('period')
     historical_query = (
         player.rating_set.filter(period_id__lte=latest.period_id)
-        .values('id', 'period_id', 'period__start', 'period__end', 'period__is_preview',
+        .values('id', 'period_id', 'period__start', 'period__end',
                 'rating', 'rating_vp', 'rating_vt', 'rating_vz',
                 'tot_vp', 'tot_vt', 'tot_vz', 
                 'bf_rating', 'bf_rating_vp', 'bf_rating_vt', 'bf_rating_vz', 'dev', 'decay', 'position', 
@@ -950,10 +950,13 @@ def historical(request, player_id):
     stats_map = {s['period_id']: s for s in match_stats}
 
     historical_list = []
+    today = date.today()
     for r in historical_query:
         s = stats_map.get(r['period_id'], {'nmatches': 0, 'ngames': 0})
         r['nmatches'] = s['nmatches']
         r['ngames'] = s['ngames']
+        # Manually calculate is_preview since it's a method, not a field
+        r['period__is_preview'] = r['period__end'] >= today
         historical_list.append(r)
 
     # Pre-calculate rating differences (since it's ordered by -period_id, next item is the previous one)
