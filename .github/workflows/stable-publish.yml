@@ -7,7 +7,7 @@ on:
   release:
     types: [published]
 
-# Use cancel-in-progress: false to avoid a bot-triggered tag push 
+# Use cancel-in-progress: false to avoid a bot-triggered tag push
 # from cancelling the release-triggered publish that initiated it.
 concurrency:
   group: stable-publish
