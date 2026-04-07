@@ -114,7 +114,7 @@ def markdown(value):
 @register.filter
 @stringfilter
 def jsescape(value):
-    return value.replace(r"'", r"\'").replace(r'"', r'\"')
+    return value.replace('\\', '\\\\').replace("'", r"\'").replace('"', r'\"').replace('\n', '\\n').replace('\r', '\\r')
 
 
 # urlify: Adds links to URLs.

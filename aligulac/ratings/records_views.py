@@ -19,6 +19,10 @@ from ratings.tools import (
     country_list,
     total_ratings,
 )
+from ratings.templatetags.ratings_extras import (
+    milliseconds,
+    ratscale,
+)
 
 
 # }}}
@@ -66,8 +70,6 @@ def history(request):
         ).order_by('period__end')
         
         ratings_by_player = {}
-        from datetime import date
-        epoch = date(1970, 1, 1)
         
         for r in all_ratings:
             pid = r['player_id']
@@ -78,10 +80,11 @@ def history(request):
             rating_val = r['bf_rating']
             
             # Pre-calculate Highcharts data to speed up template rendering
-            y = int(round((float(rating_val) + 1.0) * 1000))
+            # Reuse canonical scaling and epoch logic from templatetags
+            y = ratscale(rating_val)
             ratings_by_player[pid].append({
                 'name': f"{date_val}: {y}",
-                'x': (date_val - epoch).days * 24 * 60 * 60 * 1000,
+                'x': milliseconds(date_val),
                 'y': y
             })
 
@@ -105,10 +108,11 @@ def history(request):
     )
     # }}}
 
-    # Cache the country list since it changes very rarely and Player.objects.all() is slow.
+    # Cache the country list scoped by language since it contains translated names.
+    countries_cache_key = f"country_list_all_{request.LANGUAGE_CODE}"
     countries = cached_query(
         request,
-        'country_list_all',
+        countries_cache_key,
         lambda: country_list(Player.objects.all()),
         timeout=86400
     )
