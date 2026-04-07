@@ -78,6 +78,7 @@ PROJECT_PATH = local.PROJECT_PATH
 DUMP_PATH = local.DUMP_PATH
 INTERNAL_IPS = local.INTERNAL_IPS
 EXCHANGE_ID = local.EXCHANGE_ID
+DB_SCHEMA = get_env('DB_SCHEMA', getattr(local, 'DB_SCHEMA', 'public'))
 
 # S3/R2 Configuration
 # Database Dumps (AWS S3)
@@ -219,7 +220,7 @@ DATABASES = {
         'PORT': local.DB_PORT,
         'OPTIONS': {
             'sslmode': getattr(local, 'DB_SSLMODE', 'prefer'),
-            'options': f'-c search_path={get_env("DB_SCHEMA", getattr(local, "DB_SCHEMA", "public"))}',
+            'options': f'-c search_path={DB_SCHEMA}',
         }
     }
 }
