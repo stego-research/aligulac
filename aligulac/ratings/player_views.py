@@ -97,6 +97,40 @@ def interp_rating(date, ratings):
 
 # }}}
 
+# {{{ get_rating_dict: helper to convert Rating object to dict for templates/caching
+def get_rating_dict(r):
+    if not r:
+        return None
+    return {
+        'rating': r.rating,
+        'rating_vp': r.rating_vp,
+        'rating_vt': r.rating_vt,
+        'rating_vz': r.rating_vz,
+        'tot_vp': r.rating + r.rating_vp,
+        'tot_vt': r.rating + r.rating_vt,
+        'tot_vz': r.rating + r.rating_vz,
+        'dev': r.dev,
+        'dev_vp': r.dev_vp,
+        'dev_vt': r.dev_vt,
+        'dev_vz': r.dev_vz,
+        'tot_dev_vp': sqrt(r.dev**2 + r.dev_vp**2),
+        'tot_dev_vt': sqrt(r.dev**2 + r.dev_vt**2),
+        'tot_dev_vz': sqrt(r.dev**2 + r.dev_vz**2),
+        'position': r.position,
+        'position_vp': r.position_vp,
+        'position_vt': r.position_vt,
+        'position_vz': r.position_vz,
+        'period': {
+            'id': r.period_id,
+            'end': r.period.end,
+            'start': r.period.start,
+        },
+        'decay': r.decay,
+    }
+
+
+# }}}
+
 # {{{ PlayerModForm: Form for modifying a player.
 class PlayerModForm(forms.Form):
     tag = StrippedCharField(max_length=30, required=True, label=_('Tag'))
@@ -367,35 +401,6 @@ def player(request, player_id):
 
         ratings_q = total_ratings(player.rating_set.filter(period__computed=True)).select_related('period')
         
-        def get_rating_dict(r):
-            if not r: return None
-            return {
-                'rating': r.rating,
-                'rating_vp': r.rating_vp,
-                'rating_vt': r.rating_vt,
-                'rating_vz': r.rating_vz,
-                'tot_vp': r.rating + r.rating_vp,
-                'tot_vt': r.rating + r.rating_vt,
-                'tot_vz': r.rating + r.rating_vz,
-                'dev': r.dev,
-                'dev_vp': r.dev_vp,
-                'dev_vt': r.dev_vt,
-                'dev_vz': r.dev_vz,
-                'tot_dev_vp': sqrt(r.dev**2 + r.dev_vp**2),
-                'tot_dev_vt': sqrt(r.dev**2 + r.dev_vt**2),
-                'tot_dev_vz': sqrt(r.dev**2 + r.dev_vz**2),
-                'position': r.position,
-                'position_vp': r.position_vp,
-                'position_vt': r.position_vt,
-                'position_vz': r.position_vz,
-                'period': {
-                    'id': r.period_id, 
-                    'end': r.period.end,
-                    'start': r.period.start,
-                },
-                'decay': r.decay,
-            }
-
         recent_update = player.get_latest_rating_update()
         first_rating = ratings_q.earliest('period')
         
@@ -987,43 +992,108 @@ def earnings(request, player_id):
     base = base_ctx('Ranking', 'Earnings', request, context=player)
 
     year = get_param(request, 'year', 'all')
-
-    # {{{ Gather data
-    earnings = player.earnings_set
     if year != 'all':
-        earnings = earnings.filter(event__latest__year=year)
-    earnings = earnings.prefetch_related('event__earnings_set').order_by('-event__latest')
-    totalearnings = earnings.aggregate(Sum('earnings'))['earnings__sum']
+        try:
+            year = int(year)
+        except ValueError:
+            year = 'all'
 
-    years = range(2010, datetime.now().year + 1)
+    from aligulac.cache import cached_query
+    from ratings.models import TYPE_CATEGORY, TYPE_EVENT
 
-    def year_is_valid(y):
-        return player.earnings_set.filter(event__latest__year=y).exists()
+    def get_earnings_payload():
+        # Fetch all years with earnings efficiently, excluding null dates
+        valid_years = sorted(
+            [y for y in player.earnings_set.values_list('event__latest__year', flat=True).distinct() if y is not None],
+            reverse=True
+        )
 
-    valid_years = filter(year_is_valid, years)
+        earnings_q = player.earnings_set.all()
+        if year != 'all':
+            earnings_q = earnings_q.filter(event__latest__year=year)
+        
+        # Prefetch everything needed for Python-side processing to avoid N+1
+        earnings_q = earnings_q.select_related('event').prefetch_related(
+            'event__earnings_set',
+            'event__uplink__parent'
+        ).order_by('-event__latest')
 
-    # Get placement range for each prize
-    for e in earnings:
-        placements = get_placements(e.event)
-        for prize, rng in placements.items():
-            if rng[0] <= e.placement <= rng[1]:
-                e.rng = rng
-    # }}}
+        total_earnings_usd = ntz(earnings_q.aggregate(Sum('earnings'))['earnings__sum'])
 
-    # {{{ Sum up earnings by currency
-    currencies = {e.currency for e in earnings}
-    by_currency = {cur: sum([e.origearnings for e in earnings if e.currency == cur]) for cur in currencies}
-    if len(by_currency) == 1 and 'USD' in by_currency:
-        by_currency = None
-    # }}}
+        earnings_list = []
+        by_currency_raw = {}
 
+        for e in earnings_q:
+            by_currency_raw[e.currency] = by_currency_raw.get(e.currency, 0) + e.origearnings
+
+            # Placement range logic: Compute in Python from prefetched event__earnings_set
+            event_earnings = list(e.event.earnings_set.all())
+            placements_map = {}
+            for ee in event_earnings:
+                if ee.placement == 0:
+                    continue
+                prize = ee.earnings
+                if prize not in placements_map:
+                    placements_map[prize] = [ee.placement, ee.placement]
+                else:
+                    placements_map[prize][0] = min(placements_map[prize][0], ee.placement)
+                    placements_map[prize][1] = max(placements_map[prize][1], ee.placement)
+            
+            rng = None
+            for prize, r in placements_map.items():
+                if r[0] <= e.placement <= r[1]:
+                    rng = r
+                    break
+            
+            # Ancestors logic: Compute in Python from prefetched event__uplink__parent
+            # We match get_ancestors_event() which includes TYPE_CATEGORY and TYPE_EVENT (no noprint filter)
+            links = list(e.event.uplink.all())
+            links.sort(key=lambda link: -link.distance)
+            ancestors = []
+            for link in links:
+                parent = link.parent
+                if parent.type in (TYPE_CATEGORY, TYPE_EVENT):
+                    ancestors.append({
+                        'id': parent.id,
+                        'name': parent.name,
+                        'fullname': parent.fullname
+                    })
+
+            earnings_list.append({
+                'rng': rng,
+                'event': {
+                    'id': e.event.id,
+                    'name': e.event.name,
+                    'fullname': e.event.fullname,
+                    'earliest': e.event.earliest,
+                    'latest': e.event.latest,
+                    'ancestors': ancestors
+                },
+                'origearnings': e.origearnings,
+                'currency': e.currency,
+                'earnings': e.earnings
+            })
+
+        if len(by_currency_raw) == 1 and 'USD' in by_currency_raw:
+            by_currency = None
+        else:
+            by_currency = by_currency_raw
+
+        return {
+            'earnings': earnings_list,
+            'totalearnings': total_earnings_usd,
+            'by_currency': by_currency,
+            'valid_years': list(valid_years)
+        }
+
+    # Cache key scoped by player, filter, and language
+    cache_key = f"player_earnings_{player.id}_{year}_{request.LANGUAGE_CODE}"
+    payload = cached_query(request, cache_key, get_earnings_payload, timeout=3600)
+
+    base.update(payload)
     base.update({
         'player': player,
-        'earnings': earnings,
-        'totalearnings': totalearnings,
-        'by_currency': by_currency,
         'year': year,
-        'valid_years': reversed(list(valid_years))
     })
 
     return render(request, 'player_earnings.djhtml', base)
