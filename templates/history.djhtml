@@ -91,21 +91,21 @@ This is the Hall of Fame template. It's called from ratings.views.records.
        series: [
          {% for p in players %}
          { 
-           name: '{{ p.0.tag }}',
-           {% if p.0.race == "T" %}
+           name: '{{ p.tag }}',
+           {% if p.race == "T" %}
            color: 'var(--race-t)',
-           {% elif p.0.race == "Z" %}
+           {% elif p.race == "Z" %}
            color: 'var(--race-z)',
-           {% elif p.0.race == "P" %}
+           {% elif p.race == "P" %}
            color: 'var(--race-p)',
            {% else %}
            color: 'var(--fg-muted)',
            {% endif %}
            lineWidth: 1,
-           data: [{% for r in p.1 %} {
-             name: '{{ r.period.end }}: {{r.bf_rating|ratscale }}',
-             x: {{ r.period.end|milliseconds }},
-             y: {{ r.bf_rating|ratscale }}
+           data: [{% for r in p.ratings %} {
+             name: '{{ r.name }}',
+             x: {{ r.x }},
+             y: {{ r.y }}
                                },{% endfor %}]
          },
          {% endfor %}] 
