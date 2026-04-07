@@ -350,10 +350,19 @@ def home(request):
 
     entries = []
     if base['curp']:
-        entries = filter_active(Rating.objects.filter(period=base['curp'])) \
-            .order_by('-rating') \
-            .select_related('player', 'prev')[0:10]
-        entries = populate_teams(entries)
+        def get_top_10():
+            qset = filter_active(Rating.objects.filter(period=base['curp'])) \
+                .order_by('-rating') \
+                .select_related('player', 'prev')[0:10]
+            return populate_teams(qset)
+
+        from aligulac.cache import cached_query
+        entries = cached_query(
+            request,
+            f"home_top_10_{base['curp'].id}",
+            get_top_10,
+            timeout=settings.CACHE_TIMES.get('aligulac.views.home', 900)
+        )
 
     blogs = Post.objects.order_by('-date')[0:3]
 

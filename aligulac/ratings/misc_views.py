@@ -243,44 +243,63 @@ CLOCKS = [
 def clocks(request):
     ctx = base_ctx('Misc', 'Days Since…', request)
 
+    def get_clocks_data():
+        clocks_data = list()
+        for desc, alt_desc, q, t in CLOCKS:
+            obj = None
+            extra = None
+            date = None
+
+            if t == "match":
+                q = q.prefetch_related("pla", "plb", "eventobj", "message_set")
+                matches = q[:10]
+                extra = display_matches(matches)
+                date = extra[0]["date"]
+
+            elif t == "event_winner":
+                q = q.prefetch_related("earnings_set")
+                events = list(q[:10])
+                obj = events[0]
+                extra = list()
+                for e in events:
+                    pearnings = list(
+                        e.earnings_set
+                        .exclude(placement=0)
+                        .order_by("placement")
+                        .prefetch_related("player")[:2]
+                    )
+                    extra.append((e, pearnings))
+                date = obj.latest
+
+            elif t == "one_time":
+                date = q()
+
+            clocks_data.append({
+                'desc': desc,
+                'alt_desc': alt_desc,
+                'obj': obj,
+                't': t,
+                'date': date,
+                'extra': extra
+            })
+        return clocks_data
+
+    from aligulac.cache import cached_query
+    from django.conf import settings
+    clocks_data = cached_query(
+        request,
+        "clocks_data",
+        get_clocks_data,
+        timeout=settings.CACHE_TIMES.get('ratings.misc_views.clocks', 43200)
+    )
+
+    today = datetime.today().date()
     ctx["clocks"] = list()
-    for desc, alt_desc, q, t in CLOCKS:
-        obj = None
-        extra = None
-        date = None
-
-        if t == "match":
-            q = q.prefetch_related("pla", "plb", "eventobj", "message_set")
-            matches = q[:10]
-
-            extra = display_matches(matches)
-
-            date = extra[0]["date"]
-
-        elif t == "event_winner":
-            q = q.prefetch_related("earnings_set")
-            events = list(q[:10])
-            obj = events[0]
-            extra = list()
-            for e in events:
-                pearnings = list(
-                    e.earnings_set
-                    .exclude(placement=0)
-                    .order_by("placement")
-                    .prefetch_related("player")[:2]
-                )
-                extra.append((e, pearnings))
-
-            date = obj.latest
-
-        elif t == "one_time":
-            date = q()
-
-        diff = datetime.today().date() - date
+    for d in clocks_data:
+        diff = today - d['date']
         years = diff.days // 365
         days = diff.days % 365
-        c = Clock(desc, alt_desc, obj, t, date, years, days, extra)
-
+        c = Clock(d['desc'], d['alt_desc'], d['obj'], d['t'], d['date'], years, days, d['extra'])
         ctx["clocks"].append(c)
 
     ctx["clocks"].sort(key=lambda c: c.date, reverse=True)
