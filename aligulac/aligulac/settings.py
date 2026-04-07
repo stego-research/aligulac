@@ -443,6 +443,8 @@ if SENTRY_DSN:
         integrations=[DjangoIntegration()],
         # Add data like request headers and IP for users
         send_default_pii=True,
+        # Sample errors at 10% to prevent flooding on high-frequency errors
+        sample_rate=0.1 if not DEBUG else 1.0,
         # Use traces_sampler instead of traces_sample_rate for more fine-grained control
         traces_sampler=traces_sampler,
         # Keep breadcrumbs list short and filtered

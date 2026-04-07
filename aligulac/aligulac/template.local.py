@@ -77,8 +77,8 @@ REDIS_PASSWORD = get_env('REDIS_PASSWORD', None)
 VALKEY_PASSWORD = get_env('VALKEY_PASSWORD', None)
 
 # Debug mode
-DEBUG = get_env('DEBUG', 'True').lower() == 'true'
-DEBUG_TOOLBAR = get_env('DEBUG_TOOLBAR', 'True').lower() == 'true'
+DEBUG = get_env('DEBUG', 'False').lower() == 'true'
+DEBUG_TOOLBAR = get_env('DEBUG_TOOLBAR', 'False').lower() == 'true'
 
 # Log settings
 ERROR_LOG_FILE = get_env('ERROR_LOG_FILE', '/var/log/aligulac/error.log')
