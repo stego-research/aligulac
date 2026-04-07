@@ -18,7 +18,7 @@ def cached_query(request, key, query_func, timeout=None):
     """
     force_refresh = (
         request.GET.get('refresh') == 'true' or
-        request.META.get('HTTP_PRAGMA') == 'no-cache' or
+        'no-cache' in request.META.get('HTTP_PRAGMA', '').lower() or
         'no-cache' in request.META.get('HTTP_CACHE_CONTROL', '').lower()
     )
 
@@ -27,8 +27,10 @@ def cached_query(request, key, query_func, timeout=None):
             data = cache.get(key)
             if data is not None:
                 return data
-        except Exception as e:
-            logger.error(f"Failed to get from cache (key={key}): {str(e)}")
+        except Exception:
+            # logger.exception preserves the stack trace for production debugging
+            # A cache MISS (returning None) does not trigger this; only backend failures do.
+            logger.exception(f"Cache backend error during get (key={key})")
 
     data = query_func()
     
@@ -39,7 +41,7 @@ def cached_query(request, key, query_func, timeout=None):
     # Synchronous persistence to cache provider (typically Redis/Valkey, which is fast)
     try:
         cache.set(key, data, timeout)
-    except Exception as e:
-        logger.error(f"Failed to set to cache (key={key}): {str(e)}")
+    except Exception:
+        logger.exception(f"Cache backend error during set (key={key})")
 
     return data

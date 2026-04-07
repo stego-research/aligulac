@@ -187,10 +187,14 @@ def period(request, period_id=None):
 
         entries = entries.prefetch_related('prev')
         
-        entries_list = list(entries[(actual_page - 1) * pagesize: actual_page * pagesize]) if actual_page > 0 else []
+        # Slice the queryset without evaluating it to a list yet
+        entries_slice = entries[(actual_page - 1) * pagesize: actual_page * pagesize] if actual_page > 0 else []
+
+        # populate_teams needs to prefetch on the queryset object
+        populated_data = populate_teams(entries_slice)
 
         return {
-            'entries': populate_teams(entries_list),
+            'entries': list(populated_data),
             'npages': npages,
             'nitems': nitems,
             'page': actual_page,
