@@ -420,14 +420,14 @@ if SENTRY_DSN:
         if not transaction_context:
             return sample_rate
             
-        name = transaction_context.get('name')
+        transaction_name = transaction_context.get('name')
         
         # Exclude common noisy or low-value endpoints from performance monitoring
-        if name in ('/health', '/health/', 'health_check'):
+        if transaction_name in ('/health', '/health/', 'health_check'):
             return 0.0
             
         # Optional: reduce sampling further for high-traffic API or search endpoints
-        if name and (name.startswith('/api/') or name.startswith('/search/json/')):
+        if transaction_name and (transaction_name.startswith('/api/') or transaction_name.startswith('/search/json/')):
             return sample_rate * 0.5
 
         return sample_rate
