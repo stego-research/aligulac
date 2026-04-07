@@ -12,7 +12,6 @@ import itertools
 import sys
 import subprocess
 
-from django.core.cache import cache
 from django.db import connection
 from django.db.models import F, Q
 from django.db.transaction import atomic
@@ -159,4 +158,3 @@ print('[%s] Finished' % str(datetime.now()), flush=True)
 
 subprocess.call(['touch', os.path.join(PROJECT_PATH, 'update')])
 
-cache.clear()
