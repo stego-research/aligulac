@@ -1,6 +1,37 @@
 import hashlib
 from django.utils.encoding import force_bytes
 
+class RealIPMiddleware:
+    """
+    Middleware that updates request.META['REMOTE_ADDR'] with the true origin IP 
+    from Cloudflare's 'CF-Connecting-IP' header if present.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # 1. Cloudflare provides the original visitor IP address in the 'CF-Connecting-IP' header.
+        # This is the most reliable header when using Cloudflare as it cannot be easily spoofed 
+        # (if we only allow traffic through Cloudflare).
+        real_ip = request.META.get('HTTP_CF_CONNECTING_IP')
+
+        # 2. Fallback to 'X-Forwarded-For' if 'CF-Connecting-IP' is not present.
+        # This is useful for other proxies or if Cloudflare is bypassed.
+        if not real_ip:
+            forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if forwarded_for:
+                # X-Forwarded-For can be a comma-separated list (e.g., "client, proxy1, proxy2").
+                # The first entry is generally the original client IP.
+                real_ip = forwarded_for.split(',')[0].strip()
+
+        # Update REMOTE_ADDR if we found a better candidate for the real client IP.
+        # This ensures that Django's request logging, Sentry (with send_default_pii=True),
+        # and other tools see the correct origin IP.
+        if real_ip:
+            request.META['REMOTE_ADDR'] = real_ip
+            
+        return self.get_response(request)
+
 class ETagMiddleware:
     """
     Middleware that adds an ETag header to all 200 OK responses that don't already have one.
