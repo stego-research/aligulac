@@ -992,14 +992,19 @@ def earnings(request, player_id):
     base = base_ctx('Ranking', 'Earnings', request, context=player)
 
     year = get_param(request, 'year', 'all')
+    if year != 'all':
+        try:
+            year = int(year)
+        except ValueError:
+            year = 'all'
 
     from aligulac.cache import cached_query
     from ratings.models import TYPE_CATEGORY, TYPE_EVENT
 
     def get_earnings_payload():
-        # Fetch all years with earnings efficiently
+        # Fetch all years with earnings efficiently, excluding null dates
         valid_years = sorted(
-            player.earnings_set.values_list('event__latest__year', flat=True).distinct(),
+            [y for y in player.earnings_set.values_list('event__latest__year', flat=True).distinct() if y is not None],
             reverse=True
         )
 
@@ -1041,12 +1046,13 @@ def earnings(request, player_id):
                     break
             
             # Ancestors logic: Compute in Python from prefetched event__uplink__parent
+            # We match get_ancestors_event() which includes TYPE_CATEGORY and TYPE_EVENT (no noprint filter)
             links = list(e.event.uplink.all())
             links.sort(key=lambda link: -link.distance)
             ancestors = []
             for link in links:
                 parent = link.parent
-                if not parent.noprint and parent.type in (TYPE_CATEGORY, TYPE_EVENT):
+                if parent.type in (TYPE_CATEGORY, TYPE_EVENT):
                     ancestors.append({
                         'id': parent.id,
                         'name': parent.name,
