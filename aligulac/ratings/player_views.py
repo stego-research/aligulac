@@ -84,11 +84,13 @@ def meandate(tm):
 def interp_rating(date, ratings):
     for ind, r in enumerate(ratings):
         if (r['period__end'] - date).days >= 0:
+            if ind == 0:
+                return r['bf_rating']
             try:
                 right = (r['period__end'] - date).days
                 left = (date - ratings[ind - 1]['period__end']).days
                 return (left * r['bf_rating'] + right * ratings[ind - 1]['bf_rating']) / (left + right)
-            except:
+            except ZeroDivisionError:
                 return r['bf_rating']
     return ratings[-1]['bf_rating']
 
@@ -315,9 +317,9 @@ def player(request, player_id):
             'vtf': count_matchup_player(recent, player, T),
             'vzf': count_matchup_player(recent, player, Z),
             'riv_nem_vic': list(zip_longest(
-                [{'id': r.id, 'tag': r.tag, 'country': r.country, 'race': r.race, 'matches': r.matches} for r in player.rivals],
-                [{'id': n.id, 'tag': n.tag, 'country': n.country, 'race': n.race, 'pm': n.pm} for n in player.nemesis],
-                [{'id': v.id, 'tag': v.tag, 'country': v.country, 'race': v.race, 'pm': v.pm} for v in player.victim]
+                list(player.rivals),
+                list(player.nemesis),
+                list(player.victim)
             ))
         }
 
@@ -380,6 +382,9 @@ def player(request, player_id):
                 'dev_vp': r.dev_vp,
                 'dev_vt': r.dev_vt,
                 'dev_vz': r.dev_vz,
+                'tot_dev_vp': sqrt(r.dev**2 + r.dev_vp**2),
+                'tot_dev_vt': sqrt(r.dev**2 + r.dev_vt**2),
+                'tot_dev_vz': sqrt(r.dev**2 + r.dev_vz**2),
                 'position': r.position,
                 'position_vp': r.position_vp,
                 'position_vt': r.position_vt,
@@ -929,7 +934,9 @@ def historical(request, player_id):
     latest = player.rating_set.filter(period__computed=True, decay=0).latest('period')
     historical_query = (
         player.rating_set.filter(period_id__lte=latest.period_id)
-        .values('id', 'period_id', 'period__start', 'period__end', 'rating', 'tot_vp', 'tot_vt', 'tot_vz', 
+        .values('id', 'period_id', 'period__start', 'period__end', 'period__is_preview',
+                'rating', 'rating_vp', 'rating_vt', 'rating_vz',
+                'tot_vp', 'tot_vt', 'tot_vz', 
                 'bf_rating', 'bf_rating_vp', 'bf_rating_vt', 'bf_rating_vz', 'dev', 'decay', 'position', 
                 'position_vp', 'position_vt', 'position_vz', 'prev_id')
         .order_by('-period_id')

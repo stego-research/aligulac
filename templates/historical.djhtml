@@ -51,6 +51,7 @@ This shows the rating history of a player. It's called from ratings.views.player
               <tr>
                 <td>
                   <a href="/periods/{{ rating.period_id }}/">{{ rating.period__end }}</a>
+                  {% if rating.period__is_preview %}*{% endif %}
                 </td>
                 <td class="rl_rating">{{ rating.rating|ratscale }}</td>
                 <td class="rl_icon hidden-xs">

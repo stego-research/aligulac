@@ -186,7 +186,7 @@ This is the template for the main player page, called from ratings.views.player.
            },
            data: [{% for s in stories %}{% if not s.skip %} {
              name: '{{s.text|jsescape|safe}}<br/>{{s.date|date:"DATE_FORMAT"|jsescape|safe}}{% if s.event %}: {{s.event.fullname|jsescape|safe}}{% endif %}',
-             url: '/results/events/{{s.event.id}}-{{s.event.fullname|urlfilter|jsescape}}/',
+             {% if s.event %}url: '/results/events/{{s.event.id}}-{{s.event.fullname|urlfilter|jsescape}}/',{% endif %}
              x: {{ s.ms }},
              y: {{ s.rating }}
                                 },{% endif %}{% endfor %}]
@@ -281,7 +281,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.tot_vp|ratscale }} ± {{ rating.dev|addf:rating.dev_vp|ratscalediff }}
+                    {{ rating.tot_vp|ratscale }} ± {{ rating.tot_dev_vp|ratscalediff }}
                     {% if rating.position_vp %}
                       <small class="text-muted">(#{{ rating.position_vp }})</small>
                     {% endif %}
@@ -301,7 +301,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.tot_vt|ratscale }} ± {{ rating.dev|addf:rating.dev_vt|ratscalediff }}
+                    {{ rating.tot_vt|ratscale }} ± {{ rating.tot_dev_vt|ratscalediff }}
                     {% if rating.position_vt %}
                       <small class="text-muted">(#{{ rating.position_vt }})</small>
                     {% endif %}
@@ -322,7 +322,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.tot_vz|ratscale }} ± {{ rating.dev|addf:rating.dev_vz|ratscalediff }}
+                    {{ rating.tot_vz|ratscale }} ± {{ rating.tot_dev_vz|ratscalediff }}
                     {% if rating.position_vz %}
                       <small class="text-muted">(#{{ rating.position_vz }})</small>
                     {% endif %}
@@ -368,7 +368,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.tot_vp|ratscale }} ± {{ rating.dev|addf:rating.dev_vp|ratscalediff }}
+                    {{ rating.tot_vp|ratscale }} ± {{ rating.tot_dev_vp|ratscalediff }}
                     {% if rating.position_vp %}
                       <small class="text-muted">(#{{ rating.position_vp }})</small>
                     {% endif %}
@@ -388,7 +388,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.tot_vt|ratscale }} ± {{ rating.dev|addf:rating.dev_vt|ratscalediff }}
+                    {{ rating.tot_vt|ratscale }} ± {{ rating.tot_dev_vt|ratscalediff }}
                     {% if rating.position_vt %}
                       <small class="text-muted">(#{{ rating.position_vt }})</small>
                     {% endif %}
@@ -409,7 +409,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.tot_vz|ratscale }} ± {{ rating.dev|addf:rating.dev_vz|ratscalediff }}
+                    {{ rating.tot_vz|ratscale }} ± {{ rating.tot_dev_vz|ratscalediff }}
                     {% if rating.position_vz %}
                       <small class="text-muted">(#{{ rating.position_vz }})</small>
                     {% endif %}
@@ -452,7 +452,7 @@ This is the template for the main player page, called from ratings.views.player.
                 <td>
                   {% if highs %}
                     {{ highs.1.tot_vp|ratscale }} 
-                    ± {{ highs.1.dev|addf:highs.1.dev_vp|ratscalediff }}
+                    ± {{ highs.1.tot_dev_vp|ratscalediff }}
                     {% if highs.1.position_vp %}
                       <small class="text-muted">(#{{ highs.1.position_vp }})</small>
                     {% endif %}
@@ -477,7 +477,7 @@ This is the template for the main player page, called from ratings.views.player.
                 <td>
                   {% if highs %}
                     {{ highs.2.tot_vt|ratscale }} 
-                    ± {{ highs.2.dev|addf:highs.2.dev_vt|ratscalediff }}
+                    ± {{ highs.2.tot_dev_vt|ratscalediff }}
                     {% if highs.2.position_vt %}
                       <small class="text-muted">(#{{ highs.2.position_vt }})</small>
                     {% endif %}
@@ -502,7 +502,7 @@ This is the template for the main player page, called from ratings.views.player.
                 <td>
                   {% if highs %}
                     {{ highs.3.tot_vz|ratscale }} 
-                    ± {{ highs.3.dev|addf:highs.3.dev_vz|ratscalediff }}
+                    ± {{ highs.3.tot_dev_vz|ratscalediff }}
                     {% if highs.3.position_vz %}
                       <small class="text-muted">(#{{ highs.3.position_vz }})</small>
                     {% endif %}
