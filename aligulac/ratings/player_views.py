@@ -97,6 +97,42 @@ def interp_rating(date, ratings):
 
 # }}}
 
+# }}}
+
+# {{{ get_rating_dict: helper to convert Rating object to dict for templates/caching
+def get_rating_dict(r):
+    if not r:
+        return None
+    return {
+        'rating': r.rating,
+        'rating_vp': r.rating_vp,
+        'rating_vt': r.rating_vt,
+        'rating_vz': r.rating_vz,
+        'tot_vp': r.rating + r.rating_vp,
+        'tot_vt': r.rating + r.rating_vt,
+        'tot_vz': r.rating + r.rating_vz,
+        'dev': r.dev,
+        'dev_vp': r.dev_vp,
+        'dev_vt': r.dev_vt,
+        'dev_vz': r.dev_vz,
+        'tot_dev_vp': sqrt(r.dev**2 + r.dev_vp**2),
+        'tot_dev_vt': sqrt(r.dev**2 + r.dev_vt**2),
+        'tot_dev_vz': sqrt(r.dev**2 + r.dev_vz**2),
+        'position': r.position,
+        'position_vp': r.position_vp,
+        'position_vt': r.position_vt,
+        'position_vz': r.position_vz,
+        'period': {
+            'id': r.period_id,
+            'end': r.period.end,
+            'start': r.period.start,
+        },
+        'decay': r.decay,
+    }
+
+
+# }}}
+
 # {{{ PlayerModForm: Form for modifying a player.
 class PlayerModForm(forms.Form):
     tag = StrippedCharField(max_length=30, required=True, label=_('Tag'))
