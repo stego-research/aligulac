@@ -5,17 +5,19 @@ on:
     tags:
       - 'stable'
   release:
-    types: [released]
+    types: [published]
+
+concurrency:
+  group: stable-publish
+  cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
   update-stable-tag:
     if: github.event_name == 'release'
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
