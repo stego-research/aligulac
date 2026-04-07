@@ -47,7 +47,7 @@ jobs:
     # Skip if triggered by a tag push from the bot to avoid duplicate publishes.
     if: |
       always() &&
-      ((github.event_name == 'push' && github.actor != 'github-actions[bot]') || 
+      ((github.event_name == 'push' && github.actor != 'github-actions[bot]') ||
        (github.event_name == 'release' && needs.update-stable-tag.result == 'success'))
     uses: ./.github/workflows/reusable-docker-publish.yml
     with:
