@@ -29,7 +29,7 @@ SECRET_KEY = get_env('SECRET_KEY', '')
 
 # Sentry DSN
 SENTRY_DSN = get_env('SENTRY_DSN', '')
-SENTRY_TRACES_SAMPLE_RATE = get_env('SENTRY_TRACES_SAMPLE_RATE', None)
+SENTRY_TRACES_SAMPLE_RATE = get_env('SENTRY_TRACES_SAMPLE_RATE', None)  # Defaults to 0.001 (0.1%) in production
 
 # API key to openexchangerates.org
 EXCHANGE_ID = get_env('EXCHANGE_ID', '')
@@ -77,8 +77,8 @@ REDIS_PASSWORD = get_env('REDIS_PASSWORD', None)
 VALKEY_PASSWORD = get_env('VALKEY_PASSWORD', None)
 
 # Debug mode
-DEBUG = get_env('DEBUG', 'True').lower() == 'true'
-DEBUG_TOOLBAR = get_env('DEBUG_TOOLBAR', 'True').lower() == 'true'
+DEBUG = get_env('DEBUG', 'False').lower() == 'true'
+DEBUG_TOOLBAR = get_env('DEBUG_TOOLBAR', 'False').lower() == 'true'
 
 # Log settings
 ERROR_LOG_FILE = get_env('ERROR_LOG_FILE', '/var/log/aligulac/error.log')

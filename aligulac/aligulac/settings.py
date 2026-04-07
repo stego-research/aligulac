@@ -395,8 +395,8 @@ if SENTRY_DSN:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
-    # Default to 1% in production, 100% in debug/dev
-    default_sample_rate = 0.01 if not DEBUG else 1.0
+    # Default to 0.1% in production (1 in 1000), 100% in debug/dev
+    default_sample_rate = 0.001 if not DEBUG else 1.0
     
     # Safely parse and validate the sample rate
     try:
@@ -410,11 +410,44 @@ if SENTRY_DSN:
     except (ValueError, TypeError):
         sample_rate = default_sample_rate
 
+    def traces_sampler(sampling_context):
+        # Sample everything in debug/dev
+        if DEBUG:
+            return 1.0
+        
+        # Check transaction context
+        transaction_context = sampling_context.get('transaction_context')
+        if not transaction_context:
+            return sample_rate
+            
+        transaction_name = transaction_context.get('name')
+        
+        # Exclude common noisy or low-value endpoints from performance monitoring
+        if transaction_name in ('/health', '/health/', 'health_check'):
+            return 0.0
+            
+        # Optional: reduce sampling further for high-traffic API or search endpoints
+        if transaction_name and (transaction_name.startswith('/api/') or transaction_name.startswith('/search/json/')):
+            return sample_rate * 0.5
+
+        return sample_rate
+
+    def before_breadcrumb(breadcrumb, hint):
+        # Filter out noisy SQL queries from breadcrumbs to reduce event size
+        if breadcrumb.get('category') == 'django.db.queries':
+            return None
+        return breadcrumb
+
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
         # Add data like request headers and IP for users
         send_default_pii=True,
-        # Set traces_sample_rate to capture transactions for performance monitoring.
-        traces_sample_rate=sample_rate,
+        # Sample errors at 10% to prevent flooding on high-frequency errors
+        sample_rate=0.1 if not DEBUG else 1.0,
+        # Use traces_sampler instead of traces_sample_rate for more fine-grained control
+        traces_sampler=traces_sampler,
+        # Keep breadcrumbs list short and filtered
+        before_breadcrumb=before_breadcrumb,
+        max_breadcrumbs=50,
     )
