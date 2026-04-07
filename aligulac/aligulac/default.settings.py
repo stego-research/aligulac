@@ -99,7 +99,7 @@ CACHE_TIMES = {
     'ratings.records_views.history': 15 * 60,
     'ratings.records_views.hof': 15 * 60,
     'ratings.records_views.race': 15 * 60,
-    'ratings.report_views.balance': 15 * 60,
+    'ratings.reports_views.balance': 15 * 60,
     'blog.views.blog': 15 * 60,
 
     # Depends on results but not urgent

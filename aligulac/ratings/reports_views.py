@@ -30,7 +30,7 @@ def balance(request):
         request,
         "balance_entries",
         get_balance_entries,
-        timeout=settings.CACHE_TIMES.get('ratings.report_views.balance', 43200)
+        timeout=settings.CACHE_TIMES.get('ratings.reports_views.balance', 43200)
     )
 
     base.update({

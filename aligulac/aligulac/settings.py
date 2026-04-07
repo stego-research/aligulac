@@ -131,11 +131,12 @@ CACHE_TIMES = {
     'ratings.player_views.historical': 15 * 60,
     'ratings.ranking_views.periods': 15 * 60,
     'ratings.ranking_views.period': 15 * 60,
+    'ratings.ranking_views.earnings': 15 * 60,
     'ratings.team_views.teams': 15 * 60,
     'ratings.records_views.history': 12 * 60 * 60,
     'ratings.records_views.hof': 12 * 60 * 60,
     'ratings.records_views.race': 15 * 60,
-    'ratings.report_views.balance': 12 * 60 * 60,
+    'ratings.reports_views.balance': 12 * 60 * 60,
     'blog.views.blog': 15 * 60,
 
     # Depends on results but not urgent

@@ -56,8 +56,19 @@ def history(request):
         query += ' GROUP BY player.id, player.tag, player.race, player.country ORDER BY high DESC LIMIT %s'
         params.append(nplayers)
 
-        players = Player.objects.raw(query, params)
-        return [(p, list(p.rating_set.select_related('period'))) for p in players]
+        players = list(Player.objects.raw(query, params))
+        player_ids = [p.id for p in players]
+
+        # Fetch all ratings for these players in a single query to avoid N+1
+        all_ratings = Rating.objects.filter(player_id__in=player_ids).select_related('period')
+        
+        ratings_by_player = {}
+        for r in all_ratings:
+            if r.player_id not in ratings_by_player:
+                ratings_by_player[r.player_id] = []
+            ratings_by_player[r.player_id].append(r)
+
+        return [(p, ratings_by_player.get(p.id, [])) for p in players]
 
     from aligulac.cache import cached_query
     from django.conf import settings

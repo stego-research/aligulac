@@ -91,8 +91,8 @@ def period(request, period_id=None):
             'bestvz': qset.latest('tot_vz'),
             'bestp': qsetp.latest('rating'),
             'bestpvp': qsetp.latest('tot_vp'),
-            'bestpvt': qsetp.latest('tot_vp'),
-            'bestpvz': qsetp.latest('tot_vp'),
+            'bestpvt': qsetp.latest('tot_vt'),
+            'bestpvz': qsetp.latest('tot_vz'),
             'bestt': qsett.latest('rating'),
             'besttvp': qsett.latest('tot_vp'),
             'besttvt': qsett.latest('tot_vt'),
@@ -161,35 +161,31 @@ def period(request, period_id=None):
     sort = get_param(request, 'sort', '')
     page = int(get_param(request, 'page', 1))
 
+    # Initial filtering of ratings to determine total item count and normalize page
+    entries_base = filter_active(period.rating_set).select_related('player')
+    q = Q()
+    for r in race:
+        q |= Q(player__race=r.upper())
+    entries_base = entries_base.filter(q)
+    if nats == 'foreigners':
+        entries_base = entries_base.exclude(player__country='KR')
+    elif nats != 'all':
+        entries_base = entries_base.filter(player__country=nats)
+
+    nitems = entries_base.count()
+    pagesize = SHOW_PER_LIST_PAGE
+    npages = nitems // pagesize + (1 if nitems % pagesize > 0 else 0)
+    actual_page = min(max(page, 1), npages)
+
     def get_period_entries():
-        # Initial filtering of ratings
-        entries = filter_active(period.rating_set).select_related('player')
-
-        # Race filter
-        q = Q()
-        for r in race:
-            q |= Q(player__race=r.upper())
-        entries = entries.filter(q)
-
-        # Country filter
-        if nats == 'foreigners':
-            entries = entries.exclude(player__country='KR')
-        elif nats != 'all':
-            entries = entries.filter(player__country=nats)
-
-        # Sorting
+        # Re-apply sorting and prefetching
+        entries = entries_base
         if sort not in ['vp', 'vt', 'vz']:
             entries = entries.order_by('-rating', 'player__tag')
         else:
             entries = entries.extra(select={'d': 'rating+rating_' + sort}).order_by('-d', 'player__tag')
 
         entries = entries.prefetch_related('prev')
-
-        # Pages etc.
-        pagesize = SHOW_PER_LIST_PAGE
-        nitems = entries.count()
-        npages = nitems // pagesize + (1 if nitems % pagesize > 0 else 0)
-        actual_page = min(max(page, 1), npages)
         
         entries_list = list(entries[(actual_page - 1) * pagesize: actual_page * pagesize]) if actual_page > 0 else []
 
@@ -202,7 +198,7 @@ def period(request, period_id=None):
 
     entries_data = cached_query(
         request,
-        f"period_entries_{period.id}_{race}_{nats}_{sort}_{page}",
+        f"period_entries_{period.id}_{race}_{nats}_{sort}_{actual_page}",
         get_period_entries,
         timeout=settings.CACHE_TIMES.get('ratings.ranking_views.period', 900)
     )
@@ -253,6 +249,7 @@ def earnings(request):
 
     from aligulac.cache import cached_query
     from django.conf import settings
+    cache_timeout = settings.CACHE_TIMES.get('ratings.ranking_views.earnings', 900)
 
     # {{{ Build country and currency list
     def get_earnings_stats():
@@ -262,7 +259,7 @@ def earnings(request):
             'currencies': currency_list(Earnings.objects),
         }
 
-    stats = cached_query(request, "earnings_stats", get_earnings_stats, timeout=900)
+    stats = cached_query(request, "earnings_stats", get_earnings_stats, timeout=cache_timeout)
     base.update(stats)
     # }}}
 
@@ -274,37 +271,32 @@ def earnings(request):
 
     base['filters'] = {'year': year, 'country': nats, 'currency': curs}
 
+    # Pre-filter to determine nitems and normalize page
+    preranking_base = Earnings.objects.filter(earnings__isnull=False)
+    if year != 'all':
+        preranking_base = preranking_base.filter(event__latest__year=int(year))
+    if nats == 'foreigners':
+        preranking_base = preranking_base.exclude(player__country='KR')
+    elif nats != 'all':
+        preranking_base = preranking_base.filter(player__country=nats)
+    if curs != 'all':
+        preranking_base = preranking_base.filter(currency=curs)
+
+    nitems = preranking_base.values('player').distinct().count()
+    pagesize = SHOW_PER_LIST_PAGE
+    npages = nitems // pagesize + (1 if nitems % pagesize > 0 else 0)
+    actual_page = min(max(page, 1), npages)
+
     def get_earnings_ranking():
-        preranking = Earnings.objects.filter(earnings__isnull=False)
-
-        # Filtering by year
-        if year != 'all':
-            preranking = preranking.filter(event__latest__year=int(year))
-
-        # Country filter
-        if nats == 'foreigners':
-            preranking = preranking.exclude(player__country='KR')
-        elif nats != 'all':
-            preranking = preranking.filter(player__country=nats)
-
-        # Currency filter
-        if curs != 'all':
-            preranking = preranking.filter(currency=curs)
-
-        totalorigprizepool = preranking.aggregate(Sum('origearnings'))['origearnings__sum']
-        totalprizepool = preranking.aggregate(Sum('earnings'))['earnings__sum']
+        totalorigprizepool = preranking_base.aggregate(Sum('origearnings'))['origearnings__sum']
+        totalprizepool = preranking_base.aggregate(Sum('earnings'))['earnings__sum']
 
         ranking_qset = (
-            preranking.values('player')
+            preranking_base.values('player')
             .annotate(totalorigearnings=Sum('origearnings'))
             .annotate(totalearnings=Sum('earnings'))
             .order_by('-totalearnings', 'player')
         )
-
-        nitems = ranking_qset.count()
-        pagesize = SHOW_PER_LIST_PAGE
-        npages = nitems // pagesize + (1 if nitems % pagesize > 0 else 0)
-        actual_page = min(max(page, 1), npages)
 
         if nitems > 0:
             ranking_list = list(ranking_qset[(actual_page - 1) * pagesize: actual_page * pagesize])
@@ -329,9 +321,9 @@ def earnings(request):
 
     ranking_data = cached_query(
         request,
-        f"earnings_ranking_{year}_{nats}_{curs}_{page}",
+        f"earnings_ranking_{year}_{nats}_{curs}_{actual_page}",
         get_earnings_ranking,
-        timeout=900
+        timeout=cache_timeout
     )
 
     actual_page = ranking_data['page']

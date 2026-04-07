@@ -1,8 +1,7 @@
-from django.views.decorators.cache import cache_page as django_cache_page
+import logging
 from django.core.cache import cache
-import threading
-from django.conf import settings
-import threading
+
+logger = logging.getLogger(__name__)
 
 def cache_page(view):
     """
@@ -14,20 +13,22 @@ def cache_page(view):
 def cached_query(request, key, query_func, timeout=None):
     """
     Caches the result of a query function.
-    Supports force refresh via 'refresh=true' query param or 'Pragma: no-cache' header.
-    Persists to cache asynchronously.
+    Supports force refresh via 'refresh=true' query param, 'Pragma: no-cache' header,
+    or 'Cache-Control: no-cache' (case-insensitive substring match).
     """
     force_refresh = (
         request.GET.get('refresh') == 'true' or
         request.META.get('HTTP_PRAGMA') == 'no-cache' or
-        request.META.get('HTTP_CACHE_CONTROL') == 'no-cache'
+        'no-cache' in request.META.get('HTTP_CACHE_CONTROL', '').lower()
     )
 
-
     if not force_refresh:
-        data = cache.get(key)
-        if data is not None:
-            return data
+        try:
+            data = cache.get(key)
+            if data is not None:
+                return data
+        except Exception as e:
+            logger.error(f"Failed to get from cache (key={key}): {str(e)}")
 
     data = query_func()
     
@@ -35,14 +36,10 @@ def cached_query(request, key, query_func, timeout=None):
     if hasattr(data, '__iter__') and not isinstance(data, (list, dict, str, bytes)):
         data = list(data)
 
-    # Asynchronous persistence to cache provider
-    def persist():
-        try:
-            cache.set(key, data, timeout)
-        except Exception:
-            # Best effort
-            pass
-
-    threading.Thread(target=persist, daemon=True).start()
+    # Synchronous persistence to cache provider (typically Redis/Valkey, which is fast)
+    try:
+        cache.set(key, data, timeout)
+    except Exception as e:
+        logger.error(f"Failed to set to cache (key={key}): {str(e)}")
 
     return data
