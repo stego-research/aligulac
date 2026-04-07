@@ -25,19 +25,10 @@ class RealIPMiddleware:
                 real_ip = forwarded_for.split(',')[0].strip()
 
         # Update REMOTE_ADDR if we found a better candidate for the real client IP.
-        # This ensures that Django's request logging, Sentry, and other tools 
-        # see the correct origin IP.
+        # This ensures that Django's request logging, Sentry (with send_default_pii=True),
+        # and other tools see the correct origin IP.
         if real_ip:
             request.META['REMOTE_ADDR'] = real_ip
-            
-            # Update Sentry user context if Sentry is configured
-            from django.conf import settings
-            if getattr(settings, 'SENTRY_DSN', None):
-                try:
-                    import sentry_sdk
-                    sentry_sdk.set_user({"ip_address": real_ip})
-                except (ImportError, Exception):
-                    pass
             
         return self.get_response(request)
 
