@@ -159,4 +159,3 @@ print('[%s] Finished' % str(datetime.now()), flush=True)
 
 subprocess.call(['touch', os.path.join(PROJECT_PATH, 'update')])
 
-cache.clear()
