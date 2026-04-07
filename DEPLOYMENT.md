@@ -55,7 +55,7 @@ The application is configured via environment variables. These can be passed to 
 | `CACHE_BACKEND` | Django cache backend. | `DummyCache` |
 | `CACHE_LOCATION`| Cache location (URL for Redis, path for File). | `/app/aligulac/untracked/cache/` |
 | `SENTRY_DSN` | Sentry DSN URL. If empty, Sentry reporting is disabled. | `""` |
-| `SENTRY_TRACES_SAMPLE_RATE` | Sample rate for performance tracing. Defaults to `0.01` (1%) in production and `1.0` (100%) in development. | `None` |
+| `SENTRY_TRACES_SAMPLE_RATE` | Sample rate for performance tracing. Defaults to `0.001` (0.1%) in production and `1.0` (100%) in development. | `None` |
 | `EXCHANGE_ID` | API key for openexchangerates.org. | `""` |
 
 ### **Redis Cache (Recommended for Multi-instance)**

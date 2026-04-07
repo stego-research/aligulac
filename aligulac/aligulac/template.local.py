@@ -29,7 +29,7 @@ SECRET_KEY = get_env('SECRET_KEY', '')
 
 # Sentry DSN
 SENTRY_DSN = get_env('SENTRY_DSN', '')
-SENTRY_TRACES_SAMPLE_RATE = get_env('SENTRY_TRACES_SAMPLE_RATE', None)
+SENTRY_TRACES_SAMPLE_RATE = get_env('SENTRY_TRACES_SAMPLE_RATE', None)  # Defaults to 0.001 (0.1%) in production
 
 # API key to openexchangerates.org
 EXCHANGE_ID = get_env('EXCHANGE_ID', '')
