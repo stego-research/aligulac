@@ -7,9 +7,11 @@ on:
   release:
     types: [published]
 
+# Use cancel-in-progress: false to avoid a bot-triggered tag push 
+# from cancelling the release-triggered publish that initiated it.
 concurrency:
   group: stable-publish
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -35,9 +37,10 @@ jobs:
 
   call-reusable-workflow:
     needs: [update-stable-tag]
+    # Skip if triggered by a tag push from the bot to avoid duplicate publishes.
     if: |
       always() &&
-      (github.event_name == 'push' || 
+      ((github.event_name == 'push' && github.actor != 'github-actions[bot]') || 
        (github.event_name == 'release' && needs.update-stable-tag.result == 'success'))
     uses: ./.github/workflows/reusable-docker-publish.yml
     with:
