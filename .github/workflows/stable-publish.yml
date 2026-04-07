@@ -4,13 +4,51 @@ on:
   push:
     tags:
       - 'stable'
+  release:
+    types: [published]
+
+# Use cancel-in-progress: false to avoid a bot-triggered tag push
+# from cancelling the release-triggered publish that initiated it.
+concurrency:
+  group: stable-publish
+  cancel-in-progress: false
 
 permissions:
   contents: read
   packages: write
 
 jobs:
+  update-stable-tag:
+    if: github.event_name == 'release'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Force push stable tag
+        run: |
+          set -euo pipefail
+          tag_name="${{ github.event.release.tag_name }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          expected_remote_tag="$(git ls-remote --refs origin refs/tags/stable | awk '{print $1}')"
+          git tag -f stable "${tag_name}^{}"
+          if [ -n "${expected_remote_tag}" ]; then
+            git push origin refs/tags/stable --force-with-lease=refs/tags/stable:"${expected_remote_tag}"
+          else
+            git push origin refs/tags/stable
+          fi
+
   call-reusable-workflow:
+    needs: [update-stable-tag]
+    # Skip if triggered by a tag push from the bot to avoid duplicate publishes.
+    if: |
+      always() &&
+      ((github.event_name == 'push' && github.actor != 'github-actions[bot]') ||
+       (github.event_name == 'release' && needs.update-stable-tag.result == 'success'))
     uses: ./.github/workflows/reusable-docker-publish.yml
     with:
       tags: |
