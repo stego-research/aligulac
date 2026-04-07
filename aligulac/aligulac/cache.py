@@ -1,7 +1,11 @@
 import logging
 from django.core.cache import cache
+from django.db.models.query import QuerySet
 
 logger = logging.getLogger(__name__)
+
+# Unique sentinel to distinguish between a cache miss and a cached None value.
+CACHE_MISS = object()
 
 def cache_page(view):
     """
@@ -24,21 +28,23 @@ def cached_query(request, key, query_func, timeout=None):
 
     if not force_refresh:
         try:
-            data = cache.get(key)
-            if data is not None:
+            # Use the sentinel to correctly handle legitimate None results from the cache.
+            data = cache.get(key, default=CACHE_MISS)
+            if data is not CACHE_MISS:
                 return data
         except Exception:
-            # logger.exception preserves the stack trace for production debugging
-            # A cache MISS (returning None) does not trigger this; only backend failures do.
+            # logger.exception preserves the stack trace for production debugging.
+            # A true cache miss (key not found) returns CACHE_MISS and doesn't trigger this.
             logger.exception(f"Cache backend error during get (key={key})")
 
     data = query_func()
     
-    # If it's a queryset or other iterable, evaluate it now
-    if hasattr(data, '__iter__') and not isinstance(data, (list, dict, str, bytes)):
+    # Evaluate Django QuerySets into a list before caching to prevent pickling lazy objects.
+    # We limit this to QuerySets to avoid subtle type breakages for tuples, sets, etc.
+    if isinstance(data, QuerySet):
         data = list(data)
 
-    # Synchronous persistence to cache provider (typically Redis/Valkey, which is fast)
+    # Synchronous persistence to cache provider (typically Redis/Valkey, which is fast).
     try:
         cache.set(key, data, timeout)
     except Exception:
