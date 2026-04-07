@@ -33,36 +33,59 @@ def history(request):
     race = get_param_choice(request, 'race', ['ptzrs', 'p', 't', 'z', 'ptrs', 'tzrs', 'pzrs'], 'ptzrs')
     nats = get_param_choice(request, 'nats', ['all', 'foreigners'] + list(data.ccn_to_cca2.values()), 'all')
 
-    query = '''SELECT player.id, player.tag, player.race, player.country, MAX(rating.rating) AS high
-               FROM player
-                        JOIN rating ON player.id = rating.player_id'''
-    params = []
-    if race != 'ptzrs' or nats != 'all':
-        query += ' WHERE '
-        ands = []
-        if race != 'ptzrs':
-            race_filters = []
-            for r in race:
-                race_filters.append("player.race=%s")
-                params.append(r.upper())
-            ands.append('(' + ' OR '.join(race_filters) + ')')
-        if nats == 'foreigners':
-            ands.append("(player.country!='KR')")
-        elif nats != 'all':
-            ands.append("(player.country=%s)")
-            params.append(nats)
-        query += ' AND '.join(ands)
-    query += ' GROUP BY player.id, player.tag, player.race, player.country ORDER BY high DESC LIMIT %s'
-    params.append(nplayers)
+    def get_history():
+        query = '''SELECT player.id, player.tag, player.race, player.country, MAX(rating.rating) AS high
+                   FROM player
+                            JOIN rating ON player.id = rating.player_id'''
+        params = []
+        if race != 'ptzrs' or nats != 'all':
+            query += ' WHERE '
+            ands = []
+            if race != 'ptzrs':
+                race_filters = []
+                for r in race:
+                    race_filters.append("player.race=%s")
+                    params.append(r.upper())
+                ands.append('(' + ' OR '.join(race_filters) + ')')
+            if nats == 'foreigners':
+                ands.append("(player.country!='KR')")
+            elif nats != 'all':
+                ands.append("(player.country=%s)")
+                params.append(nats)
+            query += ' AND '.join(ands)
+        query += ' GROUP BY player.id, player.tag, player.race, player.country ORDER BY high DESC LIMIT %s'
+        params.append(nplayers)
 
-    players = Player.objects.raw(query, params)
+        players = list(Player.objects.raw(query, params))
+        player_ids = [p.id for p in players]
+
+        # Fetch all ratings for these players in a single query to avoid N+1
+        all_ratings = Rating.objects.filter(player_id__in=player_ids).select_related('period')
+        
+        ratings_by_player = {}
+        for r in all_ratings:
+            if r.player_id not in ratings_by_player:
+                ratings_by_player[r.player_id] = []
+            ratings_by_player[r.player_id].append(r)
+
+        return [(p, ratings_by_player.get(p.id, [])) for p in players]
+
+    from aligulac.cache import cached_query
+    from django.conf import settings
+    cache_key = f"records_history_{nplayers}_{race}_{nats}"
+    players_data = cached_query(
+        request,
+        cache_key,
+        get_history,
+        timeout=settings.CACHE_TIMES.get('ratings.records_views.history', 900)
+    )
     # }}}
 
     base.update({
         'race': race,
         'nats': nats,
         'nplayers': nplayers,
-        'players': [(p, p.rating_set.select_related('period')) for p in players],
+        'players': players_data,
         'countries': country_list(Player.objects.all()),
         'charts': True,
         'patches': PATCHES,
@@ -77,10 +100,19 @@ def history(request):
 @cache_page
 def hof(request):
     base = base_ctx('Records', 'HoF', request)
-    base['high'] = (
-        Player.objects.filter(
+
+    def get_hof():
+        return list(Player.objects.filter(
             dom_val__isnull=False, dom_start__isnull=False, dom_end__isnull=False, dom_val__gt=0
-        ).order_by('-dom_val')
+        ).order_by('-dom_val'))
+
+    from aligulac.cache import cached_query
+    from django.conf import settings
+    base['high'] = cached_query(
+        request,
+        "records_hof",
+        get_hof,
+        timeout=settings.CACHE_TIMES.get('ratings.records_views.hof', 43200)
     )
 
     return render(request, 'hof.djhtml', base)

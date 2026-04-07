@@ -101,31 +101,44 @@ class TeamModForm(forms.Form):
 def teams(request):
     base = base_ctx('Teams', 'Ranking', request)
 
-    all_teams = Group.objects.filter(is_team=True).prefetch_related('groupmembership_set')
-    active = all_teams.filter(active=True)
-
     sort = get_param_choice(request, 'sort', ['ak', 'pl', 'rt', 'np'], 'ak')
-    if sort == 'pl':
-        active = active.order_by('-scorepl', 'name')
-    elif sort == 'ak':
-        active = active.order_by('-scoreak', 'name')
-    elif sort == 'rt':
-        active = active.order_by('-meanrating', 'name')
-    else:
-        active = active.order_by('name')
 
-    for t in active:
-        t.nplayers = sum([1 if m.current and m.playing else 0 for m in t.groupmembership_set.all()])
+    def get_teams_data():
+        all_teams = Group.objects.filter(is_team=True).prefetch_related('groupmembership_set')
+        active = all_teams.filter(active=True)
 
-    if sort == 'np':
-        active = sorted(list(active), key=lambda a: -a.nplayers)
+        if sort == 'pl':
+            active = active.order_by('-scorepl', 'name')
+        elif sort == 'ak':
+            active = active.order_by('-scoreak', 'name')
+        elif sort == 'rt':
+            active = active.order_by('-meanrating', 'name')
+        else:
+            active = active.order_by('name')
 
-    inactive = all_teams.filter(active=False).order_by('name')
+        for t in active:
+            t.nplayers = sum([1 if m.current and m.playing else 0 for m in t.groupmembership_set.all()])
 
-    base.update({
-        'active': active,
-        'inactive': inactive,
-    })
+        if sort == 'np':
+            active = sorted(list(active), key=lambda a: -a.nplayers)
+
+        inactive = list(all_teams.filter(active=False).order_by('name'))
+        
+        return {
+            'active': list(active),
+            'inactive': inactive,
+        }
+
+    from aligulac.cache import cached_query
+    from django.conf import settings
+    teams_data = cached_query(
+        request,
+        f"teams_list_{sort}",
+        get_teams_data,
+        timeout=settings.CACHE_TIMES.get('ratings.team_views.teams', 900)
+    )
+
+    base.update(teams_data)
 
     return render(request, 'teams.djhtml', base)
 
