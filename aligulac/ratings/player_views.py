@@ -52,6 +52,10 @@ from ratings.tools import (
     PATCHES,
     total_ratings,
 )
+from ratings.templatetags.ratings_extras import (
+    milliseconds,
+    ratscale,
+)
 
 # }}}
 
@@ -79,14 +83,16 @@ def meandate(tm):
 # {{{ interp_rating: Takes a date and a rating list, and interpolates linearly.
 def interp_rating(date, ratings):
     for ind, r in enumerate(ratings):
-        if (r.period.end - date).days >= 0:
+        if (r['period__end'] - date).days >= 0:
+            if ind == 0:
+                return r['bf_rating']
             try:
-                right = (r.period.end - date).days
-                left = (date - ratings[ind - 1].period.end).days
-                return (left * r.bf_rating + right * ratings[ind - 1].bf_rating) / (left + right)
-            except:
-                return r.bf_rating
-    return ratings[-1].bf_rating
+                right = (r['period__end'] - date).days
+                left = (date - ratings[ind - 1]['period__end']).days
+                return (left * r['bf_rating'] + right * ratings[ind - 1]['bf_rating']) / (left + right)
+            except ZeroDivisionError:
+                return r['bf_rating']
+    return ratings[-1]['bf_rating']
 
 
 # }}}
@@ -269,138 +275,242 @@ def player(request, player_id):
     # }}}
 
     # {{{ Various easy data
-    matches = player.get_matchset()
-    recent = matches.filter(date__gte=(date.today() - relativedelta(months=2)))
+    from aligulac.cache import cached_query
 
+    def get_player_stats():
+        matches = player.get_matchset()
+        recent = matches.filter(date__gte=(date.today() - relativedelta(months=2)))
+
+        # Efficiently fetch counts in a single aggregation
+        stats = matches.aggregate(
+            total_m=Count('id'),
+            offline_m=Count('id', filter=Q(offline=True)),
+            # Match wins/losses
+            m_win=Count('id', filter=(Q(pla=player, sca__gt=F('scb')) | Q(plb=player, scb__gt=F('sca')))),
+            m_loss=Count('id', filter=(Q(pla=player, sca__lt=F('scb')) | Q(plb=player, scb__lt=F('sca')))),
+            # Game wins/losses
+            g_win=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0)),
+            g_loss=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0)),
+        )
+        
+        # Recent stats
+        recent_stats = recent.aggregate(
+            m_win=Count('id', filter=(Q(pla=player, sca__gt=F('scb')) | Q(plb=player, scb__gt=F('sca')))),
+            m_loss=Count('id', filter=(Q(pla=player, sca__lt=F('scb')) | Q(plb=player, scb__lt=F('sca')))),
+            g_win=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0)),
+            g_loss=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0)),
+        )
+
+        return {
+            'first_date': etn(lambda: matches.earliest('date').date),
+            'last_date': etn(lambda: matches.latest('date').date),
+            'totalmatches': stats['total_m'],
+            'offlinematches': stats['offline_m'],
+            'earnings': ntz(player.earnings_set.aggregate(Sum('earnings'))['earnings__sum']),
+            'total': (ntz(stats['g_win']), ntz(stats['g_loss'])),
+            'vp': count_matchup_player(matches, player, P),
+            'vt': count_matchup_player(matches, player, T),
+            'vz': count_matchup_player(matches, player, Z),
+            'totalf': (ntz(recent_stats['g_win']), ntz(recent_stats['g_loss'])),
+            'vpf': count_matchup_player(recent, player, P),
+            'vtf': count_matchup_player(recent, player, T),
+            'vzf': count_matchup_player(recent, player, Z),
+            'riv_nem_vic': list(zip_longest(
+                list(player.rivals),
+                list(player.nemesis),
+                list(player.victim)
+            ))
+        }
+
+    stats_cache_key = f"player_stats_{player.id}"
+    p_stats = cached_query(request, stats_cache_key, get_player_stats, timeout=3600)
+
+    base.update(p_stats)
     base.update({
         'player': player,
         'modform': modform,
-        'first': etn(lambda: matches.earliest('date')),
-        'last': etn(lambda: matches.latest('date')),
-        'totalmatches': matches.count(),
-        'offlinematches': matches.filter(offline=True).count(),
-        'aliases': player.alias_set.all(),
-        'earnings': ntz(player.earnings_set.aggregate(Sum('earnings'))['earnings__sum']),
+        'aliases': list(player.alias_set.all().values('name')),
         'team': player.get_current_team(),
-        'total': count_winloss_player(matches, player),
-        'vp': count_matchup_player(matches, player, P),
-        'vt': count_matchup_player(matches, player, T),
-        'vz': count_matchup_player(matches, player, Z),
-        'totalf': count_winloss_player(recent, player),
-        'vpf': count_matchup_player(recent, player, P),
-        'vtf': count_matchup_player(recent, player, T),
-        'vzf': count_matchup_player(recent, player, Z),
     })
-
-    base['riv_nem_vic'] = zip_longest(
-        player.rivals,
-        player.nemesis,
-        player.victim
-    )
 
     if player.country is not None:
         base['countryfull'] = transformations.cc_to_cn(player.country)
     # }}}
 
     # {{{ Recent matches
+    # We don't cache this as much or use simple dicts because display_matches is complex
     matches = player.get_matchset(related=['rta', 'rtb', 'pla', 'plb', 'eventobj'])[0:10]
     if matches.exists():
         base['matches'] = display_matches(matches, fix_left=player, ratings=True)
     # }}}
 
     # {{{ Team memberships
-    team_memberships = list(player.groupmembership_set.filter(group__is_team=True).select_related('group'))
-    team_memberships.sort(key=lambda t: t.id, reverse=True)
-    team_memberships.sort(key=meandate, reverse=True)
-    team_memberships.sort(key=lambda t: t.current, reverse=True)
-    base['teammems'] = team_memberships
+    def get_team_history():
+        mems = list(player.groupmembership_set.filter(group__is_team=True).select_related('group'))
+        mems.sort(key=lambda t: t.id, reverse=True)
+        mems.sort(key=meandate, reverse=True)
+        mems.sort(key=lambda t: t.current, reverse=True)
+        return [{
+            'group': {'id': m.group_id, 'name': m.group.name},
+            'start': m.start,
+            'end': m.end,
+            'current': m.current
+        } for m in mems]
+
+    base['teammems'] = cached_query(request, f"player_teams_{player.id}", get_team_history, timeout=3600)
     # }}}
 
     # {{{ If the player has at least one rating
-    if player.current_rating:
-        ratings = total_ratings(player.rating_set.filter(period__computed=True)).select_related('period')
-        base.update({
+    def get_rating_data():
+        if not player.current_rating:
+            return {'charts': False}
+
+        ratings_q = total_ratings(player.rating_set.filter(period__computed=True)).select_related('period')
+        
+        def get_rating_dict(r):
+            if not r: return None
+            return {
+                'rating': r.rating,
+                'rating_vp': r.rating_vp,
+                'rating_vt': r.rating_vt,
+                'rating_vz': r.rating_vz,
+                'tot_vp': r.rating + r.rating_vp,
+                'tot_vt': r.rating + r.rating_vt,
+                'tot_vz': r.rating + r.rating_vz,
+                'dev': r.dev,
+                'dev_vp': r.dev_vp,
+                'dev_vt': r.dev_vt,
+                'dev_vz': r.dev_vz,
+                'tot_dev_vp': sqrt(r.dev**2 + r.dev_vp**2),
+                'tot_dev_vt': sqrt(r.dev**2 + r.dev_vt**2),
+                'tot_dev_vz': sqrt(r.dev**2 + r.dev_vz**2),
+                'position': r.position,
+                'position_vp': r.position_vp,
+                'position_vt': r.position_vt,
+                'position_vz': r.position_vz,
+                'period': {
+                    'id': r.period_id, 
+                    'end': r.period.end,
+                    'start': r.period.start,
+                },
+                'decay': r.decay,
+            }
+
+        recent_update = player.get_latest_rating_update()
+        first_rating = ratings_q.earliest('period')
+        
+        res = {
             'highs': (
-                ratings.latest('rating'),
-                ratings.latest('tot_vp'),
-                ratings.latest('tot_vt'),
-                ratings.latest('tot_vz'),
+                get_rating_dict(ratings_q.order_by('-rating').first()),
+                get_rating_dict(ratings_q.order_by('-tot_vp').first()),
+                get_rating_dict(ratings_q.order_by('-tot_vt').first()),
+                get_rating_dict(ratings_q.order_by('-tot_vz').first()),
             ),
-            'recentchange': player.get_latest_rating_update(),
-            'firstrating': ratings.earliest('period'),
-            'rating': player.current_rating,
-        })
+            'recentchange': get_rating_dict(recent_update),
+            'firstrating': get_rating_dict(first_rating),
+            'rating': get_rating_dict(player.current_rating),
+            'charts': recent_update.period_id > first_rating.period_id
+        }
 
-        if player.current_rating.decay >= INACTIVE_THRESHOLD:
-            base['messages'].append(Message(msg_inactive % player.tag, 'Inactive', type=Message.INFO))
+        if res['charts']:
+            # Fetch ratings using .values() to minimize object unpickling overhead
+            ratings_query = (
+                player.rating_set.filter(period_id__lte=recent_update.period_id)
+                .values('id', 'period_id', 'period__start', 'period__end', 'rating', 
+                        'bf_rating', 'bf_rating_vp', 'bf_rating_vt', 'bf_rating_vz', 'prev_id')
+                .order_by('period_id')
+            )
+            
+            # Optimized match count fetching
+            match_stats = player.get_matchset().order_by().values('period_id').annotate(
+                nmatches=Count('id'),
+                ngames=Sum(F('sca') + F('scb'))
+            )
+            stats_map = {s['period_id']: s for s in match_stats}
 
-        base['charts'] = base['recentchange'].period_id > base['firstrating'].period_id
-    else:
+            ratings_list = []
+            for r in ratings_query:
+                s = stats_map.get(r['period_id'], {'nmatches': 0, 'ngames': 0})
+                
+                # Pre-calculate data for Highcharts to avoid template filter overhead
+                # Reuse canonical logic from templatetags
+                r['ms'] = milliseconds(r['period__end'])
+                r['r_gen'] = ratscale(r['bf_rating'])
+                r['r_vp'] = ratscale(float(r['bf_rating']) + float(r['bf_rating_vp']))
+                r['r_vt'] = ratscale(float(r['bf_rating']) + float(r['bf_rating_vt']))
+                r['r_vz'] = ratscale(float(r['bf_rating']) + float(r['bf_rating_vz']))
+                
+                r['nmatches'] = s['nmatches']
+                r['ngames'] = s['ngames']
+                ratings_list.append(r)
+
+            # Look through team changes
+            teampoints = []
+            for mem in base['teammems']: # Use teampoints from outer scope
+                if mem['start'] and res['firstrating']['period']['end'] < mem['start'] < res['recentchange']['period']['end']:
+                    teampoints.append({
+                        'date': mem['start'],
+                        'ms': milliseconds(mem['start']),
+                        'rating': ratscale(interp_rating(mem['start'], ratings_list)),
+                        'data': [{'date': mem['start'], 'team': mem['group'], 'jol': _('joins')}],
+                    })
+                if mem['end'] and res['firstrating']['period']['end'] < mem['end'] < res['recentchange']['period']['end']:
+                    teampoints.append({
+                        'date': mem['end'],
+                        'ms': milliseconds(mem['end']),
+                        'rating': ratscale(interp_rating(mem['end'], ratings_list)),
+                        'data': [{'date': mem['end'], 'team': mem['group'], 'jol': _('leaves')}],
+                    })
+            teampoints.sort(key=lambda p: p['date'])
+
+            # Condense team switches
+            cur = 0
+            while cur < len(teampoints) - 1:
+                if (teampoints[cur + 1]['date'] - teampoints[cur]['date']).days <= 14:
+                    teampoints[cur]['data'].append(teampoints[cur + 1]['data'][0])
+                    del teampoints[cur + 1]
+                else:
+                    cur += 1
+
+            for point in teampoints:
+                point['data'].sort(key=lambda a: a['jol'], reverse=True)
+                point['data'].sort(key=lambda a: a['date'])
+
+            # Look through stories
+            stories = list(player.story_set.all().select_related('event'))
+            story_list = []
+            for s in stories:
+                if res['firstrating']['period']['start'] < s.date < res['recentchange']['period']['end']:
+                    story_list.append({
+                        'text': str(s),
+                        'date': s.date,
+                        'ms': milliseconds(s.date),
+                        'event': {'id': s.event.id, 'fullname': s.event.fullname} if s.event else None,
+                        'rating': ratscale(interp_rating(s.date, ratings_list))
+                    })
+
+            res.update({
+                'ratings': ratings_list,
+                'stories': story_list,
+                'teampoints': teampoints,
+            })
+        
+        return res
+
+    # Cache key must include language because teampoints contains translated "joins"/"leaves"
+    rating_cache_key = f"player_ratings_{player.id}_{request.LANGUAGE_CODE}"
+    rating_data = cached_query(request, rating_cache_key, get_rating_data, timeout=3600)
+    base.update(rating_data)
+
+    if player.current_rating and player.current_rating.decay >= INACTIVE_THRESHOLD:
+        base['messages'].append(Message(msg_inactive % player.tag, 'Inactive', type=Message.INFO))
+    
+    if not player.current_rating:
         base['messages'].append(Message(_('%s has no rating yet.') % player.tag, type=Message.INFO))
-        base['charts'] = False
-    # }}}
-
-    # {{{ If the player has enough games to make a chart
-    if base['charts']:
-        ratings = (
-            total_ratings(player.rating_set.filter(period_id__lte=base['recentchange'].period_id))
-            .select_related('period')
-            .prefetch_related('prev__rta', 'prev__rtb')
-            .order_by('period')
-        )
-
-        # {{{ Add stories and other extra information
-        earliest = base['firstrating']
-        latest = base['recentchange']
-
-        # Look through team changes
-        teampoints = []
-        for mem in base['teammems']:
-            if mem.start and earliest.period.end < mem.start < latest.period.end:
-                teampoints.append({
-                    'date': mem.start,
-                    'rating': interp_rating(mem.start, ratings),
-                    'data': [{'date': mem.start, 'team': mem.group, 'jol': _('joins')}],
-                })
-            if mem.end and earliest.period.end < mem.end < latest.period.end:
-                teampoints.append({
-                    'date': mem.end,
-                    'rating': interp_rating(mem.end, ratings),
-                    'data': [{'date': mem.end, 'team': mem.group, 'jol': _('leaves')}],
-                })
-        teampoints.sort(key=lambda p: p['date'])
-
-        # Condense if team changes happened within 14 days
-        cur = 0
-        while cur < len(teampoints) - 1:
-            if (teampoints[cur + 1]['date'] - teampoints[cur]['date']).days <= 14:
-                teampoints[cur]['data'].append(teampoints[cur + 1]['data'][0])
-                del teampoints[cur + 1]
-            else:
-                cur += 1
-
-        # Sort first by date, then by joined/left
-        for point in teampoints:
-            point['data'].sort(key=lambda a: a['jol'], reverse=True)
-            point['data'].sort(key=lambda a: a['date'])
-
-        # Look through stories
-        stories = player.story_set.all().select_related('event')
-        for s in stories:
-            if earliest.period.start < s.date < latest.period.start:
-                s.rating = interp_rating(s.date, ratings)
-            else:
-                s.skip = True
-        # }}}
-
-        base.update({
-            'ratings': add_counts(ratings),
-            'patches': PATCHES,
-            'stories': stories,
-            'teampoints': teampoints,
-        })
-    else:
+    elif not base['charts']:
         base['messages'].append(Message(msg_nochart % player.tag, type=Message.INFO))
+
+    base['patches'] = PATCHES
     # }}}
 
     return render(request, 'player.djhtml', base)
@@ -566,15 +676,37 @@ def results(request, player_id):
     # }}}
 
     # {{{ Statistics
+    # Efficiently aggregate all stats in one query
     stats = matches.aggregate(
         sc_my=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0,
                        output_field=IntegerField())),
         sc_op=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0,
                        output_field=IntegerField())),
-        msc_my=Count(Case(When(pla=player, sca__gt=F('scb'), then=1), When(plb=player, scb__gt=F('sca'), then=1),
-                          output_field=IntegerField())),
-        msc_op=Count(Case(When(pla=player, scb__gt=F('sca'), then=1), When(plb=player, sca__gt=F('scb'), then=1),
-                          output_field=IntegerField())),
+        msc_my=Count('id', filter=(Q(pla=player, sca__gt=F('scb')) | Q(plb=player, scb__gt=F('sca')))),
+        msc_op=Count('id', filter=(Q(pla=player, scb__gt=F('sca')) | Q(plb=player, sca__gt=F('scb')))),
+        
+        # Matchup game wins/losses
+        vp_w=Sum(Case(When(pla=player, rcb=P, then=F('sca')), When(plb=player, rca=P, then=F('scb')), default=0)),
+        vp_l=Sum(Case(When(pla=player, rcb=P, then=F('scb')), When(plb=player, rca=P, then=F('sca')), default=0)),
+        vt_w=Sum(Case(When(pla=player, rcb=T, then=F('sca')), When(plb=player, rca=T, then=F('scb')), default=0)),
+        vt_l=Sum(Case(When(pla=player, rcb=T, then=F('scb')), When(plb=player, rca=T, then=F('sca')), default=0)),
+        vz_w=Sum(Case(When(pla=player, rcb=Z, then=F('sca')), When(plb=player, rca=Z, then=F('scb')), default=0)),
+        vz_l=Sum(Case(When(pla=player, rcb=Z, then=F('scb')), When(plb=player, rca=Z, then=F('sca')), default=0)),
+    )
+
+    recent = matches.filter(date__gte=(date.today() - relativedelta(months=2)))
+    recent_stats = recent.aggregate(
+        g_win=Sum(Case(When(pla=player, then=F('sca')), When(plb=player, then=F('scb')), default=0)),
+        g_loss=Sum(Case(When(pla=player, then=F('scb')), When(plb=player, then=F('sca')), default=0)),
+        m_win=Count('id', filter=(Q(pla=player, sca__gt=F('scb')) | Q(plb=player, scb__gt=F('sca')))),
+        m_loss=Count('id', filter=(Q(pla=player, sca__lt=F('scb')) | Q(plb=player, scb__lt=F('sca')))),
+        
+        vp_w=Sum(Case(When(pla=player, rcb=P, then=F('sca')), When(plb=player, rca=P, then=F('scb')), default=0)),
+        vp_l=Sum(Case(When(pla=player, rcb=P, then=F('scb')), When(plb=player, rca=P, then=F('sca')), default=0)),
+        vt_w=Sum(Case(When(pla=player, rcb=T, then=F('sca')), When(plb=player, rca=T, then=F('scb')), default=0)),
+        vt_l=Sum(Case(When(pla=player, rcb=T, then=F('scb')), When(plb=player, rca=T, then=F('sca')), default=0)),
+        vz_w=Sum(Case(When(pla=player, rcb=Z, then=F('sca')), When(plb=player, rca=Z, then=F('scb')), default=0)),
+        vz_l=Sum(Case(When(pla=player, rcb=Z, then=F('scb')), When(plb=player, rca=Z, then=F('sca')), default=0)),
     )
 
     base.update({
@@ -582,18 +714,14 @@ def results(request, player_id):
         'sc_op': stats['sc_op'] or 0,
         'msc_my': stats['msc_my'] or 0,
         'msc_op': stats['msc_op'] or 0,
-    })
-
-    recent = matches.filter(date__gte=(date.today() - relativedelta(months=2)))
-    base.update({
-        'total': count_winloss_player(matches, player),
-        'vp': count_matchup_player(matches, player, P),
-        'vt': count_matchup_player(matches, player, T),
-        'vz': count_matchup_player(matches, player, Z),
-        'totalf': count_winloss_player(recent, player),
-        'vpf': count_matchup_player(recent, player, P),
-        'vtf': count_matchup_player(recent, player, T),
-        'vzf': count_matchup_player(recent, player, Z)
+        'total': (stats['sc_my'] or 0, stats['sc_op'] or 0),
+        'vp': (stats['vp_w'] or 0, stats['vp_l'] or 0),
+        'vt': (stats['vt_w'] or 0, stats['vt_l'] or 0),
+        'vz': (stats['vz_w'] or 0, stats['vz_l'] or 0),
+        'totalf': (recent_stats['g_win'] or 0, recent_stats['g_loss'] or 0),
+        'vpf': (recent_stats['vp_w'] or 0, recent_stats['vp_l'] or 0),
+        'vtf': (recent_stats['vt_w'] or 0, recent_stats['vt_l'] or 0),
+        'vzf': (recent_stats['vz_w'] or 0, recent_stats['vz_l'] or 0),
     })
     # }}}
 
@@ -803,18 +931,48 @@ def historical(request, player_id):
     base = base_ctx('Ranking', 'Rating history', request, context=player)
 
     latest = player.rating_set.filter(period__computed=True, decay=0).latest('period')
-    historical = (
+    historical_query = (
         player.rating_set.filter(period_id__lte=latest.period_id)
-        .prefetch_related('prev__rta', 'prev__rtb')
-        .select_related('period', 'prev')
-        .order_by('-period')
+        .values('id', 'period_id', 'period__start', 'period__end',
+                'rating', 'rating_vp', 'rating_vt', 'rating_vz',
+                'bf_rating', 'bf_rating_vp', 'bf_rating_vt', 'bf_rating_vz', 'dev', 'decay', 'position', 
+                'position_vp', 'position_vt', 'position_vz', 'prev_id')
+        .order_by('-period_id')
     )
 
-    historical = add_counts(historical)
+    # Bulk fetch match stats
+    match_stats = player.get_matchset().order_by().values('period_id').annotate(
+        nmatches=Count('id'),
+        ngames=Sum(F('sca') + F('scb'))
+    )
+    stats_map = {s['period_id']: s for s in match_stats}
+
+    historical_list = []
+    today = date.today()
+    for r in historical_query:
+        s = stats_map.get(r['period_id'], {'nmatches': 0, 'ngames': 0})
+        r['nmatches'] = s['nmatches']
+        r['ngames'] = s['ngames']
+        # Manually calculate is_preview since it's a method, not a field
+        r['period__is_preview'] = r['period__end'] >= today
+        historical_list.append(r)
+
+    # Pre-calculate rating differences (since it's ordered by -period_id, next item is the previous one)
+    for i in range(len(historical_list) - 1):
+        curr = historical_list[i]
+        prev = historical_list[i+1]
+        
+        # Only show diffs if they are consecutive and same player
+        if curr['prev_id'] == prev['id']:
+            curr['rating_diff'] = curr['rating'] - prev['rating']
+            curr['rating_diff_vp'] = (curr['rating'] + curr['rating_vp']) - (prev['rating'] + prev['rating_vp'])
+            curr['rating_diff_vt'] = (curr['rating'] + curr['rating_vt']) - (prev['rating'] + prev['rating_vt'])
+            curr['rating_diff_vz'] = (curr['rating'] + curr['rating_vz']) - (prev['rating'] + prev['rating_vz'])
+            curr['has_prev'] = True
 
     base.update({
         'player': player,
-        'historical': historical,
+        'historical': historical_list,
     })
 
     return render(request, 'historical.djhtml', base)

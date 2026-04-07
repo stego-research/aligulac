@@ -19,6 +19,10 @@ from ratings.tools import (
     country_list,
     total_ratings,
 )
+from ratings.templatetags.ratings_extras import (
+    milliseconds,
+    ratscale,
+)
 
 
 # }}}
@@ -56,19 +60,42 @@ def history(request):
         query += ' GROUP BY player.id, player.tag, player.race, player.country ORDER BY high DESC LIMIT %s'
         params.append(nplayers)
 
-        players = list(Player.objects.raw(query, params))
-        player_ids = [p.id for p in players]
+        players_raw = list(Player.objects.raw(query, params))
+        player_ids = [p.id for p in players_raw]
 
-        # Fetch all ratings for these players in a single query to avoid N+1
-        all_ratings = Rating.objects.filter(player_id__in=player_ids).select_related('period')
+        # Use .values() to fetch only needed fields and avoid creating 1000s of model instances.
+        # This significantly reduces unpickling time when retrieving from cache.
+        all_ratings = Rating.objects.filter(player_id__in=player_ids).values(
+            'player_id', 'period__end', 'bf_rating'
+        ).order_by('period__end')
         
         ratings_by_player = {}
+        
         for r in all_ratings:
-            if r.player_id not in ratings_by_player:
-                ratings_by_player[r.player_id] = []
-            ratings_by_player[r.player_id].append(r)
+            pid = r['player_id']
+            if pid not in ratings_by_player:
+                ratings_by_player[pid] = []
+            
+            date_val = r['period__end']
+            rating_val = r['bf_rating']
+            
+            # Pre-calculate Highcharts data to speed up template rendering
+            # Reuse canonical scaling and epoch logic from templatetags
+            y = ratscale(rating_val)
+            ratings_by_player[pid].append({
+                'name': f"{date_val}: {y}",
+                'x': milliseconds(date_val),
+                'y': y
+            })
 
-        return [(p, ratings_by_player.get(p.id, [])) for p in players]
+        return [
+            {
+                'tag': p.tag,
+                'race': p.race,
+                'ratings': ratings_by_player.get(p.id, [])
+            }
+            for p in players_raw
+        ]
 
     from aligulac.cache import cached_query
     from django.conf import settings
@@ -81,12 +108,21 @@ def history(request):
     )
     # }}}
 
+    # Cache the country list scoped by language since it contains translated names.
+    countries_cache_key = f"country_list_all_{request.LANGUAGE_CODE}"
+    countries = cached_query(
+        request,
+        countries_cache_key,
+        lambda: country_list(Player.objects.all()),
+        timeout=86400
+    )
+
     base.update({
         'race': race,
         'nats': nats,
         'nplayers': nplayers,
         'players': players_data,
-        'countries': country_list(Player.objects.all()),
+        'countries': countries,
         'charts': True,
         'patches': PATCHES,
     })

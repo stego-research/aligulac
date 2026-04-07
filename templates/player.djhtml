@@ -121,7 +121,7 @@ This is the template for the main player page, called from ratings.views.player.
            type: 'column',
            color: isDark ? '#221133' : 'rgba(140,140,140,0.4)',
            data: [{% for r in ratings %} {
-             x: {{ r.period.end|milliseconds }},
+             x: {{ r.ms }},
              y: {{ r.ngames }}
                                 },{% endfor %}]
          }, {
@@ -132,9 +132,9 @@ This is the template for the main player page, called from ratings.views.player.
            yAxis: 0,
            color: '#00aa00',
            data: [{% for r in ratings %} {
-             name: '{{ r.period.end }} vP: {{r.bf_rating|addf:r.bf_rating_vp|ratscale }}',
-             x: {{ r.period.end|milliseconds }},
-             y: {{ r.bf_rating|addf:r.bf_rating_vp|ratscale }}
+             name: '{{ r.period__end }} vP: {{ r.r_vp }}',
+             x: {{ r.ms }},
+             y: {{ r.r_vp }}
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Terran" %}',
@@ -144,9 +144,9 @@ This is the template for the main player page, called from ratings.views.player.
            yAxis: 0,
            color: isDark ? '#4c8de9' : '#0066cc',
            data: [{% for r in ratings %} {
-             name: '{{ r.period.end }} vT: {{r.bf_rating|addf:r.bf_rating_vt|ratscale }}',
-             x: {{ r.period.end|milliseconds }},
-             y: {{ r.bf_rating|addf:r.bf_rating_vt|ratscale }}
+             name: '{{ r.period__end }} vT: {{ r.r_vt }}',
+             x: {{ r.ms }},
+             y: {{ r.r_vt }}
                                 },{% endfor %}]
          }, {
            name: '{% trans "vs. Zerg" %}',
@@ -156,9 +156,9 @@ This is the template for the main player page, called from ratings.views.player.
            yAxis: 0,
            color: '#cc0000',
            data: [{% for r in ratings %} {
-             name: '{{ r.period.end }} vZ: {{r.bf_rating|addf:r.bf_rating_vz|ratscale }}',
-             x: {{ r.period.end|milliseconds }},
-             y: {{ r.bf_rating|addf:r.bf_rating_vz|ratscale }}
+             name: '{{ r.period__end }} vZ: {{ r.r_vz }}',
+             x: {{ r.ms }},
+             y: {{ r.r_vz }}
                                 },{% endfor %}]
          }, {
            {% comment %}Translators: General rating{% endcomment %}
@@ -168,9 +168,9 @@ This is the template for the main player page, called from ratings.views.player.
            yAxis: 0,
            color: isDark ? '#ffeeff' : '#000000',
            data: [{% for r in ratings %} {
-             name: '{{ r.period.end }}: {{r.bf_rating|ratscale }}',
-             x: {{ r.period.end|milliseconds }},
-             y: {{ r.bf_rating|ratscale }}
+             name: '{{ r.period__end }}: {{ r.r_gen }}',
+             x: {{ r.ms }},
+             y: {{ r.r_gen }}
                                 },{% endfor %}]
          }{% if stories or teampoints %},{% endif %}
  {% if stories %}
@@ -185,10 +185,10 @@ This is the template for the main player page, called from ratings.views.player.
              radius: 5
            },
            data: [{% for s in stories %}{% if not s.skip %} {
-             name: '{{s|jsescape|safe}}<br/>{{s.date|date:"DATE_FORMAT"|jsescape|safe}}{% if s.event %}: {{s.event.fullname|jsescape|safe}}{% endif %}',
-             url: '/results/events/{{s.event.id}}-{{s.event.fullname|urlfilter|jsescape}}/',
-             x: {{ s.date|milliseconds }},
-             y: {{ s.rating|ratscale }}
+             name: '{{s.text|jsescape|safe}}<br/>{{s.date|date:"DATE_FORMAT"|jsescape|safe}}{% if s.event %}: {{s.event.fullname|jsescape|safe}}{% endif %}',
+             {% if s.event %}url: '/results/events/{{s.event.id}}-{{s.event.fullname|urlfilter|jsescape}}/',{% endif %}
+             x: {{ s.ms }},
+             y: {{ s.rating }}
                                 },{% endif %}{% endfor %}]
          }, {% endif %}{% if teampoints %}
                   {
@@ -202,8 +202,8 @@ This is the template for the main player page, called from ratings.views.player.
            },
            data: [{% for t in teampoints %} {
              name: '{% for d in t.data %}{{d.date|date:"DATE_FORMAT"|jsescape|safe}}: {{player.tag|jsescape}} {{d.jol}} {{d.team.name|jsescape}}<br/>{% endfor %}',
-             x: {{ t.date|milliseconds }},
-             y: {{ t.rating|ratscale }}
+             x: {{ t.ms }},
+             y: {{ t.rating }}
                                 },{% endfor %}]
          } {% endif %}]
        });
@@ -281,7 +281,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.rating|addf:rating.rating_vp|ratscale }} ± {{ rating|ratingdev:"P"|ratscalediff }}
+                    {{ rating.tot_vp|ratscale }} ± {{ rating.tot_dev_vp|ratscalediff }}
                     {% if rating.position_vp %}
                       <small class="text-muted">(#{{ rating.position_vp }})</small>
                     {% endif %}
@@ -301,7 +301,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.rating|addf:rating.rating_vt|ratscale }} ± {{ rating|ratingdev:"T"|ratscalediff }}
+                    {{ rating.tot_vt|ratscale }} ± {{ rating.tot_dev_vt|ratscalediff }}
                     {% if rating.position_vt %}
                       <small class="text-muted">(#{{ rating.position_vt }})</small>
                     {% endif %}
@@ -322,7 +322,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.rating|addf:rating.rating_vz|ratscale }} ± {{ rating|ratingdev:"Z"|ratscalediff }}
+                    {{ rating.tot_vz|ratscale }} ± {{ rating.tot_dev_vz|ratscalediff }}
                     {% if rating.position_vz %}
                       <small class="text-muted">(#{{ rating.position_vz }})</small>
                     {% endif %}
@@ -368,7 +368,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.rating|addf:rating.rating_vp|ratscale }} ± {{ rating|ratingdev:"P"|ratscalediff }}
+                    {{ rating.tot_vp|ratscale }} ± {{ rating.tot_dev_vp|ratscalediff }}
                     {% if rating.position_vp %}
                       <small class="text-muted">(#{{ rating.position_vp }})</small>
                     {% endif %}
@@ -388,7 +388,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.rating|addf:rating.rating_vt|ratscale }} ± {{ rating|ratingdev:"T"|ratscalediff }}
+                    {{ rating.tot_vt|ratscale }} ± {{ rating.tot_dev_vt|ratscalediff }}
                     {% if rating.position_vt %}
                       <small class="text-muted">(#{{ rating.position_vt }})</small>
                     {% endif %}
@@ -409,7 +409,7 @@ This is the template for the main player page, called from ratings.views.player.
                 </td>
                 <td style="border-top: none;">
                   {% if rating %}
-                    {{ rating.rating|addf:rating.rating_vz|ratscale }} ± {{ rating|ratingdev:"Z"|ratscalediff }}
+                    {{ rating.tot_vz|ratscale }} ± {{ rating.tot_dev_vz|ratscalediff }}
                     {% if rating.position_vz %}
                       <small class="text-muted">(#{{ rating.position_vz }})</small>
                     {% endif %}
@@ -451,10 +451,10 @@ This is the template for the main player page, called from ratings.views.player.
                 <th class="text-right">{% trans "vP" %}</th>
                 <td>
                   {% if highs %}
-                    {{ highs.1.rating|addf:highs.1.rating_vp|ratscale }} 
-                    ± {{ highs.1|ratingdev:"P"|ratscalediff }}
+                    {{ highs.1.tot_vp|ratscale }} 
+                    ± {{ highs.1.tot_dev_vp|ratscalediff }}
                     {% if highs.1.position_vp %}
-                      <small class="text-muted">(#{{ highs.2.position_vp }})</small>
+                      <small class="text-muted">(#{{ highs.1.position_vp }})</small>
                     {% endif %}
                   {% endif %}
                 </td>
@@ -476,8 +476,8 @@ This is the template for the main player page, called from ratings.views.player.
                 <th class="text-right">{% trans "vT" %}</th>
                 <td>
                   {% if highs %}
-                    {{ highs.2.rating|addf:highs.2.rating_vt|ratscale }} 
-                    ± {{ highs.2|ratingdev:"T"|ratscalediff }}
+                    {{ highs.2.tot_vt|ratscale }} 
+                    ± {{ highs.2.tot_dev_vt|ratscalediff }}
                     {% if highs.2.position_vt %}
                       <small class="text-muted">(#{{ highs.2.position_vt }})</small>
                     {% endif %}
@@ -501,8 +501,8 @@ This is the template for the main player page, called from ratings.views.player.
                 <th class="text-right">{% trans "vZ" %}</th>
                 <td>
                   {% if highs %}
-                    {{ highs.3.rating|addf:highs.3.rating_vz|ratscale }} 
-                    ± {{ highs.3|ratingdev:"Z"|ratscalediff }}
+                    {{ highs.3.tot_vz|ratscale }} 
+                    ± {{ highs.3.tot_dev_vz|ratscalediff }}
                     {% if highs.3.position_vz %}
                       <small class="text-muted">(#{{ highs.3.position_vz }})</small>
                     {% endif %}
@@ -647,16 +647,16 @@ This is the template for the main player page, called from ratings.views.player.
               <td><a href="/teams/{{ team.id }}-{{ team.name|urlfilter }}/">{{ team.name }}</a></td>
             </tr>
           {% endif %}
-          {% if first %}
+          {% if first_date %}
             <tr class="small">
               <td class="text-right ibox-left">{% trans "First match" %}</td>
-              <td>{{first.date|date:"DATE_FORMAT"}}</td>
+              <td>{{first_date|date:"DATE_FORMAT"}}</td>
             </tr>
           {% endif %}
-          {% if last %}
+          {% if last_date %}
             <tr class="small">
               <td class="text-right ibox-left">{% trans "Last match" %}</td>
-              <td>{{last.date|date:"DATE_FORMAT"}}</td>
+              <td>{{last_date|date:"DATE_FORMAT"}}</td>
             </tr>
           {% endif %}
           {% if earnings %}
