@@ -29,8 +29,9 @@ def cached_query(request, key, query_func, timeout=None):
     if not force_refresh:
         try:
             # Use the sentinel to correctly handle legitimate None results from the cache.
+            # However, for our optimized views, None is never a valid result.
             data = cache.get(key, default=CACHE_MISS)
-            if data is not CACHE_MISS:
+            if data is not CACHE_MISS and data is not None:
                 return data
         except Exception:
             # logger.exception preserves the stack trace for production debugging.
@@ -45,9 +46,11 @@ def cached_query(request, key, query_func, timeout=None):
         data = list(data)
 
     # Synchronous persistence to cache provider (typically Redis/Valkey, which is fast).
-    try:
-        cache.set(key, data, timeout)
-    except Exception:
-        logger.exception(f"Cache backend error during set (key={key})")
+    # We avoid caching None to prevent transient failures from being persisted.
+    if data is not None:
+        try:
+            cache.set(key, data, timeout)
+        except Exception:
+            logger.exception(f"Cache backend error during set (key={key})")
 
     return data

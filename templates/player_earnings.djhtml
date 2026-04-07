@@ -86,7 +86,7 @@ This is the template for the earnings of a player. It's called from ratings.view
                 {% endif %}
               </td>
               <td style="padding-left: 2em;">
-                {% for event in earning.event.get_ancestors_event %}
+                {% for event in earning.event.ancestors %}
                   <a href="/results/events/{{ event.id }}-{{ event.fullname|urlfilter }}/">{{ event.name }}</a>
                 {% endfor %}
               </td>
