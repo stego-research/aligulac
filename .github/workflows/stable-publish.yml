@@ -32,8 +32,13 @@ jobs:
           tag_name="${{ github.event.release.tag_name }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          expected_remote_tag="$(git ls-remote --refs origin refs/tags/stable | awk '{print $1}')"
           git tag -f stable "${tag_name}^{}"
-          git push origin refs/tags/stable --force
+          if [ -n "${expected_remote_tag}" ]; then
+            git push origin refs/tags/stable --force-with-lease=refs/tags/stable:"${expected_remote_tag}"
+          else
+            git push origin refs/tags/stable
+          fi
 
   call-reusable-workflow:
     needs: [update-stable-tag]
