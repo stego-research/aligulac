@@ -649,6 +649,14 @@ footer {
     border-top: 1px solid var(--border-color) !important;
 }
 
+.table .table {
+    background-color: var(--bg-primary);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > td > .table {
+    background-color: var(--bg-secondary);
+}
+
 .table-striped > tbody > tr:nth-of-type(odd) {
     background-color: var(--bg-secondary);
 }
