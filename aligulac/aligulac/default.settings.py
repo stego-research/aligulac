@@ -176,6 +176,12 @@ WSGI_APPLICATION = 'aligulac.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
+DB_SCHEMA = get_env('DB_SCHEMA', getattr(local, 'DB_SCHEMA', 'public'))
+# Normalize DB_SCHEMA to always be a non-empty string, defaulting to 'public'
+DB_SCHEMA = str(DB_SCHEMA).strip() if DB_SCHEMA else 'public'
+if not DB_SCHEMA:
+    DB_SCHEMA = 'public'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -184,7 +190,7 @@ DATABASES = {
         'PASSWORD': local.DB_PASSWORD,
         'HOST': 'localhost',
         'OPTIONS': {
-            'options': f'-c search_path={get_env("DB_SCHEMA", getattr(local, "DB_SCHEMA", "public"))}',
+            'options': f'-c search_path={DB_SCHEMA}',
         }
     }
 }

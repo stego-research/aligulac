@@ -79,6 +79,10 @@ DUMP_PATH = local.DUMP_PATH
 INTERNAL_IPS = local.INTERNAL_IPS
 EXCHANGE_ID = local.EXCHANGE_ID
 DB_SCHEMA = get_env('DB_SCHEMA', getattr(local, 'DB_SCHEMA', 'public'))
+# Normalize DB_SCHEMA to always be a non-empty string, defaulting to 'public'
+DB_SCHEMA = str(DB_SCHEMA).strip() if DB_SCHEMA else 'public'
+if not DB_SCHEMA:
+    DB_SCHEMA = 'public'
 
 # S3/R2 Configuration
 # Database Dumps (AWS S3)
