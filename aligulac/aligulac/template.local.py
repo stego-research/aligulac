@@ -38,6 +38,11 @@ EXCHANGE_ID = get_env('EXCHANGE_ID', '')
 DB_NAME = get_env('DB_NAME', 'aligulac')
 DB_HOST = get_env('DB_HOST', '127.0.0.1')
 DB_PORT = get_env('DB_PORT', '5432')
+DB_SCHEMA = get_env('DB_SCHEMA', 'public')
+# Normalize DB_SCHEMA to always be a non-empty string, defaulting to 'public'
+DB_SCHEMA = str(DB_SCHEMA).strip() if DB_SCHEMA else 'public'
+if not DB_SCHEMA:
+    DB_SCHEMA = 'public'
 DB_SSLMODE = get_env('DB_SSLMODE', 'prefer')
 DB_USER = get_env('DB_USER', '')
 DB_PASSWORD = get_env('DB_PASSWORD', '')
