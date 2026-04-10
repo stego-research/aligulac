@@ -7,7 +7,6 @@ name = "pypi"
 boto3 = "*"
 beautifulsoup4 = "==4.7.1"
 ccy = "==1.0.0"
-django = "~=4.2.0"
 django-debug-toolbar = "*"
 markdown2 = "*"
 mwparserfromhell = "==0.5.4"
@@ -31,6 +30,7 @@ certifi = "*"
 gunicorn = "*"
 whitenoise = "*"
 sentry-sdk = "*"
+django = "==4.2.30"
 
 [dev-packages]
 
