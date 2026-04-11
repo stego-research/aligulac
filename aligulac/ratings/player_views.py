@@ -275,8 +275,15 @@ class ResultsFilterForm(forms.Form):
     # }}}
 
     # {{{ Cleaning with default values
+    def clean(self):
+        cleaned_data = super(ResultsFilterForm, self).clean()
+        for field, fobj in self.fields.items():
+            if field not in cleaned_data:
+                cleaned_data[field] = fobj.initial
+        return cleaned_data
+
     def clean_default(self, field):
-        if not self[field].html_name in self.data:
+        if self[field].html_name not in self.data or field not in self.cleaned_data:
             return self.fields[field].initial
         return self.cleaned_data[field]
 
