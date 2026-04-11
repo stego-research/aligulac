@@ -40,9 +40,10 @@ def info(string):
     print("[{}]: {}".format(datetime.now(), string), flush=True)
 
 
-def perform_sanity_check(path, schema, tables):
+def perform_sanity_check(path, schema, tables, check_empty=True):
     info("Performing sanity check on dump (expecting schema: {}).".format(schema))
     allowed_tables_set = set(tables)
+    found_tables = set()
     with open(path, 'r') as f:
         for line in f:
             # Check for schema markers in pg_dump comments
@@ -65,7 +66,12 @@ def perform_sanity_check(path, schema, tables):
                 if "CREATE TABLE" in line or "COPY" in line:
                     if found_table not in allowed_tables_set:
                         raise Exception("SECURITY ALERT: Found unauthorized table '{}' in dump!".format(found_table))
-    info("Sanity check passed.")
+                    found_tables.add(found_table)
+    
+    if check_empty and not found_tables:
+        raise Exception("SECURITY ALERT: No authorized tables found in dump! The dump is likely empty or failed.")
+
+    info("Sanity check passed (found {}/{} tables).".format(len(found_tables), len(tables)))
 
 
 def rewrite_schema(path, old_schema, new_schema, rewrite=False):
@@ -127,11 +133,25 @@ env = os.environ.copy()
 if DATABASES['default']['PASSWORD']:
     env['PGPASSWORD'] = DATABASES['default']['PASSWORD']
 
+# Set search_path to the DB_SCHEMA to ensure pg_dump finds tables correctly,
+# especially when using -t which ignores -n.
+env['PGOPTIONS'] = f"-c search_path={DB_SCHEMA},public"
+
 full_path = os.path.join(DUMP_PATH, 'full.sql.gz')
 with open(full_path, "w") as f:
-    p_pg = Popen(pg_dump, stdout=subprocess.PIPE, env=env)
+    # Use Popen to capture stderr and pipe stdout to gzip
+    p_pg = Popen(pg_dump, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     p_gzip = Popen(["gzip"], stdin=p_pg.stdout, stdout=f)
+    
+    # Allow p_pg to receive a SIGPIPE if p_gzip exits
+    p_pg.stdout.close()
     p_gzip.communicate()
+    
+    # Check for pg_dump failure
+    if p_pg.wait() != 0:
+        # pg_dump failed, capture stderr for report
+        err_msg = p_pg.stderr.read().decode()
+        raise Exception("pg_dump failed (full dump):\n{}".format(err_msg))
 # }}}
 
 # {{{ Public dump
@@ -140,15 +160,19 @@ info("Dumping public database.")
 
 public_path = os.path.join(DUMP_PATH, 'aligulac.sql')
 
+# Construct the public dump command. 
+# Note that pg_dump ignores -n when -t is used, so we rely on search_path in PGOPTIONS.
 pub_pg_dump = pg_dump[:11]
-
 for tbl in public_tables:
     pub_pg_dump.extend(['-t', tbl])
-
 pub_pg_dump.append(pg_dump[-1])
 
 with open(public_path, 'w') as f:
-    subprocess.call(pub_pg_dump, stdout=f, env=env)
+    # Use Popen to capture stderr
+    p_pub = Popen(pub_pg_dump, stdout=f, stderr=subprocess.PIPE, env=env)
+    _, stderr = p_pub.communicate()
+    if p_pub.returncode != 0:
+        raise Exception("pg_dump failed (public dump):\n{}".format(stderr.decode()))
 
 # Schema rewriting is disabled by default for safety.
 # Set rewrite=True once you have verified the transformation in a staging environment.
