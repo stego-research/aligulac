@@ -40,10 +40,11 @@ def info(string):
     print("[{}]: {}".format(datetime.now(), string), flush=True)
 
 
-def perform_sanity_check(path, schema, tables):
+def perform_sanity_check(path, schema, tables, check_empty=True):
     info("Performing sanity check on dump (expecting schema: {}).".format(schema))
     allowed_tables_set = set(tables)
-    with open(path, 'r') as f:
+    found_tables = set()
+    with open(path, 'r', encoding='utf-8', errors='replace') as f:
         for line in f:
             # Check for schema markers in pg_dump comments
             if "Schema: " in line:
@@ -65,7 +66,12 @@ def perform_sanity_check(path, schema, tables):
                 if "CREATE TABLE" in line or "COPY" in line:
                     if found_table not in allowed_tables_set:
                         raise Exception("SECURITY ALERT: Found unauthorized table '{}' in dump!".format(found_table))
-    info("Sanity check passed.")
+                    found_tables.add(found_table)
+    
+    if check_empty and not found_tables:
+        raise Exception("SECURITY ALERT: No authorized tables found in dump! The dump is likely empty or failed.")
+
+    info("Sanity check passed (found {}/{} tables).".format(len(found_tables), len(tables)))
 
 
 def rewrite_schema(path, old_schema, new_schema, rewrite=False):
@@ -82,7 +88,8 @@ def rewrite_schema(path, old_schema, new_schema, rewrite=False):
     schema_comment_pattern = re.compile(r'Schema: ([\'"]?){}([\'"]?);'.format(re.escape(old_schema)))
     
     in_copy_data = False
-    with open(path, 'r') as fin, open(temp_path, 'w') as fout:
+    with open(path, 'r', encoding='utf-8', errors='replace') as fin, \
+         open(temp_path, 'w', encoding='utf-8', errors='replace') as fout:
         for line in fin:
             # Detect start of data block
             if line.startswith('COPY '):
@@ -127,11 +134,37 @@ env = os.environ.copy()
 if DATABASES['default']['PASSWORD']:
     env['PGPASSWORD'] = DATABASES['default']['PASSWORD']
 
+# Append search_path to existing PGOPTIONS if present.
+# Quote DB_SCHEMA as a PostgreSQL identifier.
+quoted_schema = '"{}"'.format(DB_SCHEMA.replace('"', '""'))
+sp_option = "-c search_path={},public".format(quoted_schema)
+if 'PGOPTIONS' in env:
+    env['PGOPTIONS'] = "{} {}".format(env['PGOPTIONS'], sp_option)
+else:
+    env['PGOPTIONS'] = sp_option
+
 full_path = os.path.join(DUMP_PATH, 'full.sql.gz')
-with open(full_path, "w") as f:
-    p_pg = Popen(pg_dump, stdout=subprocess.PIPE, env=env)
-    p_gzip = Popen(["gzip"], stdin=p_pg.stdout, stdout=f)
-    p_gzip.communicate()
+with open(full_path, "wb") as f:
+    # Use Popen to capture stderr and pipe stdout to gzip
+    p_pg = Popen(pg_dump, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    p_gzip = Popen(["gzip"], stdin=p_pg.stdout, stdout=f, stderr=subprocess.PIPE)
+    
+    # Allow p_pg to receive a SIGPIPE if p_gzip exits
+    p_pg.stdout.close()
+    
+    # communicate() safely drains the pipes without deadlocks.
+    # Note: p_gzip.communicate() will drain p_gzip.stderr (p_gzip.stdin is closed).
+    # Then p_pg.communicate() drains p_pg.stderr.
+    _, stderr_gzip = p_gzip.communicate()
+    _, stderr_pg = p_pg.communicate()
+    
+    # Check for failures in BOTH processes
+    if p_pg.returncode != 0:
+        err_msg = stderr_pg.decode('utf-8', 'replace')
+        raise Exception("pg_dump failed (full dump):\n{}".format(err_msg))
+    if p_gzip.returncode != 0:
+        err_msg = stderr_gzip.decode('utf-8', 'replace')
+        raise Exception("gzip failed (full dump):\n{}".format(err_msg))
 # }}}
 
 # {{{ Public dump
@@ -140,20 +173,28 @@ info("Dumping public database.")
 
 public_path = os.path.join(DUMP_PATH, 'aligulac.sql')
 
+# Construct the public dump command. 
+# Note that pg_dump ignores -n when -t is used, so we rely on search_path in PGOPTIONS.
 pub_pg_dump = pg_dump[:11]
-
 for tbl in public_tables:
     pub_pg_dump.extend(['-t', tbl])
-
 pub_pg_dump.append(pg_dump[-1])
 
-with open(public_path, 'w') as f:
-    subprocess.call(pub_pg_dump, stdout=f, env=env)
+# Open in binary mode for raw output or text mode with explicit encoding.
+# Since rewrite_schema performs string regex, text mode with UTF-8 is safer.
+with open(public_path, 'w', encoding='utf-8', errors='replace') as f:
+    # Use Popen to capture stderr
+    p_pub = Popen(pub_pg_dump, stdout=f, stderr=subprocess.PIPE, env=env)
+    _, stderr = p_pub.communicate()
+    if p_pub.returncode != 0:
+        raise Exception("pg_dump failed (public dump):\n{}".format(stderr.decode('utf-8', 'replace')))
 
 # Schema rewriting is disabled by default for safety.
-# Set rewrite=True once you have verified the transformation in a staging environment.
-rewrite_schema(public_path, DB_SCHEMA, 'public', rewrite=False)
-perform_sanity_check(public_path, DB_SCHEMA, public_tables)
+# Set REWRITE_PUBLIC=True once you have verified the transformation in a staging environment.
+REWRITE_PUBLIC = False
+rewrite_schema(public_path, DB_SCHEMA, 'public', rewrite=REWRITE_PUBLIC)
+sanity_schema = 'public' if REWRITE_PUBLIC else DB_SCHEMA
+perform_sanity_check(public_path, sanity_schema, public_tables)
 
 
 # }}}
@@ -162,16 +203,18 @@ perform_sanity_check(public_path, DB_SCHEMA, public_tables)
 
 def compress_file(source):
     info("Compressing {}".format(source))
-    with open(source, "r") as src:
-        with open(source + ".gz", "w") as dst:
-            subprocess.call(["gzip"], stdin=src, stdout=dst)
+    # Open binary files for subprocess input/output
+    with open(source, "rb") as src:
+        with open(source + ".gz", "wb") as dst:
+            subprocess.run(["gzip"], stdin=src, stdout=dst, check=True)
 
 
 def decompress_file(source):
     info("Decompressing {}".format(source))
-    with open(source, "r") as src:
-        with open(source[:-3], "w") as dst:
-            subprocess.call(["gunzip"], stdin=src, stdout=dst)
+    # Open binary files for subprocess input/output
+    with open(source, "rb") as src:
+        with open(source[:-3], "wb") as dst:
+            subprocess.run(["gunzip"], stdin=src, stdout=dst, check=True)
 
 
 compress_file(public_path)
