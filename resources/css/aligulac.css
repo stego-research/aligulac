@@ -337,6 +337,28 @@
 .progress-t { background-color: var(--race-t-bg) !important; }
 .progress-z { background-color: var(--race-z-bg) !important; }
 
+/* Modals */
+.modal-content {
+    background-color: var(--bg-secondary);
+    color: var(--fg-primary);
+    border: 1px solid var(--border-color);
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--border-color);
+}
+
+.modal-header .close, .close {
+    color: var(--fg-primary) !important;
+    text-shadow: none !important;
+    opacity: 0.5;
+}
+
+.modal-header .close:hover, .close:hover {
+    opacity: 0.8;
+    color: var(--fg-primary) !important;
+}
+
 /* 
    BASE STYLES & LAYOUT
    --------------------
@@ -523,6 +545,14 @@ footer {
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
     box-shadow:         inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
+}
+
+.help-block {
+    color: var(--fg-muted);
+}
+
+.control-label {
+    color: var(--fg-primary);
 }
 
 /* JQuery datepicker needs to have the same font */
