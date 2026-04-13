@@ -296,6 +296,7 @@ AWS_STORAGE_BUCKET_NAME = S3_STATIC_BUCKET
 AWS_S3_REGION_NAME = S3_STATIC_REGION
 AWS_S3_ENDPOINT_URL = S3_STATIC_ENDPOINT_URL
 AWS_S3_CUSTOM_DOMAIN = S3_STATIC_CUSTOM_DOMAIN
+AWS_S3_ADDRESSING_STYLE = 'path'
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=31536000, public, immutable',
@@ -307,7 +308,6 @@ AWS_S3_GZIP = True
 AWS_QUERYSTRING_AUTH = False
 # Optimization: Increase memory buffer and reduce redundant metadata calls
 AWS_S3_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB
-AWS_S3_PRELOAD_METADATA = False
 AWS_S3_CHECKSUM_MODE = None
 AWS_S3_USE_THREADS = True
 
@@ -315,6 +315,7 @@ AWS_S3_USE_THREADS = True
 if S3_STATIC_BUCKET:
     from storages.backends.s3boto3 import S3Boto3Storage
     from django.contrib.staticfiles.storage import ManifestFilesMixin
+    from botocore.exceptions import ClientError
 
     class StaticS3Storage(ManifestFilesMixin, S3Boto3Storage):
         file_overwrite = True
@@ -326,6 +327,17 @@ if S3_STATIC_BUCKET:
             # Ensure the manifest is ALWAYS stored locally in the container
             # so WhiteNoise and Django can find it at runtime.
             self.manifest_storage = FileSystemStorage(location=STATIC_ROOT)
+
+        def get_modified_time(self, name):
+            """
+            Cloudflare R2 (and some S3 implementations) can return 404 on HeadObject
+            even if exists() returned True, or if the resource API hits a standard
+            AWS endpoint. Catching this prevents collectstatic from crashing.
+            """
+            try:
+                return super().get_modified_time(name)
+            except (ClientError, Exception):
+                return None
 else:
     from whitenoise.storage import CompressedManifestStaticFilesStorage
 

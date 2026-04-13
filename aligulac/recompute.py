@@ -19,6 +19,11 @@ from django.db.transaction import atomic
 from aligulac.settings import PROJECT_PATH
 
 from ratings.models import Match, Period, Player
+from period import run_period
+
+# Set asynchronous commit for the duration of this job to reduce IOPS
+with connection.cursor() as cursor:
+    cursor.execute('SET synchronous_commit TO OFF')
 
 print('[%s] Checking for Match <-> Period artifacts... ' % (str(datetime.now())), end="")
 
@@ -114,7 +119,7 @@ latest = Period.objects.filter(start__lte=date.today()).latest('id')
 print('[%s] Recomputing periods %i through %i' % (str(datetime.now()), earliest.id, latest.id), flush=True)
 
 for i in range(earliest.id, latest.id + 1):
-    subprocess.call([os.path.join(PROJECT_PATH, 'period.py'), str(i)])
+    run_period(i)
 
 if 'debug' not in sys.argv:
     subprocess.call([os.path.join(PROJECT_PATH, 'smoothing.py')])
