@@ -90,16 +90,15 @@ To use, you should define the following blocks:
        var iconSize = size || 16;
        if (!race_svgs || !race_svgs[race]) {
          /* Fallback to legacy img if SVGs aren't loaded */
-         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" style="margin-right: 0.25em;" />';
+         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" style="vertical-align: middle;" />';
        }
        var data = race_svgs[race];
        var width = iconSize;
        var height = iconSize;
        if (race === 'P') {
-         width = Math.round(iconSize * 0.85);
          height = Math.round(iconSize * 1.2);
        }
-       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle; margin-right: 0.25em;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle; display: inline-block; width: ' + width + 'px;" role="img" aria-label="' + raceName + '" preserveAspectRatio="xMidYMid meet"><title>' + raceName + '</title>' + data.path + '</svg>';
 
      }
      window.getFlag = getFlag;

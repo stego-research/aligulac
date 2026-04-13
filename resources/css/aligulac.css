@@ -113,11 +113,11 @@
     
     --fg-primary: #ffeeff;
     --fg-secondary: #dccbed;
-    --fg-muted: rgba(220, 203, 237, 0.7);
+    --fg-muted: rgb(128, 119, 136);
     --fg-disabled: rgba(220, 203, 237, 0.5);
     
-    --link-color: #dccbed;
-    --link-hover-color: #ffeeff;
+    --link-color: #eddbf6;
+    --link-hover-color: #fffeff;
     
     --border-color: rgba(220, 203, 237, 0.15);
     --border-dark: #090014;
@@ -730,8 +730,10 @@ footer {
 .lm_date { width: 17%; }
 .lm_rta { text-align: right; width: 3.5em; }
 .lm_pla { text-align: right; width: 23%; }
+th.lm_pla { padding-right: 2em !important; } /* Align "Player A" header text end with flag */
 .lm_score { width: 7em; text-align: center; }
 .lm_plb { width: 23%; }
+th.lm_plb { padding-left: 2em !important; } /* Align "Player B" header text start with flag */
 .lm_rtb { text-align: right; width: 3.5em; }
 .lm_right { text-align: right; width: 17%; }
 
@@ -850,15 +852,39 @@ div.text, div.text > p, div.text > ul > li { text-align: justify; }
     border-right-color: var(--border-color);
 }
 
-/* Keep race and flag icons apart */
-.player img, .ui-corner-all img, .lm_plb img, .player .fi, .ui-corner-all .fi, .lm_plb .fi { padding-right: 0.3em; }
-.playerleft img, .lm_pla img, .playerleft .fi, .lm_pla .fi { padding-left: 0.3em; }
+/* Keep race, flag and trophy icons consistently aligned and spaced */
+.fi, .race-icon, .winner-trophy {
+    vertical-align: middle;
+    display: inline-block;
+    position: relative;
+    top: -0.05em; /* Subtle adjustment to pull icons up for better visual centering with text */
+}
+
+/* Default gap to the right for icons before text */
+.fi, .race-icon { margin-right: 0.3em; }
+
+/* Mirror player blocks and left-aligned match list elements ([Tag][Icon]) */
+.playerleft .race-icon, .playerleft .fi,
+.lm_pla .fi, .lm_pla .race-icon {
+    margin-right: 0;
+    margin-left: 0.3em;
+}
+
+/* Trophy gaps in match list */
+.lm_pla .winner-trophy { margin-right: 0; }
+.lm_plb .winner-trophy { margin-left: 0; }
+
+/* Remove margins for icon-only cells in rankings and tables to keep them centered */
+.rl_icon .fi, .rl_icon .race-icon,
+.ho_icon .fi, .ho_icon .race-icon,
+.ea_icon .fi, .ea_icon .race-icon,
+.pp_icon .fi, .pp_icon .race-icon {
+    margin: 0;
+}
 
 .fi {
-    vertical-align: middle;
     width: 1.33333333em;
     line-height: 1em;
-    display: inline-block;
 }
 
 /* Event manager tree */
