@@ -1,18 +1,39 @@
 #!/usr/bin/env python3
 
 import os
+from datetime import date, datetime
+import itertools
+import signal
+import sys
+import subprocess
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aligulac.settings')
 import django
 
 django.setup()
 
-from datetime import date, datetime
-import itertools
-import sys
-import subprocess
+# --- Concurrency & Timeout Protection ---
+def timeout_handler(signum, frame):
+    print('[%s] FATAL: Recompute task timed out after 8 hours. Terminating.' % str(datetime.now()), flush=True)
+    sys.exit(1)
+
+# Set an 8-hour timeout (28800 seconds)
+signal.signal(signal.SIGALRM, timeout_handler)
+signal.alarm(28800)
 
 from django.db import connection
+
+def acquire_lock():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_try_advisory_lock(837264);")
+        row = cursor.fetchone()
+        if not row[0]:
+            print('[%s] Another recompute task is already running. Exiting.' % str(datetime.now()), flush=True)
+            sys.exit(0)
+
+acquire_lock()
+# ----------------------------------------
+
 from django.db.models import F, Q
 from django.db.transaction import atomic
 
