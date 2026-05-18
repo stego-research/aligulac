@@ -1011,7 +1011,7 @@ def earnings(request, player_id):
     def get_earnings_payload():
         # Fetch all years with earnings efficiently, excluding null dates
         valid_years = sorted(
-            [y for y in player.earnings_set.values_list('event__latest__year', flat=True).distinct() if y is not None],
+            {y for y in player.earnings_set.values_list('event__latest__year', flat=True) if y is not None},
             reverse=True
         )
 
@@ -1090,7 +1090,7 @@ def earnings(request, player_id):
             'earnings': earnings_list,
             'totalearnings': total_earnings_usd,
             'by_currency': by_currency,
-            'valid_years': list(valid_years)
+            'valid_years': valid_years
         }
 
     # Cache key scoped by player, filter, and language
