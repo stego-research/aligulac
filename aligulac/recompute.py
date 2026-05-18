@@ -12,27 +12,27 @@ import django
 
 django.setup()
 
-# --- Concurrency & Timeout Protection ---
+TIMEOUT_SECONDS = 28800
+RECOMPUTE_LOCK_ID = 837264
+
 def timeout_handler(signum, frame):
     print('[%s] FATAL: Recompute task timed out after 8 hours. Terminating.' % str(datetime.now()), flush=True)
     sys.exit(1)
 
-# Set an 8-hour timeout (28800 seconds)
 signal.signal(signal.SIGALRM, timeout_handler)
-signal.alarm(28800)
+signal.alarm(TIMEOUT_SECONDS)
 
 from django.db import connection
 
 def acquire_lock():
     with connection.cursor() as cursor:
-        cursor.execute("SELECT pg_try_advisory_lock(837264);")
-        row = cursor.fetchone()
-        if not row[0]:
+        cursor.execute("SELECT pg_try_advisory_lock(%s);", [RECOMPUTE_LOCK_ID])
+        (locked,) = cursor.fetchone()
+        if not locked:
             print('[%s] Another recompute task is already running. Exiting.' % str(datetime.now()), flush=True)
             sys.exit(0)
 
 acquire_lock()
-# ----------------------------------------
 
 from django.db.models import F, Q
 from django.db.transaction import atomic
@@ -45,11 +45,11 @@ print('[%s] Checking for Match <-> Period artifacts... ' % (str(datetime.now()))
 
 q = Match.objects.exclude(period__start__lte=F('date'), period__end__gte=F('date'))
 
-if q.count() > 0:
+matches = list(q)
+
+if matches:
     print('Found!')
     print('[%s] Fixing artifacts... ' % str(datetime.now()))
-
-    matches = list(q)
 
     period_set = set()
 
@@ -165,13 +165,13 @@ if 'debug' not in sys.argv:
         g += 1
 
     print('[%s] Refreshing miscellaneous data' % str(datetime.now()), flush=True)
-    cur = connection.cursor()
-    cur.execute('UPDATE event SET earliest = (SELECT MIN(date) FROM match JOIN eventadjacency '
-                'ON match.eventobj_id=eventadjacency.child_id WHERE eventadjacency.parent_id=event.id)')
-    cur.execute('UPDATE event SET latest   = (SELECT MAX(date) FROM match JOIN eventadjacency '
-                'ON match.eventobj_id=eventadjacency.child_id WHERE eventadjacency.parent_id=event.id)')
-    cur.execute('UPDATE player SET current_rating_id = (SELECT rating.id FROM rating '
-                'WHERE rating.period_id=%i AND rating.player_id=player.id)' % latest.id)
+    with connection.cursor() as cur:
+        cur.execute('UPDATE event SET earliest = (SELECT MIN(date) FROM match JOIN eventadjacency '
+                    'ON match.eventobj_id=eventadjacency.child_id WHERE eventadjacency.parent_id=event.id)')
+        cur.execute('UPDATE event SET latest   = (SELECT MAX(date) FROM match JOIN eventadjacency '
+                    'ON match.eventobj_id=eventadjacency.child_id WHERE eventadjacency.parent_id=event.id)')
+        cur.execute('UPDATE player SET current_rating_id = (SELECT rating.id FROM rating '
+                    'WHERE rating.period_id=%s AND rating.player_id=player.id)', [latest.id])
 
     os.system(os.path.join(PROJECT_PATH, 'event_sort.py'))
 
