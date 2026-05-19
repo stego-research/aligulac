@@ -21,7 +21,7 @@ This is the main prediction page, showing all available options. It's called fro
   <div class="row" style="margin-bottom: 2em;">
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
       <div class="alert alert-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
-        <img src="/resources/img/replayman-icon.svg" width="24" height="24" alt="REPLAYMAN">
+        <img src="{{ 'img/replayman-icon.svg'|static }}" width="24" height="24" alt="REPLAYMAN">
         <span>Try the new <a href="https://replayman.com/versus" style="font-weight: bold;">versus experience</a> on REPLAYMAN!</span>
       </div>
     </div>

@@ -682,10 +682,10 @@ This is the template for the main player page, called from ratings.views.player.
               <td>{{player.id}}</td>
             </tr>
             <tr class="small">
-              <td class="text-right ibox-left">{% trans "REPLAYMAN Profile" %}</td>
+              <td class="text-right ibox-left">{% trans "REPLAYMAN" %}</td>
               <td>
                 <a href="https://replayman.com/player/aligulac/{{ player.id }}" target="_blank">
-                  <img src="/resources/img/replayman-icon.svg" width="16" height="16" alt="REPLAYMAN" style="vertical-align: middle; margin-right: 0.3em;">
+                  <img src="{{ 'img/replayman-icon.svg'|static }}" width="16" height="16" alt="REPLAYMAN" style="vertical-align: middle; margin-right: 0.3em;">
                   REPLAYMAN
                 </a>
               </td>
