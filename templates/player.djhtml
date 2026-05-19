@@ -681,7 +681,7 @@ This is the template for the main player page, called from ratings.views.player.
               <td class="text-right ibox-left">{% trans "Aligulac ID" %}</td>
               <td>{{player.id}}</td>
             </tr>
-          {% if player.tlpd_id or player.lp_name or player.sc2e_id %}
+          {% if player.tlpd_id or player.lp_name or player.sc2e_id or player.id %}
             <tr class="small">
               <td class="text-right ibox-left">{% trans "External" %}</td>
               <td>
@@ -698,6 +698,7 @@ This is the template for the main player page, called from ratings.views.player.
                   {% comment %}Translators: LP = Liquipedia{% endcomment %}
                   <a href="https://liquipedia.net/starcraft2/{{ player.lp_name }}" target="_blank">{% trans "LP" %}</a>
                 {% endif %}
+                <a href="https://replayman.com/player/aligulac/{{ player.id }}" target="_blank">Replayman</a>
               </td>
             </tr>
           {% endif %}
