@@ -411,8 +411,8 @@ This template shows a rating list for a given period.
     </div>
   </div>
 
-  <div class="row">
-    {% include "ratinglist.djhtml" with rl_pos_arrow=1 displayteams=1 %}
-  </div>
+  {# ratinglist supplies its own .row wrappers; don't nest another .row around it
+     (nested rows stack negative margins and push content to the panel edge). #}
+  {% include "ratinglist.djhtml" with rl_pos_arrow=1 displayteams=1 %}
 
 {% endblock %}

@@ -167,7 +167,7 @@ To use, you should define the following blocks:
       </div>
     </nav>
 
-    <div class="container">
+    <div class="container page-panel">
       <!-- Language picker and search -->
       <div class="row">
         <div class="col-sm-4 col-md-4 col-lg-4 text-muted">
@@ -301,16 +301,16 @@ To use, you should define the following blocks:
            colors: isDark ? ["#221133", "#00aa00", "#2196F3", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#2196F3", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
            chart: {
              style: { fontFamily: "'SUSE', 'IBM Plex Sans', sans-serif", fontFeatureSettings: '"tnum" 1, "lnum" 1' },
-             backgroundColor: isDark ? '#110022' : '#FFFFFF',
-             plotBackgroundColor: isDark ? '#110022' : '#FFFFFF',
+             backgroundColor: isDark ? '#0c0019' : '#FFFFFF',
+             plotBackgroundColor: isDark ? '#0c0019' : '#FFFFFF',
              resetZoomButton: {
                theme: {
-                 fill: isDark ? '#221133' : '#FFFFFF',
+                 fill: isDark ? '#14091c' : '#FFFFFF',
                  stroke: isDark ? '#aaddbb' : '#CCCCCC',
                  style: { color: isDark ? '#ffeeff' : '#333333' },
                  states: {
                    hover: {
-                     fill: isDark ? '#110022' : '#E6E6E6',
+                     fill: isDark ? '#0c0019' : '#E6E6E6',
                      style: { color: isDark ? '#aaddbb' : '#000000' }
                    }
                  }
@@ -320,21 +320,21 @@ To use, you should define the following blocks:
            title: { style: { color: isDark ? '#ffeeff' : '#3E576F' } },
            subtitle: { style: { color: isDark ? '#dccbed' : '#6D869F' } },
            xAxis: {
-             gridLineColor: isDark ? '#221133' : '#C0C0C0',
+             gridLineColor: isDark ? '#14091c' : '#C0C0C0',
              labels: { style: { color: isDark ? '#dccbed' : '#666' } },
-             lineColor: isDark ? '#221133' : '#C0D0E0',
-             tickColor: isDark ? '#221133' : '#C0D0E0'
+             lineColor: isDark ? '#14091c' : '#C0D0E0',
+             tickColor: isDark ? '#14091c' : '#C0D0E0'
            },
            yAxis: {
-             gridLineColor: isDark ? '#221133' : '#C0C0C0',
+             gridLineColor: isDark ? '#14091c' : '#C0C0C0',
              labels: { style: { color: isDark ? '#dccbed' : '#666' } },
-             lineColor: isDark ? '#221133' : '#C0D0E0',
-             tickColor: isDark ? '#221133' : '#C0D0E0',
+             lineColor: isDark ? '#14091c' : '#C0D0E0',
+             tickColor: isDark ? '#14091c' : '#C0D0E0',
              title: { style: { color: isDark ? '#dccbed' : '#4d759e' } }
            },
            tooltip: {
              useHTML: true,
-             backgroundColor: isDark ? '#221133' : 'rgba(255, 255, 255, 0.85)',
+             backgroundColor: isDark ? '#14091c' : 'rgba(255, 255, 255, 0.85)',
              style: { color: isDark ? '#ffeeff' : '#333' }
            },
            legend: {
@@ -346,11 +346,11 @@ To use, you should define the following blocks:
              buttons: {
                contextButton: {
                  theme: {
-                   fill: isDark ? '#221133' : '#F7F7F7',
-                   stroke: isDark ? '#110022' : '#CCCCCC',
+                   fill: isDark ? '#14091c' : '#F7F7F7',
+                   stroke: isDark ? '#0c0019' : '#CCCCCC',
                    states: {
                      hover: {
-                       fill: isDark ? '#110022' : '#E0E0E0',
+                       fill: isDark ? '#0c0019' : '#E0E0E0',
                        stroke: isDark ? '#aaddbb' : '#AAA'
                      }
                    }
@@ -361,11 +361,11 @@ To use, you should define the following blocks:
            navigation: {
              buttonOptions: {
                symbolStroke: isDark ? '#dccbed' : '#666',
-               theme: { fill: isDark ? '#221133' : '#F7F7F7' }
+               theme: { fill: isDark ? '#14091c' : '#F7F7F7' }
              },
              menuStyle: {
-               background: isDark ? '#221133' : '#FFFFFF',
-               border: isDark ? '1px solid #110022' : '1px solid #A0A0A0',
+               background: isDark ? '#14091c' : '#FFFFFF',
+               border: isDark ? '1px solid #0c0019' : '1px solid #A0A0A0',
                padding: '5px 0'
              },
              menuItemStyle: {
@@ -374,7 +374,7 @@ To use, you should define the following blocks:
                padding: '2px 15px'
              },
              menuItemHoverStyle: {
-               background: isDark ? '#110022' : '#4572A7',
+               background: isDark ? '#0c0019' : '#4572A7',
                color: isDark ? '#ffeeff' : '#FFFFFF'
              }
            }
