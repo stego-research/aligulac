@@ -170,17 +170,17 @@ To use, you should define the following blocks:
     <div class="container">
       <!-- Language picker and search -->
       <div class="row">
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-muted">
+        <div class="col-sm-4 col-md-4 col-lg-4 text-muted">
           <form action="/language/" method="POST">
             {% trans "Language" %}:
             <a href="#" class="langbtn">{{ lang|flag }}</a>
             <input type="hidden" name="return" value="{{ cur_path }}" />
           </form>
         </div>
-        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 text-right text-muted">
-          <form class="form-inline" role="form" action="/search/" method="get">
+        <div class="col-sm-8 col-md-8 col-lg-8 text-right text-muted">
+          <form class="form-inline search-form" role="form" action="/search/" method="get">
             <div class="form-group">
-              <input class="form-control input-sm" type="text" name="q" id="search_box" placeholder="{% trans "Find player, team or event" %}" style="width: 100%; max-width: 30em;">
+              <input class="form-control input-sm" type="text" name="q" id="search_box" placeholder="{% trans "Find player, team or event" %}">
             </div>
           </form>
         </div>

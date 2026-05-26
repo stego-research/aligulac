@@ -573,6 +573,18 @@ footer {
 }
 
 /* Autocomplete styles */
+/* Header search box: reliably fill its column up to a comfortable max on every
+   breakpoint. Bootstrap's .form-inline turns the input into a shrink-wrapped
+   inline-block, which collapsed it to ~the size attribute and cut off the
+   placeholder on wide screens. */
+.search-form { width: 100%; }
+.search-form .form-group { display: block; margin-bottom: 0; }
+.search-form #search_box {
+    display: inline-block;
+    width: 100%;
+    max-width: 30em;
+}
+
 .ui-autocomplete {
     padding: 0.3em !important;
     font-family: var(--font-main) !important;
@@ -581,6 +593,11 @@ footer {
     color: var(--fg-secondary) !important;
     border: 1px solid var(--border-dark) !important;
     z-index: 1050 !important; /* Above navbar */
+    /* Keep the results list from rendering off-page: cap it to the input's max
+       width on desktop, and to the viewport on phones (the JS sets width:auto
+       on .ui-menu, but max-width still applies). */
+    max-width: min(30em, calc(100vw - 1.5em));
+    box-sizing: border-box;
 }
 
 .ui-menu .ui-menu-item {
@@ -620,7 +637,10 @@ footer {
 }
 
 .autocomp-team {
-    margin-left: 10em; /* So that the team names don't get too close */
+    /* pull-right floats this to the row's right edge; a small min-gap keeps it
+       off the player tag. (Was 10em, which forced every dropdown row absurdly
+       wide and pushed the list off-page.) */
+    margin-left: 1.5em;
     color: var(--link-color);
 }
 
@@ -776,7 +796,7 @@ th.lm_plb { padding-left: 2em !important; } /* Align "Player B" header text star
 .winner a, td.winner { font-weight: 900; }
 
 .loser a {
-    font-weight: 100;
+    font-weight: 200; /* SUSE's 100 reads too thin on muted text; 200 stays light without hairline weight */
     color: var(--fg-muted);
 }
 
