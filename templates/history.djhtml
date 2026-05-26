@@ -20,7 +20,7 @@ This is the Hall of Fame template. It's called from ratings.views.records.
          type: 'spline',
          zoomType: 'xy',
          style: {
-           fontFamily: "'IBM Plex Sans', sans-serif"
+           fontFamily: "'SUSE', 'IBM Plex Sans', sans-serif", fontFeatureSettings: '"tnum" 1, "lnum" 1'
          }
        },
        credits: {
