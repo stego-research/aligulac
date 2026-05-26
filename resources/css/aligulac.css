@@ -811,22 +811,30 @@ td.loser {
 /* Days since styles */
 .clock-expandable { cursor: pointer; }
 
-/* Subelements of h2 headings */
+/* Subelements of h2 headings (blog post titles: title + byline).
+   Flex row so the byline sits at the right and wraps below a long title
+   instead of being absolutely positioned underneath it. */
+h2.sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 1em;
+    row-gap: 0.2em;
+}
+
 h2.sub > small.right {
     font-family: var(--font-main);
     font-size: small;
-    position: absolute;
-    bottom: 0.2em;
-    right: 0;
     font-variant: normal;
+    margin-left: auto; /* push byline to the right edge of its line */
+    flex-shrink: 0;
+    text-align: right;
 }
 
 h2.sub > .left {
     font-family: var(--font-main);
     font-size: small;
-    position: absolute;
-    bottom: 0.2em;
-    margin-left: 1em;
+    font-variant: normal;
 }
 
 /* Text justification */
