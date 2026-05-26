@@ -1,10 +1,12 @@
 :root {
     /* Fonts */
     --font-title: 'Marcellus SC', Times, serif;
-    --font-main: 'IBM Plex Sans', sans-serif;
+    /* SUSE is the new body face (same designer/family as REPLAYMAN's SUSE Mono).
+       IBM Plex Sans kept as fallback for one release, then drop. */
+    --font-main: 'SUSE', 'IBM Plex Sans', sans-serif;
     
     /* Font sizes */
-    --font-size-h1: 60px;
+    --font-size-h1: clamp(2.5rem, 5vw, 3.75rem); /* design-system --step-display (was fixed 60px) */
     --font-size-h2: 2em;
     --font-size-h3: 1.5em;
     --font-size-base: 1.5em;
@@ -86,13 +88,13 @@
     --spacing-lg: 24px;
     --spacing-xl: 32px;
 
-    --race-t: #0066CC;
+    --race-t: #2196F3;
     --race-z: #CC0000;
     --race-p: #00AA00;
     --race-r: #777777;
     --race-s: #555555;
 
-    --race-t-bg: rgba(0, 102, 204, 0.2);
+    --race-t-bg: rgba(33, 150, 243, 0.2);
     --race-z-bg: rgba(204, 0, 0, 0.2);
     --race-p-bg: rgba(0, 170, 0, 0.2);
 
@@ -173,11 +175,11 @@
     --well-bg: #221133;
     --well-border: #110022;
 
-    --race-t: #4c8de9;
+    /* --race-t inherits #2196F3 from :root — dual Terran blue retired */
     --race-z: #CC0000;
     --race-p: #00AA00;
 
-    --race-t-bg: rgba(76, 141, 233, 0.3);
+    --race-t-bg: rgba(33, 150, 243, 0.3);
     --race-z-bg: rgba(204, 0, 0, 0.3);
     --race-p-bg: rgba(0, 170, 0, 0.3);
 }
@@ -401,6 +403,16 @@ h1 {
     color: var(--fg-primary);
 }
 
+/* On phones the 0.6em wordmark tracking overflows; tighten it (still >= the
+   design-system 0.3em Marcellus minimum). padding-left mirrors letter-spacing
+   to keep the title optically centered. */
+@media (max-width: 480px) {
+    h1 {
+        letter-spacing: 0.35em;
+        padding-left: 0.35em;
+    }
+}
+
 .subheading {
     letter-spacing: 0.1em;
     text-align: center;
@@ -561,6 +573,18 @@ footer {
 }
 
 /* Autocomplete styles */
+/* Header search box: reliably fill its column up to a comfortable max on every
+   breakpoint. Bootstrap's .form-inline turns the input into a shrink-wrapped
+   inline-block, which collapsed it to ~the size attribute and cut off the
+   placeholder on wide screens. */
+.search-form { width: 100%; }
+.search-form .form-group { display: block; margin-bottom: 0; }
+.search-form #search_box {
+    display: inline-block;
+    width: 100%;
+    max-width: 30em;
+}
+
 .ui-autocomplete {
     padding: 0.3em !important;
     font-family: var(--font-main) !important;
@@ -569,6 +593,11 @@ footer {
     color: var(--fg-secondary) !important;
     border: 1px solid var(--border-dark) !important;
     z-index: 1050 !important; /* Above navbar */
+    /* Keep the results list from rendering off-page: cap it to the input's max
+       width on desktop, and to the viewport on phones (the JS sets width:auto
+       on .ui-menu, but max-width still applies). */
+    max-width: min(30em, calc(100vw - 1.5em));
+    box-sizing: border-box;
 }
 
 .ui-menu .ui-menu-item {
@@ -608,7 +637,10 @@ footer {
 }
 
 .autocomp-team {
-    margin-left: 10em; /* So that the team names don't get too close */
+    /* pull-right floats this to the row's right edge; a small min-gap keeps it
+       off the player tag. (Was 10em, which forced every dropdown row absurdly
+       wide and pushed the list off-page.) */
+    margin-left: 1.5em;
     color: var(--link-color);
 }
 
@@ -648,6 +680,19 @@ footer {
 }
 
 /* Tables */
+/* SUSE is proportional, so number columns (ratings, earnings, results, match
+   scores) need tabular + lining figures to stay vertically aligned. */
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td,
+.progress-bar {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
 .table-bordered {
     border: 1px solid var(--border-color);
 }
@@ -751,7 +796,7 @@ th.lm_plb { padding-left: 2em !important; } /* Align "Player B" header text star
 .winner a, td.winner { font-weight: 900; }
 
 .loser a {
-    font-weight: 100;
+    font-weight: 200; /* SUSE's 100 reads too thin on muted text; 200 stays light without hairline weight */
     color: var(--fg-muted);
 }
 
@@ -766,22 +811,30 @@ td.loser {
 /* Days since styles */
 .clock-expandable { cursor: pointer; }
 
-/* Subelements of h2 headings */
+/* Subelements of h2 headings (blog post titles: title + byline).
+   Flex row so the byline sits at the right and wraps below a long title
+   instead of being absolutely positioned underneath it. */
+h2.sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 1em;
+    row-gap: 0.2em;
+}
+
 h2.sub > small.right {
     font-family: var(--font-main);
     font-size: small;
-    position: absolute;
-    bottom: 0.2em;
-    right: 0;
     font-variant: normal;
+    margin-left: auto; /* push byline to the right edge of its line */
+    flex-shrink: 0;
+    text-align: right;
 }
 
 h2.sub > .left {
     font-family: var(--font-main);
     font-size: small;
-    position: absolute;
-    bottom: 0.2em;
-    margin-left: 1em;
+    font-variant: normal;
 }
 
 /* Text justification */

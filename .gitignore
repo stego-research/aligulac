@@ -204,3 +204,6 @@ aligulac/bugrep/
 # Virtualenv
 .venv
 .env
+
+# Collected static files (output of `manage.py collectstatic`; only needed when running DEBUG=False)
+static_root/

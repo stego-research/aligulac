@@ -63,7 +63,7 @@ This is the template for the main player page, called from ratings.views.player.
            type: 'spline',
            zoomType: 'xy',
            style: {
-           fontFamily: "'IBM Plex Sans', sans-serif"
+           fontFamily: "'SUSE', 'IBM Plex Sans', sans-serif", fontFeatureSettings: '"tnum" 1, "lnum" 1'
            }
          },
          credits: {
@@ -142,7 +142,7 @@ This is the template for the main player page, called from ratings.views.player.
            dashStyle: 'Dash',
            enableMouseTracking: false,
            yAxis: 0,
-           color: isDark ? '#4c8de9' : '#0066cc',
+           color: '#2196F3',
            data: [{% for r in ratings %} {
              name: '{{ r.period__end }} vT: {{ r.r_vt }}',
              x: {{ r.ms }},

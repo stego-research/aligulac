@@ -23,6 +23,7 @@ To use, you should define the following blocks:
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Aligulac{% endblock %}</title>
     <style type="text/css">
      @font-face {
@@ -104,6 +105,8 @@ To use, you should define the following blocks:
      window.getFlag = getFlag;
     </script>
     <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css2?family=SUSE:ital,wght@0,100..800;1,100..800&display=swap' rel='stylesheet' type='text/css'>
+    <!-- IBM Plex Sans retained as a fallback for one release while SUSE rolls out; drop in a follow-up -->
     <link href='https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,400i,700,700i&display=swap' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
@@ -167,17 +170,17 @@ To use, you should define the following blocks:
     <div class="container">
       <!-- Language picker and search -->
       <div class="row">
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-muted">
+        <div class="col-sm-4 col-md-4 col-lg-4 text-muted">
           <form action="/language/" method="POST">
             {% trans "Language" %}:
             <a href="#" class="langbtn">{{ lang|flag }}</a>
             <input type="hidden" name="return" value="{{ cur_path }}" />
           </form>
         </div>
-        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 text-right text-muted">
-          <form class="form-inline" role="form" action="/search/" method="get">
+        <div class="col-sm-8 col-md-8 col-lg-8 text-right text-muted">
+          <form class="form-inline search-form" role="form" action="/search/" method="get">
             <div class="form-group">
-              <input class="form-control input-sm" type="text" name="q" id="search_box" placeholder="{% trans "Find player, team or event" %}" style="width: 30em;">
+              <input class="form-control input-sm" type="text" name="q" id="search_box" placeholder="{% trans "Find player, team or event" %}">
             </div>
           </form>
         </div>
@@ -295,8 +298,9 @@ To use, you should define the following blocks:
        (function() {
          var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
          var chartTheme = {
-           colors: isDark ? ["#221133", "#00aa00", "#4c8de9", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#0066cc", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
+           colors: isDark ? ["#221133", "#00aa00", "#2196F3", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#2196F3", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
            chart: {
+             style: { fontFamily: "'SUSE', 'IBM Plex Sans', sans-serif", fontFeatureSettings: '"tnum" 1, "lnum" 1' },
              backgroundColor: isDark ? '#110022' : '#FFFFFF',
              plotBackgroundColor: isDark ? '#110022' : '#FFFFFF',
              resetZoomButton: {
