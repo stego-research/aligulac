@@ -13,6 +13,7 @@
     
     /* Colors - Light Theme (Default) */
     --bg-primary: #ffffff;
+    --bg-panel: #ffffff;     /* light: panel == void; lifted by shadow only (light layering TBD) */
     --bg-secondary: #f8f8f8;
     --bg-tertiary: #f5f5f5;
     --bg-zebra: rgba(0, 0, 0, 0.08); /* striped-row darkening overlay */
@@ -110,9 +111,11 @@
 
 [data-theme='dark'] {
     /* Colors - Dark Theme — aligned to REPLAYMAN's midnight/plum ladder */
-    --bg-primary: #0c0019;   /* midnight — page (was aubergine #110022) */
-    --bg-secondary: #14091c; /* plum — raised surface (was dusk #221133) */
-    --bg-tertiary: #090014;  /* obsidian — deepest inset */
+    /* 3-tone depth ladder: void (page) < panel (content container) < raised (elements) */
+    --bg-primary: #0c0019;   /* midnight — page void, frames the content panel */
+    --bg-panel:    #14091c;  /* plum — content-container panel (the dimensional layer) */
+    --bg-secondary: #221133; /* dusk — raised elements: headers, tracks, inputs, buttons */
+    --bg-tertiary: #090014;  /* obsidian — deepest inset (pagination hover) */
     --bg-zebra: rgba(0, 0, 0, 0.15); /* striped-row darkening overlay */
     
     /* Desaturated lavender ladder for long-session comfort (was #ffeeff / #dccbed,
@@ -129,7 +132,7 @@
     --border-dark: #090014;
     --border-subtle: rgba(220, 203, 237, 0.08);
     
-    --input-bg: #14091c;
+    --input-bg: #221133;
     --input-border: #0c0019;
     --input-focus-border: #aaddbb;
     --input-focus-shadow: rgba(170, 221, 187, 0.4);
@@ -172,11 +175,11 @@
     --navbar-link-active: #e2d8ed;
     --navbar-link-active-bg: #0c0019;
 
-    --btn-default-bg: #14091c;
+    --btn-default-bg: #221133;
     --btn-default-fg: #c4bbcf;
     --btn-default-border: #0c0019;
 
-    --well-bg: #14091c;
+    --well-bg: #221133;
     --well-border: #0c0019;
 
     /* --race-t inherits #2196F3 from :root — dual Terran blue retired */
@@ -214,6 +217,20 @@ hr {
 }
 .table-responsive {
     border-color: var(--border-color);
+}
+
+/* PHASE-3 PROTOTYPE — content panel.
+   Lift the main content onto a panel so it reads as a layer above the page
+   void, instead of elements floating on a flat background. Depth is purely
+   tonal (dark: plum panel on midnight void; raised elements step up to dusk) —
+   no per-element borders/padding. Scoped to the content container only. */
+.page-panel {
+    background-color: var(--bg-panel);
+    border-radius: 8px;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 /* Pagination */
@@ -600,6 +617,14 @@ footer {
     display: inline-block;
     width: 100%;
     max-width: 30em;
+    /* Subtle lift so the field reads as integrated with the panel, not stuck on. */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Restore the focus glow (the #id resting rule above would otherwise out-specify
+   the generic .form-control:focus). */
+.search-form #search_box:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 4px var(--input-focus-shadow);
 }
 
 .ui-autocomplete {

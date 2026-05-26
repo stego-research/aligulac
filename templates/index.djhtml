@@ -167,7 +167,7 @@ To use, you should define the following blocks:
       </div>
     </nav>
 
-    <div class="container">
+    <div class="container page-panel">
       <!-- Language picker and search -->
       <div class="row">
         <div class="col-sm-4 col-md-4 col-lg-4 text-muted">
