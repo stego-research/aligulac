@@ -33,7 +33,7 @@ ratings.submitviews.)
             <input type="hidden" name="next" value="{{ return }}">
             <input type="hidden" name="language" value="{{l.0}}">
             <button type="submit" class="btn btn-{% if l.0 == lang %}info{% else %}default{% endif %}"
-                    style="width: 20em; margin-bottom: 1em;">
+                    style="width: 100%; max-width: 20em; margin-bottom: 1em;">
               {{l.1}}
             </button>
           </form>

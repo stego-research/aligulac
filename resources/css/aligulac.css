@@ -1,18 +1,22 @@
 :root {
     /* Fonts */
     --font-title: 'Marcellus SC', Times, serif;
-    --font-main: 'IBM Plex Sans', sans-serif;
+    /* SUSE is the new body face (same designer/family as REPLAYMAN's SUSE Mono).
+       IBM Plex Sans kept as fallback for one release, then drop. */
+    --font-main: 'SUSE', 'IBM Plex Sans', sans-serif;
     
     /* Font sizes */
-    --font-size-h1: 60px;
+    --font-size-h1: clamp(2.5rem, 5vw, 3.75rem); /* design-system --step-display (was fixed 60px) */
     --font-size-h2: 2em;
     --font-size-h3: 1.5em;
     --font-size-base: 1.5em;
     
     /* Colors - Light Theme (Default) */
     --bg-primary: #ffffff;
+    --bg-panel: #ffffff;     /* light: panel == void; lifted by shadow only (light layering TBD) */
     --bg-secondary: #f8f8f8;
     --bg-tertiary: #f5f5f5;
+    --bg-zebra: rgba(0, 0, 0, 0.08); /* striped-row darkening overlay */
     
     --fg-primary: #000000;
     --fg-secondary: #555555;
@@ -86,13 +90,13 @@
     --spacing-lg: 24px;
     --spacing-xl: 32px;
 
-    --race-t: #0066CC;
+    --race-t: #2196F3;
     --race-z: #CC0000;
     --race-p: #00AA00;
     --race-r: #777777;
     --race-s: #555555;
 
-    --race-t-bg: rgba(0, 102, 204, 0.2);
+    --race-t-bg: rgba(33, 150, 243, 0.2);
     --race-z-bg: rgba(204, 0, 0, 0.2);
     --race-p-bg: rgba(0, 170, 0, 0.2);
 
@@ -106,25 +110,30 @@
 }
 
 [data-theme='dark'] {
-    /* Colors - Dark Theme Overrides - Vivid Midnight (REPLAYMAN inspired) */
-    --bg-primary: #110022;
-    --bg-secondary: #221133;
-    --bg-tertiary: #090014;
+    /* Colors - Dark Theme — aligned to REPLAYMAN's midnight/plum ladder */
+    /* 3-tone depth ladder: void (page) < panel (content container) < raised (elements) */
+    --bg-primary: #0c0019;   /* midnight — page void, frames the content panel */
+    --bg-panel:    #14091c;  /* plum — content-container panel (the dimensional layer) */
+    --bg-secondary: #221133; /* dusk — raised elements: headers, tracks, inputs, buttons */
+    --bg-tertiary: #090014;  /* obsidian — deepest inset (pagination hover) */
+    --bg-zebra: rgba(0, 0, 0, 0.15); /* striped-row darkening overlay */
     
-    --fg-primary: #ffeeff;
-    --fg-secondary: #dccbed;
-    --fg-muted: rgba(220, 203, 237, 0.7);
+    /* Desaturated lavender ladder for long-session comfort (was #ffeeff / #dccbed,
+       which read hot on midnight purple). Matches REPLAYMAN's dark-mode pass. */
+    --fg-primary: #e2d8ed;
+    --fg-secondary: #c4bbcf;
+    --fg-muted: rgb(128, 119, 136);
     --fg-disabled: rgba(220, 203, 237, 0.5);
     
-    --link-color: #dccbed;
-    --link-hover-color: #ffeeff;
+    --link-color: #f4e3ff;
+    --link-hover-color: #fffeff;
     
     --border-color: rgba(220, 203, 237, 0.15);
     --border-dark: #090014;
     --border-subtle: rgba(220, 203, 237, 0.08);
     
     --input-bg: #221133;
-    --input-border: #110022;
+    --input-border: #0c0019;
     --input-focus-border: #aaddbb;
     --input-focus-shadow: rgba(170, 221, 187, 0.4);
     
@@ -138,7 +147,7 @@
     
     --msg-info-bg: #1a1a2e;
     --msg-info-border: #2e2e4a;
-    --msg-info-fg: #dccbed;
+    --msg-info-fg: #c4bbcf;
     
     --msg-error-bg: #2e1a1a;
     --msg-error-border: #4a2e2e;
@@ -154,30 +163,30 @@
     --tree-node-event-bg: #2e1111;
     --tree-node-round-bg: #112e11;
 
-    --tag-bg: #110022;
-    --tag-fg: #dccbed;
-    --tag-border: #110022;
+    --tag-bg: #0c0019;
+    --tag-fg: #c4bbcf;
+    --tag-border: #0c0019;
     --tag-link: #aaddbb;
 
-    --navbar-bg: #221133;
-    --navbar-border: #110022;
-    --navbar-link: #dccbed;
-    --navbar-link-hover: #ffeeff;
-    --navbar-link-active: #ffeeff;
-    --navbar-link-active-bg: #110022;
+    --navbar-bg: #14091c;
+    --navbar-border: #0c0019;
+    --navbar-link: #c4bbcf;
+    --navbar-link-hover: #e2d8ed;
+    --navbar-link-active: #e2d8ed;
+    --navbar-link-active-bg: #0c0019;
 
     --btn-default-bg: #221133;
-    --btn-default-fg: #dccbed;
-    --btn-default-border: #110022;
+    --btn-default-fg: #c4bbcf;
+    --btn-default-border: #0c0019;
 
     --well-bg: #221133;
-    --well-border: #110022;
+    --well-border: #0c0019;
 
-    --race-t: #4c8de9;
+    /* --race-t inherits #2196F3 from :root — dual Terran blue retired */
     --race-z: #CC0000;
     --race-p: #00AA00;
 
-    --race-t-bg: rgba(76, 141, 233, 0.3);
+    --race-t-bg: rgba(33, 150, 243, 0.3);
     --race-z-bg: rgba(204, 0, 0, 0.3);
     --race-p-bg: rgba(0, 170, 0, 0.3);
 }
@@ -197,6 +206,31 @@
 }
 .text-info {
     color: var(--msg-info-fg) !important;
+}
+
+/* Bootstrap hard-codes light-grey borders (#eee / #ddd) on a couple of elements
+   our theme never recolored, so they showed up as bright near-white lines in
+   dark mode: the footer rule (<hr>) and the .table-responsive wrapper border
+   that appears below 768px. Pull both onto the themed border color. */
+hr {
+    border-top-color: var(--border-color);
+}
+.table-responsive {
+    border-color: var(--border-color);
+}
+
+/* PHASE-3 PROTOTYPE — content panel.
+   Lift the main content onto a panel so it reads as a layer above the page
+   void, instead of elements floating on a flat background. Depth is purely
+   tonal (dark: plum panel on midnight void; raised elements step up to dusk) —
+   no per-element borders/padding. Scoped to the content container only. */
+.page-panel {
+    background-color: var(--bg-panel);
+    border-radius: 8px;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 /* Pagination */
@@ -275,7 +309,7 @@
     text-align: center;
     white-space: nowrap;
     vertical-align: middle;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 0.25em;
     margin-right: 0.3em;
@@ -297,7 +331,7 @@
     text-align: center;
     white-space: nowrap;
     vertical-align: middle;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 0.25em;
     text-transform: lowercase;
@@ -308,7 +342,9 @@
 
 /* Progress Bars */
 .progress {
-    background-color: var(--bg-tertiary) !important;
+    /* Plum surface track (was --bg-tertiary, which now ≈ the page bg and made
+       the track melt into the background). */
+    background-color: var(--bg-secondary) !important;
     box-shadow: none !important;
 }
 
@@ -336,6 +372,28 @@
 .progress-p { background-color: var(--race-p-bg) !important; }
 .progress-t { background-color: var(--race-t-bg) !important; }
 .progress-z { background-color: var(--race-z-bg) !important; }
+
+/* Modals */
+.modal-content {
+    background-color: var(--bg-secondary);
+    color: var(--fg-primary);
+    border: 1px solid var(--border-color);
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--border-color);
+}
+
+.modal-header .close, .close {
+    color: var(--fg-primary) !important;
+    text-shadow: none !important;
+    opacity: 0.5;
+}
+
+.modal-header .close:hover, .close:hover {
+    opacity: 0.8;
+    color: var(--fg-primary) !important;
+}
 
 /* 
    BASE STYLES & LAYOUT
@@ -377,6 +435,16 @@ h1 {
     text-align: center;
     padding-left: 0.7em; /* Required for centering */
     color: var(--fg-primary);
+}
+
+/* On phones the 0.6em wordmark tracking overflows; tighten it (still >= the
+   design-system 0.3em Marcellus minimum). padding-left mirrors letter-spacing
+   to keep the title optically centered. */
+@media (max-width: 480px) {
+    h1 {
+        letter-spacing: 0.35em;
+        padding-left: 0.35em;
+    }
 }
 
 .subheading {
@@ -525,12 +593,40 @@ footer {
     box-shadow:         inset 0 1px 1px rgba(0,0,0,.075), 0 0 4px var(--input-focus-shadow);
 }
 
+.help-block {
+    color: var(--fg-muted);
+}
+
+.control-label {
+    color: var(--fg-primary);
+}
+
 /* JQuery datepicker needs to have the same font */
 .ui-widget {
     font-family: var(--font-main);
 }
 
 /* Autocomplete styles */
+/* Header search box: reliably fill its column up to a comfortable max on every
+   breakpoint. Bootstrap's .form-inline turns the input into a shrink-wrapped
+   inline-block, which collapsed it to ~the size attribute and cut off the
+   placeholder on wide screens. */
+.search-form { width: 100%; }
+.search-form .form-group { display: block; margin-bottom: 0; }
+.search-form #search_box {
+    display: inline-block;
+    width: 100%;
+    max-width: 30em;
+    /* Subtle lift so the field reads as integrated with the panel, not stuck on. */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Restore the focus glow (the #id resting rule above would otherwise out-specify
+   the generic .form-control:focus). */
+.search-form #search_box:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 4px var(--input-focus-shadow);
+}
+
 .ui-autocomplete {
     padding: 0.3em !important;
     font-family: var(--font-main) !important;
@@ -539,6 +635,11 @@ footer {
     color: var(--fg-secondary) !important;
     border: 1px solid var(--border-dark) !important;
     z-index: 1050 !important; /* Above navbar */
+    /* Keep the results list from rendering off-page: cap it to the input's max
+       width on desktop, and to the viewport on phones (the JS sets width:auto
+       on .ui-menu, but max-width still applies). */
+    max-width: min(30em, calc(100vw - 1.5em));
+    box-sizing: border-box;
 }
 
 .ui-menu .ui-menu-item {
@@ -578,7 +679,10 @@ footer {
 }
 
 .autocomp-team {
-    margin-left: 10em; /* So that the team names don't get too close */
+    /* pull-right floats this to the row's right edge; a small min-gap keeps it
+       off the player tag. (Was 10em, which forced every dropdown row absurdly
+       wide and pushed the list off-page.) */
+    margin-left: 1.5em;
     color: var(--link-color);
 }
 
@@ -618,6 +722,19 @@ footer {
 }
 
 /* Tables */
+/* SUSE is proportional, so number columns (ratings, earnings, results, match
+   scores) need tabular + lining figures to stay vertically aligned. */
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td,
+.progress-bar {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
 .table-bordered {
     border: 1px solid var(--border-color);
 }
@@ -658,7 +775,9 @@ footer {
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
-    background-color: var(--bg-secondary);
+    /* Subtle darkening overlay (matches REPLAYMAN/DS --bg-zebra) instead of
+       swapping to a lighter surface, which made stripes high-contrast. */
+    background-color: var(--bg-zebra);
 }
 
 .table-hover > tbody > tr:hover {
@@ -686,7 +805,7 @@ footer {
 
 /* Prize pool table */
 .pp_header {
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     color: var(--fg-primary);
 }
 
@@ -700,13 +819,15 @@ footer {
 .lm_date { width: 17%; }
 .lm_rta { text-align: right; width: 3.5em; }
 .lm_pla { text-align: right; width: 23%; }
+th.lm_pla { padding-right: 2em !important; } /* Align "Player A" header text end with flag */
 .lm_score { width: 7em; text-align: center; }
 .lm_plb { width: 23%; }
+th.lm_plb { padding-left: 2em !important; } /* Align "Player B" header text start with flag */
 .lm_rtb { text-align: right; width: 3.5em; }
 .lm_right { text-align: right; width: 17%; }
 
 .eventheader {
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
     color: var(--fg-primary);
 }
 
@@ -716,10 +837,10 @@ footer {
 
 .eventheader-right { font-variant: small-caps; }
 
-.winner a, td.winner { font-weight: 900; }
+.winner a, td.winner { font-weight: 800; } /* SUSE tops out at 800; 900 was synthetic-bolded */
 
 .loser a {
-    font-weight: 100;
+    font-weight: 200; /* SUSE's 100 reads too thin on muted text; 200 stays light without hairline weight */
     color: var(--fg-muted);
 }
 
@@ -734,26 +855,19 @@ td.loser {
 /* Days since styles */
 .clock-expandable { cursor: pointer; }
 
-/* Subelements of h2 headings */
-h2.sub > small.right {
+/* Blog post byline: a small meta line directly under the title's rule.
+   (Previously an absolutely-positioned <small> inside the <h2>, which long
+   titles slid underneath.) */
+.blog-byline {
     font-family: var(--font-main);
     font-size: small;
-    position: absolute;
-    bottom: 0.2em;
-    right: 0;
-    font-variant: normal;
+    color: var(--fg-muted);
+    margin: 0.3em 0 1.2em;
 }
 
-h2.sub > .left {
-    font-family: var(--font-main);
-    font-size: small;
-    position: absolute;
-    bottom: 0.2em;
-    margin-left: 1em;
-}
-
-/* Text justification */
-div.text, div.text > p, div.text > ul > li { text-align: justify; }
+/* Long-form prose reads better ragged-right than justified (justify opens up
+   uneven word-spacing / rivers, worse on narrow and mobile columns). */
+div.text, div.text > p, div.text > ul > li { text-align: left; }
 
 /* Styles for message boxes */
 .message, .alert {
@@ -820,15 +934,39 @@ div.text, div.text > p, div.text > ul > li { text-align: justify; }
     border-right-color: var(--border-color);
 }
 
-/* Keep race and flag icons apart */
-.player img, .ui-corner-all img, .lm_plb img, .player .fi, .ui-corner-all .fi, .lm_plb .fi { padding-right: 0.3em; }
-.playerleft img, .lm_pla img, .playerleft .fi, .lm_pla .fi { padding-left: 0.3em; }
+/* Keep race, flag and trophy icons consistently aligned and spaced */
+.fi, .race-icon, .winner-trophy {
+    vertical-align: middle;
+    display: inline-block;
+    position: relative;
+    top: -0.05em; /* Subtle adjustment to pull icons up for better visual centering with text */
+}
+
+/* Default gap to the right for icons before text */
+.fi, .race-icon { margin-right: 0.3em; }
+
+/* Mirror player blocks and left-aligned match list elements ([Tag][Icon]) */
+.playerleft .race-icon, .playerleft .fi,
+.lm_pla .fi, .lm_pla .race-icon {
+    margin-right: 0;
+    margin-left: 0.3em;
+}
+
+/* Trophy gaps in match list */
+.lm_pla .winner-trophy { margin-right: 0; }
+.lm_plb .winner-trophy { margin-left: 0; }
+
+/* Remove margins for icon-only cells in rankings and tables to keep them centered */
+.rl_icon .fi, .rl_icon .race-icon,
+.ho_icon .fi, .ho_icon .race-icon,
+.ea_icon .fi, .ea_icon .race-icon,
+.pp_icon .fi, .pp_icon .race-icon {
+    margin: 0;
+}
 
 .fi {
-    vertical-align: middle;
     width: 1.33333333em;
     line-height: 1em;
-    display: inline-block;
 }
 
 /* Event manager tree */

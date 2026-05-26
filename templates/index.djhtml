@@ -23,6 +23,7 @@ To use, you should define the following blocks:
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Aligulac{% endblock %}</title>
     <style type="text/css">
      @font-face {
@@ -90,21 +91,22 @@ To use, you should define the following blocks:
        var iconSize = size || 16;
        if (!race_svgs || !race_svgs[race]) {
          /* Fallback to legacy img if SVGs aren't loaded */
-         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" style="margin-right: 0.25em;" />';
+         return '<img src="' + races_dir + race + '.png" width="' + iconSize + '" height="' + iconSize + '" alt="' + raceName + '" title="' + raceName + '" style="vertical-align: middle;" />';
        }
        var data = race_svgs[race];
        var width = iconSize;
        var height = iconSize;
        if (race === 'P') {
-         width = Math.round(iconSize * 0.85);
          height = Math.round(iconSize * 1.2);
        }
-       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle; margin-right: 0.25em;" role="img" aria-label="' + raceName + '"><title>' + raceName + '</title>' + data.path + '</svg>';
+       return '<svg width="' + width + '" height="' + height + '" viewBox="' + data.viewBox + '" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="race-icon race-' + race.toLowerCase() + '" style="vertical-align: middle; display: inline-block; width: ' + width + 'px;" role="img" aria-label="' + raceName + '" preserveAspectRatio="xMidYMid meet"><title>' + raceName + '</title>' + data.path + '</svg>';
 
      }
      window.getFlag = getFlag;
     </script>
     <link href='https://fonts.googleapis.com/css?family=Marcellus+SC' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css2?family=SUSE:ital,wght@0,100..800;1,100..800&display=swap' rel='stylesheet' type='text/css'>
+    <!-- IBM Plex Sans retained as a fallback for one release while SUSE rolls out; drop in a follow-up -->
     <link href='https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,400i,700,700i&display=swap' rel='stylesheet' type='text/css'>
     <script type="text/javascript">
      var global_player_autocomplete_allow_byes = false;
@@ -165,20 +167,20 @@ To use, you should define the following blocks:
       </div>
     </nav>
 
-    <div class="container">
+    <div class="container page-panel">
       <!-- Language picker and search -->
       <div class="row">
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-muted">
+        <div class="col-sm-4 col-md-4 col-lg-4 text-muted">
           <form action="/language/" method="POST">
             {% trans "Language" %}:
             <a href="#" class="langbtn">{{ lang|flag }}</a>
             <input type="hidden" name="return" value="{{ cur_path }}" />
           </form>
         </div>
-        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 text-right text-muted">
-          <form class="form-inline" role="form" action="/search/" method="get">
+        <div class="col-sm-8 col-md-8 col-lg-8 text-right text-muted">
+          <form class="form-inline search-form" role="form" action="/search/" method="get">
             <div class="form-group">
-              <input class="form-control input-sm" type="text" name="q" id="search_box" placeholder="{% trans "Find player, team or event" %}" style="width: 30em;">
+              <input class="form-control input-sm" type="text" name="q" id="search_box" placeholder="{% trans "Find player, team or event" %}">
             </div>
           </form>
         </div>
@@ -296,18 +298,19 @@ To use, you should define the following blocks:
        (function() {
          var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
          var chartTheme = {
-           colors: isDark ? ["#221133", "#00aa00", "#4c8de9", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#0066cc", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
+           colors: isDark ? ["#221133", "#00aa00", "#2196F3", "#cc0000", "#ffeeff", "#ffaa00", "#FF0000"] : ["rgba(140,140,140,0.4)", "#00aa00", "#2196F3", "#cc0000", "#000000", "#ffaa00", "#FF0000"],
            chart: {
-             backgroundColor: isDark ? '#110022' : '#FFFFFF',
-             plotBackgroundColor: isDark ? '#110022' : '#FFFFFF',
+             style: { fontFamily: "'SUSE', 'IBM Plex Sans', sans-serif", fontFeatureSettings: '"tnum" 1, "lnum" 1' },
+             backgroundColor: isDark ? '#0c0019' : '#FFFFFF',
+             plotBackgroundColor: isDark ? '#0c0019' : '#FFFFFF',
              resetZoomButton: {
                theme: {
-                 fill: isDark ? '#221133' : '#FFFFFF',
+                 fill: isDark ? '#14091c' : '#FFFFFF',
                  stroke: isDark ? '#aaddbb' : '#CCCCCC',
                  style: { color: isDark ? '#ffeeff' : '#333333' },
                  states: {
                    hover: {
-                     fill: isDark ? '#110022' : '#E6E6E6',
+                     fill: isDark ? '#0c0019' : '#E6E6E6',
                      style: { color: isDark ? '#aaddbb' : '#000000' }
                    }
                  }
@@ -317,21 +320,21 @@ To use, you should define the following blocks:
            title: { style: { color: isDark ? '#ffeeff' : '#3E576F' } },
            subtitle: { style: { color: isDark ? '#dccbed' : '#6D869F' } },
            xAxis: {
-             gridLineColor: isDark ? '#221133' : '#C0C0C0',
+             gridLineColor: isDark ? '#14091c' : '#C0C0C0',
              labels: { style: { color: isDark ? '#dccbed' : '#666' } },
-             lineColor: isDark ? '#221133' : '#C0D0E0',
-             tickColor: isDark ? '#221133' : '#C0D0E0'
+             lineColor: isDark ? '#14091c' : '#C0D0E0',
+             tickColor: isDark ? '#14091c' : '#C0D0E0'
            },
            yAxis: {
-             gridLineColor: isDark ? '#221133' : '#C0C0C0',
+             gridLineColor: isDark ? '#14091c' : '#C0C0C0',
              labels: { style: { color: isDark ? '#dccbed' : '#666' } },
-             lineColor: isDark ? '#221133' : '#C0D0E0',
-             tickColor: isDark ? '#221133' : '#C0D0E0',
+             lineColor: isDark ? '#14091c' : '#C0D0E0',
+             tickColor: isDark ? '#14091c' : '#C0D0E0',
              title: { style: { color: isDark ? '#dccbed' : '#4d759e' } }
            },
            tooltip: {
              useHTML: true,
-             backgroundColor: isDark ? '#221133' : 'rgba(255, 255, 255, 0.85)',
+             backgroundColor: isDark ? '#14091c' : 'rgba(255, 255, 255, 0.85)',
              style: { color: isDark ? '#ffeeff' : '#333' }
            },
            legend: {
@@ -343,11 +346,11 @@ To use, you should define the following blocks:
              buttons: {
                contextButton: {
                  theme: {
-                   fill: isDark ? '#221133' : '#F7F7F7',
-                   stroke: isDark ? '#110022' : '#CCCCCC',
+                   fill: isDark ? '#14091c' : '#F7F7F7',
+                   stroke: isDark ? '#0c0019' : '#CCCCCC',
                    states: {
                      hover: {
-                       fill: isDark ? '#110022' : '#E0E0E0',
+                       fill: isDark ? '#0c0019' : '#E0E0E0',
                        stroke: isDark ? '#aaddbb' : '#AAA'
                      }
                    }
@@ -358,11 +361,11 @@ To use, you should define the following blocks:
            navigation: {
              buttonOptions: {
                symbolStroke: isDark ? '#dccbed' : '#666',
-               theme: { fill: isDark ? '#221133' : '#F7F7F7' }
+               theme: { fill: isDark ? '#14091c' : '#F7F7F7' }
              },
              menuStyle: {
-               background: isDark ? '#221133' : '#FFFFFF',
-               border: isDark ? '1px solid #110022' : '1px solid #A0A0A0',
+               background: isDark ? '#14091c' : '#FFFFFF',
+               border: isDark ? '1px solid #0c0019' : '1px solid #A0A0A0',
                padding: '5px 0'
              },
              menuItemStyle: {
@@ -371,7 +374,7 @@ To use, you should define the following blocks:
                padding: '2px 15px'
              },
              menuItemHoverStyle: {
-               background: isDark ? '#110022' : '#4572A7',
+               background: isDark ? '#0c0019' : '#4572A7',
                color: isDark ? '#ffeeff' : '#FFFFFF'
              }
            }

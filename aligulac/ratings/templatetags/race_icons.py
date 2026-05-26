@@ -49,11 +49,11 @@ def race_icon(race, size=24, cls=""):
     names = {'T': 'Terran', 'Z': 'Zerg', 'P': 'Protoss', 'R': 'Random', 'S': 'Switcher'}
     name = names.get(race, race)
 
-    # Scale Protoss slightly differently to match visual weight, like in REPLAYMAN
+    # We want a fixed width for all icons to ensure alignment.
+    # Protoss is taller but we'll center it within the standard width.
     width = size
     height = size
     if race == 'P':
-        width = int(size * 0.85)
         height = int(size * 1.2)
 
     svg = f"""<svg 
@@ -63,9 +63,10 @@ def race_icon(race, size=24, cls=""):
     xmlns="http://www.w3.org/2000/svg"
     fill="currentColor"
     class="race-icon race-{race.lower()} {cls}"
-    style="vertical-align: middle; margin-right: 0.25em;"
+    style="vertical-align: middle; display: inline-block; width: {width}px;"
     role="img"
     aria-label="{name}"
+    preserveAspectRatio="xMidYMid meet"
 >
     <title>{name}</title>
     {data['path']}
