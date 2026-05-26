@@ -15,6 +15,7 @@
     --bg-primary: #ffffff;
     --bg-secondary: #f8f8f8;
     --bg-tertiary: #f5f5f5;
+    --bg-zebra: rgba(0, 0, 0, 0.08); /* striped-row darkening overlay */
     
     --fg-primary: #000000;
     --fg-secondary: #555555;
@@ -108,13 +109,16 @@
 }
 
 [data-theme='dark'] {
-    /* Colors - Dark Theme Overrides - Vivid Midnight (REPLAYMAN inspired) */
-    --bg-primary: #110022;
-    --bg-secondary: #221133;
-    --bg-tertiary: #090014;
+    /* Colors - Dark Theme — aligned to REPLAYMAN's midnight/plum ladder */
+    --bg-primary: #0c0019;   /* midnight — page (was aubergine #110022) */
+    --bg-secondary: #14091c; /* plum — raised surface (was dusk #221133) */
+    --bg-tertiary: #090014;  /* obsidian — deepest inset */
+    --bg-zebra: rgba(0, 0, 0, 0.15); /* striped-row darkening overlay */
     
-    --fg-primary: #ffeeff;
-    --fg-secondary: #dccbed;
+    /* Desaturated lavender ladder for long-session comfort (was #ffeeff / #dccbed,
+       which read hot on midnight purple). Matches REPLAYMAN's dark-mode pass. */
+    --fg-primary: #e2d8ed;
+    --fg-secondary: #c4bbcf;
     --fg-muted: rgb(128, 119, 136);
     --fg-disabled: rgba(220, 203, 237, 0.5);
     
@@ -125,8 +129,8 @@
     --border-dark: #090014;
     --border-subtle: rgba(220, 203, 237, 0.08);
     
-    --input-bg: #221133;
-    --input-border: #110022;
+    --input-bg: #14091c;
+    --input-border: #0c0019;
     --input-focus-border: #aaddbb;
     --input-focus-shadow: rgba(170, 221, 187, 0.4);
     
@@ -140,7 +144,7 @@
     
     --msg-info-bg: #1a1a2e;
     --msg-info-border: #2e2e4a;
-    --msg-info-fg: #dccbed;
+    --msg-info-fg: #c4bbcf;
     
     --msg-error-bg: #2e1a1a;
     --msg-error-border: #4a2e2e;
@@ -156,24 +160,24 @@
     --tree-node-event-bg: #2e1111;
     --tree-node-round-bg: #112e11;
 
-    --tag-bg: #110022;
-    --tag-fg: #dccbed;
-    --tag-border: #110022;
+    --tag-bg: #0c0019;
+    --tag-fg: #c4bbcf;
+    --tag-border: #0c0019;
     --tag-link: #aaddbb;
 
-    --navbar-bg: #221133;
-    --navbar-border: #110022;
-    --navbar-link: #dccbed;
-    --navbar-link-hover: #ffeeff;
-    --navbar-link-active: #ffeeff;
-    --navbar-link-active-bg: #110022;
+    --navbar-bg: #14091c;
+    --navbar-border: #0c0019;
+    --navbar-link: #c4bbcf;
+    --navbar-link-hover: #e2d8ed;
+    --navbar-link-active: #e2d8ed;
+    --navbar-link-active-bg: #0c0019;
 
-    --btn-default-bg: #221133;
-    --btn-default-fg: #dccbed;
-    --btn-default-border: #110022;
+    --btn-default-bg: #14091c;
+    --btn-default-fg: #c4bbcf;
+    --btn-default-border: #0c0019;
 
-    --well-bg: #221133;
-    --well-border: #110022;
+    --well-bg: #14091c;
+    --well-border: #0c0019;
 
     /* --race-t inherits #2196F3 from :root — dual Terran blue retired */
     --race-z: #CC0000;
@@ -199,6 +203,17 @@
 }
 .text-info {
     color: var(--msg-info-fg) !important;
+}
+
+/* Bootstrap hard-codes light-grey borders (#eee / #ddd) on a couple of elements
+   our theme never recolored, so they showed up as bright near-white lines in
+   dark mode: the footer rule (<hr>) and the .table-responsive wrapper border
+   that appears below 768px. Pull both onto the themed border color. */
+hr {
+    border-top-color: var(--border-color);
+}
+.table-responsive {
+    border-color: var(--border-color);
 }
 
 /* Pagination */
@@ -277,7 +292,7 @@
     text-align: center;
     white-space: nowrap;
     vertical-align: middle;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 0.25em;
     margin-right: 0.3em;
@@ -299,7 +314,7 @@
     text-align: center;
     white-space: nowrap;
     vertical-align: middle;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 0.25em;
     text-transform: lowercase;
@@ -310,7 +325,9 @@
 
 /* Progress Bars */
 .progress {
-    background-color: var(--bg-tertiary) !important;
+    /* Plum surface track (was --bg-tertiary, which now ≈ the page bg and made
+       the track melt into the background). */
+    background-color: var(--bg-secondary) !important;
     box-shadow: none !important;
 }
 
@@ -733,7 +750,9 @@ footer {
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
-    background-color: var(--bg-secondary);
+    /* Subtle darkening overlay (matches REPLAYMAN/DS --bg-zebra) instead of
+       swapping to a lighter surface, which made stripes high-contrast. */
+    background-color: var(--bg-zebra);
 }
 
 .table-hover > tbody > tr:hover {
@@ -761,7 +780,7 @@ footer {
 
 /* Prize pool table */
 .pp_header {
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     color: var(--fg-primary);
 }
 
@@ -783,7 +802,7 @@ th.lm_plb { padding-left: 2em !important; } /* Align "Player B" header text star
 .lm_right { text-align: right; width: 17%; }
 
 .eventheader {
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
     color: var(--fg-primary);
 }
 
@@ -793,7 +812,7 @@ th.lm_plb { padding-left: 2em !important; } /* Align "Player B" header text star
 
 .eventheader-right { font-variant: small-caps; }
 
-.winner a, td.winner { font-weight: 900; }
+.winner a, td.winner { font-weight: 800; } /* SUSE tops out at 800; 900 was synthetic-bolded */
 
 .loser a {
     font-weight: 200; /* SUSE's 100 reads too thin on muted text; 200 stays light without hairline weight */
@@ -811,34 +830,19 @@ td.loser {
 /* Days since styles */
 .clock-expandable { cursor: pointer; }
 
-/* Subelements of h2 headings (blog post titles: title + byline).
-   Flex row so the byline sits at the right and wraps below a long title
-   instead of being absolutely positioned underneath it. */
-h2.sub {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 1em;
-    row-gap: 0.2em;
-}
-
-h2.sub > small.right {
+/* Blog post byline: a small meta line directly under the title's rule.
+   (Previously an absolutely-positioned <small> inside the <h2>, which long
+   titles slid underneath.) */
+.blog-byline {
     font-family: var(--font-main);
     font-size: small;
-    font-variant: normal;
-    margin-left: auto; /* push byline to the right edge of its line */
-    flex-shrink: 0;
-    text-align: right;
+    color: var(--fg-muted);
+    margin: 0.3em 0 1.2em;
 }
 
-h2.sub > .left {
-    font-family: var(--font-main);
-    font-size: small;
-    font-variant: normal;
-}
-
-/* Text justification */
-div.text, div.text > p, div.text > ul > li { text-align: justify; }
+/* Long-form prose reads better ragged-right than justified (justify opens up
+   uneven word-spacing / rivers, worse on narrow and mobile columns). */
+div.text, div.text > p, div.text > ul > li { text-align: left; }
 
 /* Styles for message boxes */
 .message, .alert {

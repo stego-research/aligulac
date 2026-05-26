@@ -12,16 +12,14 @@ This template prints a list of blog posts. It is included from the front page (i
     the middle 10 columns on a medium display,
     or the full display for smaller devices. -->
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
-      <h2 class="sub">
-        {{post.title}}
-        <small class="right">
-          {% language "en" %}
-          By {{post.author}}
-          on {{post.date|date:"DATETIME_FORMAT"}} 
-          (UTC {{post.date|date:"O"}})
-          {% endlanguage %}
-        </small>
-      </h2>
+      <h2>{{post.title}}</h2>
+      <p class="blog-byline">
+        {% language "en" %}
+        By {{post.author}}
+        on {{post.date|date:"DATETIME_FORMAT"}}
+        (UTC {{post.date|date:"O"}})
+        {% endlanguage %}
+      </p>
 
       <div class="text">{{post.text|markdown}}</div>
     </div>
