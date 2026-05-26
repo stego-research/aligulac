@@ -503,12 +503,12 @@ a.blacklink:hover {
     text-decoration: none !important;
 }
 
-/* Centered navbar */
+/* Centered navbar (flex instead of the old display:table centering hack) */
 @media (min-width: 768px) {
     .navbar-nav {
         margin: 0 auto;
-        display: table;
-        table-layout: fixed;
+        display: flex;
+        justify-content: center;
         float: none;
     }
 }
@@ -881,6 +881,14 @@ div.text, div.text > p, div.text > ul > li { text-align: left; }
     display: flex;
     align-items: flex-start;
     gap: 1em;
+}
+
+/* Inline Material Symbols (admin action icons, badges) — size to sit with text
+   and the surrounding links. The .message rule below overrides for alert glyphs. */
+.material-symbols-outlined {
+    font-size: 1.2em;
+    line-height: 1;
+    vertical-align: -0.2em;
 }
 
 .message .material-symbols-outlined {

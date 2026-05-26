@@ -37,7 +37,7 @@
              style="display: none;"
              class="btn btn-default">
             {% trans "Get data from Liquipedia" %}
-            <span class="glyphicon glyphicon-download"></span>
+            <span class="material-symbols-outlined">download</span>
           </a>
           <small style="display: none;"></small>
         </span>
@@ -163,11 +163,11 @@
                data-toggle="modal"
                data-target="#md-player-info"
                title="{% trans "Edit info" %}">
-              <span class="glyphicon glyphicon-pencil"></span>
+              <span class="material-symbols-outlined">edit</span>
             </a>
             <a href="/admin/ratings/player/{{p.id}}/"
                title="{% trans "Admin interface" %}">
-              <span class="glyphicon glyphicon-cog"></span>
+              <span class="material-symbols-outlined">settings</span>
             </a>
             {% if p.lp_name %}
             {% comment %}Translators: LP = Liquipedia{% endcomment %}
@@ -198,7 +198,7 @@
       <h3>
         {{ v.title }}
         {% if v.count == all_count %}
-        <small><span class="glyphicon glyphicon-check"></span></small>
+        <small><span class="material-symbols-outlined">check</span></small>
         {% endif %}
       </h3>
       <small>{{ v.count }}/{{ all_count }} ({{ v.pctg }}%)</small>
