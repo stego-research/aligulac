@@ -35,6 +35,7 @@ To use, you should define the following blocks:
     <meta name="msapplication-TileImage" content="{{"img/favicons/mstile-150x150.png"|static}}">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="{{"img/favicons/site.webmanifest"|static}}">
     <style type="text/css">
      @font-face {
