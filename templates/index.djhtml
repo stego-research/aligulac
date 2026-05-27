@@ -25,6 +25,18 @@ To use, you should define the following blocks:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Aligulac{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{"img/favicons/favicon.ico"|static}}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{"img/favicons/favicon-16x16.png"|static}}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{"img/favicons/favicon-32x32.png"|static}}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{"img/favicons/favicon-96x96.png"|static}}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{"img/favicons/android-chrome-192x192.png"|static}}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{"img/favicons/apple-touch-icon.png"|static}}">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{{"img/favicons/mstile-150x150.png"|static}}">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="{{"img/favicons/site.webmanifest"|static}}">
     <style type="text/css">
      @font-face {
        font-family: 'Glyphicons Halflings';
