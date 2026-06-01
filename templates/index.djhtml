@@ -25,13 +25,18 @@ To use, you should define the following blocks:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Aligulac{% endblock %}</title>
-    <style type="text/css">
-     @font-face {
-       font-family: 'Glyphicons Halflings';
-       src: url('{{"glyphicons-halflings-regular.eot"|fonts}}');
-       src: url('{{"glyphicons-halflings-regular.eot?#iefix"|fonts}}') format('embedded-opentype'), url('{{"glyphicons-halflings-regular.woff"|fonts}}') format('woff'), url('{{"glyphicons-halflings-regular.ttf"|fonts}}') format('truetype'), url('{{"glyphicons-halflings-regular.svg#glyphicons_halflingsregular"|fonts}}') format('svg');
-     }
-    </style>
+    <link rel="icon" type="image/x-icon" href="{{"img/favicons/favicon.ico"|static}}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{"img/favicons/favicon-16x16.png"|static}}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{"img/favicons/favicon-32x32.png"|static}}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{"img/favicons/favicon-96x96.png"|static}}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{"img/favicons/android-chrome-192x192.png"|static}}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{"img/favicons/apple-touch-icon.png"|static}}">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{{"img/favicons/mstile-150x150.png"|static}}">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="{{"img/favicons/site.webmanifest"|static}}">
     <link rel="stylesheet" href="{{"bootstrap.min"|css}}" type="text/css">
     <link rel="stylesheet" href="{{"jquery-ui.min"|css}}" type="text/css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css" type="text/css">

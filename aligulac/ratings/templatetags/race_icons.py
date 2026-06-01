@@ -19,14 +19,16 @@ PROTOSS_SVG = """
 """
 
 # Random and Switcher placeholders
-RANDOM_SVG = """<path d="M342.5-257.5Q360-275 360-300t-17.5-42.5Q325-360 300-360t-42.5 17.5Q240-325 240-300t17.5 42.5Q275-240 300-240t42.5-17.5Zm0-360Q360-635 360-660t-17.5-42.5Q325-720 300-720t-42.5 17.5Q240-685 240-660t17.5 42.5Q275-600 300-600t42.5-17.5Zm180 180Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm180 180Q720-275 720-300t-17.5-42.5Q685-360 660-360t-42.5 17.5Q600-325 600-300t17.5 42.5Q635-240 660-240t42.5-17.5Zm0-360Q720-635 720-660t-17.5-42.5Q685-720 660-720t-42.5 17.5Q600-685 600-660t17.5 42.5Q635-600 660-600t42.5-17.5ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/>"""
+# Random uses Lucide `dices` (stroke-based, per the Stego design system) — the
+# path carries its own fill/stroke so it overrides the svg-level fill="currentColor".
+RANDOM_SVG = """<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></g>"""
 SWITCHER_SVG = """<path fill="none" stroke="currentColor" stroke-width="80" d="M 200 500 L 800 500 M 500 200 L 800 500 L 500 800" />"""
 
 RACE_SVGS = {
     'T': {'viewBox': '0 0 979 958', 'path': TERRAN_SVG},
     'Z': {'viewBox': '0 0 695 763', 'path': ZERG_SVG},
     'P': {'viewBox': '0 0 591 1085', 'path': PROTOSS_SVG},
-    'R': {'viewBox': '0 -960 960 960', 'path': RANDOM_SVG},
+    'R': {'viewBox': '0 0 24 24', 'path': RANDOM_SVG},
     'S': {'viewBox': '0 0 1000 1000', 'path': SWITCHER_SVG},
 }
 

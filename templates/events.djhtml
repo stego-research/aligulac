@@ -48,7 +48,7 @@ This shows the event overview page. Called from ratings.views.events.
         <span class="pull-right">
           <div class="btn-group">
             <button class="btn btn-xs dropdown-toggle btn-{% if e.category == "individual" %}success{% elif e.category == "team" %}danger{% else %}info{% endif %}" data-toggle="dropdown">
-              <span class="glyphicon glyphicon-th-list"></span>
+              <span class="material-symbols-outlined">list</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
               {% for c in e.get_immediate_children.all %}
