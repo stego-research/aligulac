@@ -262,7 +262,7 @@ ratings.views.events.
     <h2>
       <ol class="breadcrumb">
         <li><a href="/results/events/">
-          <span class="glyphicon glyphicon-home"></span>
+          <span class="material-symbols-outlined">home</span>
         </a></li>
         {% for e in path %}
           <li {% if forloop.last %}class="active"{% endif %}>
@@ -585,22 +585,22 @@ ratings.views.events.
           {% if adm %}
             <tr class="small">
               <td colspan="2" class="text-center admin-buttons">
-                <a href="#" title="{% trans "Edit info" %}" data-toggle="modal" data-target="#md-edit"><span class="glyphicon glyphicon-pencil"></span></a>
-                <a href="/admin/ratings/event/{{event.id}}/" title="{% trans "Admin interface" %}"><span class="glyphicon glyphicon-cog"></span> </a>
-                <a href="/add/?eventid={{event.id}}" title="{% trans "Add matches" %}"><span class="glyphicon glyphicon-plus"></span> </a>
-                <a href="#" title="{% trans "Add subevents" %}" data-toggle="modal" data-target="#md-add"><span class="glyphicon glyphicon-file"></span></a>
+                <a href="#" title="{% trans "Edit info" %}" data-toggle="modal" data-target="#md-edit"><span class="material-symbols-outlined">edit</span></a>
+                <a href="/admin/ratings/event/{{event.id}}/" title="{% trans "Admin interface" %}"><span class="material-symbols-outlined">settings</span> </a>
+                <a href="/add/?eventid={{event.id}}" title="{% trans "Add matches" %}"><span class="material-symbols-outlined">add</span> </a>
+                <a href="#" title="{% trans "Add subevents" %}" data-toggle="modal" data-target="#md-add"><span class="material-symbols-outlined">description</span></a>
                 {% if event.type == "event" %}
-                  <a href="#" title="{% trans "Prize pool" %}" data-toggle="modal" data-target="#md-pp"><span class="glyphicon glyphicon-usd"></span></a>
-                  <a href="#" title="{% trans "WCS data" %}" data-toggle="modal" data-target="#md-wcs"><span class="glyphicon glyphicon-globe"></span></a>
+                  <a href="#" title="{% trans "Prize pool" %}" data-toggle="modal" data-target="#md-pp"><span class="material-symbols-outlined">attach_money</span></a>
+                  <a href="#" title="{% trans "WCS data" %}" data-toggle="modal" data-target="#md-wcs"><span class="material-symbols-outlined">public</span></a>
                 {% endif %}
                 {% if not event.has_children and stform %}
-                  <a href="#" title="{% trans "Stories" %}" data-toggle="modal" data-target="#md-st"><span class="glyphicon glyphicon-flag"></span></a>
+                  <a href="#" title="{% trans "Stories" %}" data-toggle="modal" data-target="#md-st"><span class="material-symbols-outlined">flag</span></a>
                 {% endif %}
                 {% if event.has_children %}
-                  <a href="#" title="{% trans "Reorder subevents" %}" data-toggle="modal" data-target="#md-ord"><span class="glyphicon glyphicon-random"></span></a>
+                  <a href="#" title="{% trans "Reorder subevents" %}" data-toggle="modal" data-target="#md-ord"><span class="material-symbols-outlined">shuffle</span></a>
                 {% endif %}
                 {% if not event.closed %}
-                  <a href="?close=1" title="{% trans "Close event" %}"><span class="glyphicon glyphicon-off"></span></a>
+                  <a href="?close=1" title="{% trans "Close event" %}"><span class="material-symbols-outlined">power_settings_new</span></a>
                 {% endif %}
               </td>
             </tr>
