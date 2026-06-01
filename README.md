@@ -200,7 +200,7 @@ Additional details on how to run a server are located in DEPLOYMENT.md.
 The primary dependencies to run Aligulac are:
 
 - Python 3.12
-- Django 4.2.x
+- Django 5.2.x
 - A PostgreSQL server
 
 The repository does **not** contain the Django settings file or the database dumps. Templates are provided in [default.settings.py](aligulac/aligulac/default.settings.py) and [template.local.py](aligulac/aligulac/template.local.py)

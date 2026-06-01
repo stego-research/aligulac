@@ -16,7 +16,7 @@
           <p>
             {% with a1="<a target=\"_blank\" href=\"http://www.djangoproject.com/\">" %}
             {% with a2="<a target=\"_blank\" href=\"http://python.org\">" %}
-              {% blocktrans %}Powered by {{a1}}Django 4.2</a> and {{a2}}Python 3.12</a>.{% endblocktrans %}
+              {% blocktrans %}Powered by {{a1}}Django 5.2</a> and {{a2}}Python 3.12</a>.{% endblocktrans %}
             {% endwith %}{% endwith %}
           </p>
           <p>
