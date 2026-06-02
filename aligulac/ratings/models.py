@@ -2015,6 +2015,12 @@ class Rating(models.Model):
     class Meta:
         ordering = ['period']
         db_table = 'rating'
+        # NOTE: a covering index idx_rating_player_id_rating on (player_id, rating) exists
+        # in production for the Records > History peak-rating query. It is NOT created by
+        # Django migrations — Aligulac shares the replayman DB, so DB tuning lives in
+        # rmserv/scripts/migrations/00086-aligulac-rating-peak-index.sql. If you ever want
+        # Django to manage it, add it here as models.Index(..., name='idx_rating_player_id_rating')
+        # (same name) so Django adopts the existing index instead of creating a duplicate.
 
     # {{{ Fields
     period = models.ForeignKey(

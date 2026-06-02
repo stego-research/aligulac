@@ -1,5 +1,11 @@
 import hashlib
+import logging
+
+from django.conf import settings
+from django.db.backends.signals import connection_created
 from django.utils.encoding import force_bytes
+
+logger = logging.getLogger(__name__)
 
 class RealIPMiddleware:
     """
@@ -74,5 +80,52 @@ class ETagMiddleware:
         # cache one user's language for another.
         if not response.has_header('Cache-Control'):
             response['Cache-Control'] = 'private, no-cache, must-revalidate'
-            
+
         return response
+
+
+class StatementTimeoutMiddleware:
+    """
+    Caps Postgres ``statement_timeout`` on web-request DB connections so a runaway query
+    is cancelled by the database (surfacing as a clean HTTP 500) instead of blocking a
+    gunicorn worker until the arbiter SIGABRTs it -- the failure mode behind ALIGULAC-1E
+    (SystemExit:1 raised from gunicorn's handle_abort). The timeout
+    (settings.DB_STATEMENT_TIMEOUT_MS, default 25s) is kept below the gunicorn --timeout
+    (30s) so the DB cancels first and the worker survives.
+
+    Scope is the whole point. The timeout is applied via the ``connection_created`` signal,
+    which we connect in ``__init__``. Middleware is only instantiated by the request-handling
+    stack, so this signal is never connected in management/batch processes (e.g. rating
+    recalcs) -- their legitimately long-running queries are left uncapped. And because the
+    signal fires only when a connection is actually opened, fully cache-served requests that
+    touch no DB pay nothing.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.timeout_ms = getattr(settings, 'DB_STATEMENT_TIMEOUT_MS', 25000)
+        if self.timeout_ms and self.timeout_ms > 0:
+            connection_created.connect(
+                self._apply_statement_timeout,
+                dispatch_uid='aligulac.statement_timeout',
+            )
+
+    def _apply_statement_timeout(self, sender, connection, **kwargs):
+        # Postgres-only; ignore sqlite (tests) or any other backend.
+        if connection.vendor != 'postgresql':
+            return
+        try:
+            with connection.cursor() as cursor:
+                # set_config() rather than a bare SET so the value binds as a parameter under
+                # both psycopg2 and psycopg3 (SET does not accept bind parameters). is_local
+                # is false so it holds for the life of this (per-request) connection.
+                cursor.execute(
+                    "SELECT set_config('statement_timeout', %s, false)",
+                    [str(self.timeout_ms)],
+                )
+        except Exception:
+            # Fail open: a defensive guard that cannot arm itself must not 500 every request.
+            logger.warning('Could not set per-request statement_timeout', exc_info=True)
+
+    def __call__(self, request):
+        return self.get_response(request)

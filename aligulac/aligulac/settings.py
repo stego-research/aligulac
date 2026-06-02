@@ -190,6 +190,9 @@ if DEBUG and DEBUG_TOOLBAR:
 
 MIDDLEWARE = [
     'aligulac.middleware.RealIPMiddleware',
+    # Arms a per-request DB statement_timeout (see StatementTimeoutMiddleware). Position is
+    # not significant -- it works via the connection_created signal, not request order.
+    'aligulac.middleware.StatementTimeoutMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -213,6 +216,18 @@ WSGI_APPLICATION = 'aligulac.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+
+# Per-request Postgres statement timeout (milliseconds), applied to web-request DB
+# connections by aligulac.middleware.StatementTimeoutMiddleware so a runaway query returns a
+# clean error instead of blocking a gunicorn worker until the arbiter SIGABRTs it (ALIGULAC-1E).
+# Keep it BELOW the gunicorn --timeout (30s) so Postgres cancels first. Set DB_STATEMENT_TIMEOUT_MS
+# to none/0 to disable. NOTE: this is request-scoped on purpose -- management/batch commands
+# (e.g. rating recalcs) don't run middleware, so their long-running queries are never capped.
+_db_statement_timeout = get_env('DB_STATEMENT_TIMEOUT_MS', 25000)
+try:
+    DB_STATEMENT_TIMEOUT_MS = int(_db_statement_timeout) if _db_statement_timeout is not None else 0
+except (TypeError, ValueError):
+    DB_STATEMENT_TIMEOUT_MS = 25000
 
 DATABASES = {
     'default': {

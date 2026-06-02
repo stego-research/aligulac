@@ -78,6 +78,10 @@ USER aligulac
 
 EXPOSE 8000
 
-# Start Gunicorn from the project root
+# Start Gunicorn from the project root.
+# --timeout 30 is gunicorn's default, made explicit because it must stay ABOVE
+# DB_STATEMENT_TIMEOUT_MS (25s, see aligulac.middleware.StatementTimeoutMiddleware): a slow
+# query should be cancelled by Postgres and returned as a clean 500, not run long enough for
+# the arbiter to SIGABRT the worker (the ALIGULAC-1E failure mode).
 WORKDIR /app/aligulac
-CMD ["gunicorn", "--chdir", "aligulac", "aligulac.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-", "--error-logfile", "-"]
+CMD ["gunicorn", "--chdir", "aligulac", "aligulac.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "30", "--access-logfile", "-", "--error-logfile", "-"]
