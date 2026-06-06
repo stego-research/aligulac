@@ -24,6 +24,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.template.context_processors import csrf
 from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from aligulac.cache import cache_page
@@ -165,7 +166,17 @@ class NotUniquePlayerMessage(Message):
 
 # {{{ generate_messages: Generates a list of message objects for an object that supports them.
 def generate_messages(obj):
-    return [Message(m.get_message(), m.get_title(), m.type) for m in obj.message_set.all()]
+    # Message-model rows are editor/staff-curated (Django admin + seed data) and
+    # their params intentionally carry HTML (e.g. the 'Possible confusion'
+    # %(player)s links). messages.djhtml deliberately auto-escapes plain-str
+    # message text so user-submitted echoes can't become a reflected-XSS sink,
+    # and relies on trusted-HTML messages being SafeStrings (as
+    # NotUniquePlayerMessage already is via render_to_string). Mark this trusted
+    # HTML safe, or the links render as escaped literal text.
+    return [
+        Message(mark_safe(m.get_message()), m.get_title(), m.type)
+        for m in obj.message_set.all()
+    ]
 
 
 # }}}
