@@ -109,14 +109,6 @@ def markdown(value):
     return mark_safe(markdown2.markdown(value, safe_mode=True))
 
 
-# jsescape: Escapes a string to be placed inside a
-#              javascript string
-@register.filter
-@stringfilter
-def jsescape(value):
-    return value.replace('\\', '\\\\').replace("'", r"\'").replace('"', r'\"').replace('\n', '\\n').replace('\r', '\\r')
-
-
 # urlify: Adds links to URLs.
 @register.filter
 @stringfilter
