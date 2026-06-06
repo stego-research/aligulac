@@ -299,8 +299,8 @@ class FormComparison(Comparison):
     def _get_value(self, player):
         if player.id not in self.forms:
             matches = Match.objects.symmetric_filter(pla=player) \
-                .order_by('-date')
-            recent_matches = matches[:min(5, len(matches))]
+                .order_by('-date', '-id')
+            recent_matches = list(matches[:5])
             self.forms[player.id] = [
                 self.winner_to_char(player, m) for m in recent_matches
             ]

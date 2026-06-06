@@ -1,5 +1,6 @@
 # {{{ Imports
 from django.db.models import (
+    Prefetch,
     Q,
     Sum,
 )
@@ -21,6 +22,7 @@ from aligulac.tools import (
 )
 from ratings.models import (
     Earnings,
+    GroupMembership,
     P,
     Period,
     Player,
@@ -305,12 +307,26 @@ def earnings(request):
         if nitems > 0:
             ranking_list = list(ranking_qset[(actual_page - 1) * pagesize: actual_page * pagesize])
             
-            # Populate with player and team objects
+            # Populate with player and team objects. Prefetch current-team
+            # memberships so resolving each player's team is a single extra
+            # query instead of one get_current_team() query per row.
             ids = [p['player'] for p in ranking_list]
-            players = Player.objects.in_bulk(ids)
+            players = Player.objects.filter(id__in=ids).prefetch_related(
+                Prefetch(
+                    'groupmembership_set',
+                    queryset=(
+                        GroupMembership.objects
+                        .filter(current=True, group__is_team=True)
+                        .select_related('group')
+                        .order_by('id')
+                    ),
+                    to_attr='current_team_memberships',
+                )
+            ).in_bulk()
             for p in ranking_list:
                 p['playerobj'] = players[p['player']]
-                p['teamobj'] = p['playerobj'].get_current_team()
+                memberships = p['playerobj'].current_team_memberships
+                p['teamobj'] = memberships[0].group if memberships else None
         else:
             ranking_list = []
 

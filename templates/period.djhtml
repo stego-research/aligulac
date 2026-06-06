@@ -287,7 +287,7 @@ This template shows a rating list for a given period.
               {% for e in updown %}
                 <tr>
                   <td class="small text-right" style="vertical-align: bottom;">
-                    <a href="/players/{{e.0.player.id}}-{{e.0.player.tag|urlfilter}}/period/{{e.0.period.id}}/">
+                    <a href="/players/{{e.0.player.id}}-{{e.0.player.tag|urlfilter}}/period/{{e.0.period_id}}/">
                       {{e.0.diff|ratscalediff|signify}}
                     </a>
                   </td>
@@ -295,7 +295,7 @@ This template shows a rating list for a given period.
                     {{e.0.player|player}}
                   </td>
                   <td class="small text-right" style="vertical-align: bottom;">
-                    <a href="/players/{{e.1.player.id}}-{{e.1.player.tag|urlfilter}}/period/{{e.1.period.id}}/">
+                    <a href="/players/{{e.1.player.id}}-{{e.1.player.tag|urlfilter}}/period/{{e.1.period_id}}/">
                       {{e.1.diff|ratscalediff|signify}}
                     </a>
                   </td>

@@ -10,7 +10,7 @@ from ratings.models import (
 )
 from ratings.tools import (
     cdf,
-    get_latest_period,
+    get_latest_period_no_cache,
 )
 
 debug = False
@@ -34,7 +34,7 @@ def make_player(player):
         pl = Player(
             player.tag,
             player.race,
-            start_rating(player.country, etn(lambda: get_latest_period().id) or 1), 0.0, 0.0, 0.0,
+            start_rating(player.country, etn(lambda: get_latest_period_no_cache().id) or 1), 0.0, 0.0, 0.0,
             INIT_DEV, INIT_DEV, INIT_DEV, INIT_DEV,
         )
 

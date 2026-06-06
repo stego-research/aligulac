@@ -110,7 +110,7 @@ class SmallRatingResource(ModelResource):
 
 class RatingResource(ModelResource):
     class Meta:
-        queryset = total_ratings(Rating.objects.all())
+        queryset = total_ratings(Rating.objects.all()).select_related('player')
         allowed_methods = ['get', 'post']
         resource_name = 'rating'
         authentication = APIKeyAuthentication()
@@ -156,7 +156,7 @@ class RatingResource(ModelResource):
 
 class ActiveRatingResource(ModelResource):
     class Meta:
-        queryset = filter_active(total_ratings(Rating.objects.all()))
+        queryset = filter_active(total_ratings(Rating.objects.all())).select_related('player')
         allowed_methods = ['get', 'post']
         resource_name = 'activerating'
         authentication = APIKeyAuthentication()
@@ -356,7 +356,7 @@ class EventResource(ModelResource):
 
 class MatchResource(ModelResource):
     class Meta:
-        queryset = Match.objects.all()
+        queryset = Match.objects.select_related('pla', 'plb', 'rta', 'rtb', 'eventobj')
         allowed_methods = ['get', 'post']
         resource_name = 'match'
         authentication = APIKeyAuthentication()
@@ -410,7 +410,7 @@ class MatchResource(ModelResource):
 
 class EarningResource(ModelResource):
     class Meta:
-        queryset = Earnings.objects.all()
+        queryset = Earnings.objects.select_related('event', 'player')
         allowed_methods = ['get', 'post']
         resource_name = 'earning'
         authentication = APIKeyAuthentication()

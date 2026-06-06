@@ -222,6 +222,13 @@ DATABASES = {
         'PASSWORD': local.DB_PASSWORD,
         'HOST': local.DB_HOST,
         'PORT': local.DB_PORT,
+        # Reuse backend connections across requests instead of opening (and
+        # TLS-handshaking + re-running SET search_path on) a fresh connection
+        # per request. With the 3 sync gunicorn workers steady-state persistent
+        # backends stay at ~3, well under max_connections, so no pooler is
+        # needed. CONN_HEALTH_CHECKS validates a reused connection before use.
+        'CONN_MAX_AGE': int(get_env('DB_CONN_MAX_AGE', '60')),
+        'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'sslmode': getattr(local, 'DB_SSLMODE', 'prefer'),
             'options': f'-c search_path={DB_SCHEMA}',

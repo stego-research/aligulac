@@ -8,7 +8,7 @@ import django
 
 django.setup()
 
-from aligulac.tools import get_latest_period
+from aligulac.tools import get_latest_period_no_cache
 
 from ratings.models import (
     Group,
@@ -19,7 +19,9 @@ from ratings.tools import filter_active
 print('[%s] Updating team ratings' % str(datetime.now()), flush=True)
 
 # {{{ Update ratings
-curp = get_latest_period()
+# Bypass the cache: this batch script persists team meanrating and must see the
+# period just computed by recompute.py, not a possibly-stale cached id.
+curp = get_latest_period_no_cache()
 for team in Group.objects.filter(active=True, is_team=True):
     ratings = filter_active(Rating.objects.filter(
         period=curp,

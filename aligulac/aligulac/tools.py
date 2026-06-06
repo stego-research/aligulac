@@ -44,7 +44,7 @@ from ratings.models import (
     TYPE_EVENT
 )
 from ratings.templatetags.ratings_extras import urlfilter
-from ratings.tools import get_latest_period, find_player
+from ratings.tools import get_latest_period, get_latest_period_no_cache, find_player
 
 # }}}
 
