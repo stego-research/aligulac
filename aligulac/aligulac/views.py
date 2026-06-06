@@ -538,8 +538,9 @@ class APIKeyForm(forms.Form):
         key.generate_key()
         key.save()
 
+        from django.utils.safestring import mark_safe
         ret.append(Message(
-            _("Your API key is <code>%s</code>. Please keep it safe.") % key.key, type=Message.SUCCESS))
+            mark_safe(_("Your API key is <code>%s</code>. Please keep it safe.") % key.key), type=Message.SUCCESS))
 
         return ret
 

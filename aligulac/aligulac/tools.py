@@ -172,6 +172,8 @@ def generate_messages(obj):
 
 # {{{ login_message: Generates a message notifying about login status.
 def login_message(base, extra=''):
+    from django.utils.html import escape
+    from django.utils.safestring import mark_safe
     if not base['adm']:
         text = ' '.join([
             str(_('You are not logged in.')),
@@ -180,13 +182,13 @@ def login_message(base, extra=''):
         ])
     else:
         text = ' '.join([
-            str(_('You are logged in as %s') % base['user']),
+            str(_('You are logged in as %s') % escape(base['user'])),
             str('(<a href="/logout/">%s</a>, <a href="/changepwd/">%s</a>)' % (
                 _('logout'),
                 _('change password')
             ))
         ])
-    base['messages'].append(Message(text, type=Message.INFO))
+    base['messages'].append(Message(mark_safe(text), type=Message.INFO))
 
 
 # }}}
