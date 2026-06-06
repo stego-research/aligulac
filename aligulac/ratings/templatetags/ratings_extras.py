@@ -13,6 +13,7 @@ from django.template.defaultfilters import (
     stringfilter,
 )
 from django.templatetags.static import static as django_static
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -118,9 +119,18 @@ def jsescape(value):
 
 
 # urlify: Adds links to URLs.
+#
+# SECURITY: value is user-submitted (e.g. PreMatchGroup.source, entered by
+# anonymous match submitters and later rendered to admins in the review queue).
+# We MUST HTML-escape it before linkifying — otherwise the trailing mark_safe()
+# would emit attacker markup verbatim (stored XSS in an admin session). The URL
+# patterns only match scheme://... / www... runs, which contain no '<' '>' '"',
+# so escaping first cannot break legitimate links; the captured href text is
+# already escaped, so it cannot break out of the attribute either.
 @register.filter
 @stringfilter
 def urlify(value):
+    value = escape(value)
     pat1 = re.compile(
         r"(^|[\n ])(([\w]+?://[\w\#$%&~.\-;:=,?@\[\]+]*)(/[\w\#$%&~/.\-;:=,?@\[\]+]*)?)",
         re.IGNORECASE | re.DOTALL

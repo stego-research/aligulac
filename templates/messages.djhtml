@@ -16,7 +16,12 @@
         </span>
         <p>
           <strong>{% if m.title %}{{m.title}}{% else %}{{m.type|capfirst}}{% endif %}</strong><br>
-          {{ m.text|safe }}
+          {# SECURITY: do NOT use |safe here. Some messages embed user-submitted
+             data (e.g. unparsable match lines echoed back), so |safe was a
+             reflected-XSS sink. Plain-str message text is now auto-escaped;
+             messages that intentionally carry HTML (e.g. NotUniquePlayerMessage,
+             built via render_to_string) are SafeStrings and render unescaped. #}
+          {{ m.text }}
         </p>
       </div>
     </div>
