@@ -11,13 +11,11 @@ import django
 
 django.setup()
 
-from aligulac.tools import get_latest_period_no_cache
-
 from ratings.models import (
     Group,
     Rating,
 )
-from ratings.tools import filter_active
+from ratings.tools import filter_active, get_latest_period_no_cache
 
 from simul.formats.teamak import TeamAK
 from simul.formats.teampl import TeamPL

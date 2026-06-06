@@ -148,8 +148,8 @@ for i in range(earliest.id, latest.id + 1):
 # the recompute, so swallow any error.
 try:
     cache.delete(LATEST_PERIOD_CACHE_KEY)
-except Exception:
-    print('[%s] WARNING: failed to bust latest-period cache' % str(datetime.now()), flush=True)
+except Exception as e:
+    print('[%s] WARNING: failed to bust latest-period cache: %r' % (str(datetime.now()), e), flush=True)
 
 if 'debug' not in sys.argv:
     subprocess.call([os.path.join(PROJECT_PATH, 'smoothing.py')])

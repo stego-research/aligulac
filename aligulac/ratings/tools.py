@@ -1,4 +1,5 @@
 # {{{ Imports
+import logging
 import shlex
 from datetime import date
 from decimal import Decimal
@@ -38,6 +39,8 @@ from ratings.models import (
 )
 
 # }}}
+
+logger = logging.getLogger(__name__)
 
 # {{{ Patchlist
 PATCHES = [
@@ -380,7 +383,14 @@ def get_latest_period_no_cache():
     rankings)."""
     try:
         return Period.objects.filter(computed=True).latest('start')
-    except:
+    except Period.DoesNotExist:
+        # No computed period exists yet (e.g. a fresh DB) — expected, stay quiet.
+        return None
+    except Exception:
+        # Operational DB failure: keep the historical "return None" behavior but
+        # surface it instead of failing silently; don't swallow BaseException
+        # (KeyboardInterrupt / SystemExit).
+        logger.exception('get_latest_period_no_cache: failed to load latest period')
         return None
 
 
@@ -388,11 +398,29 @@ def get_latest_period():
     try:
         period_id = cache.get(LATEST_PERIOD_CACHE_KEY)
         if period_id is not None:
-            return Period.objects.get(id=period_id)
+            try:
+                return Period.objects.get(id=period_id)
+            except (Period.DoesNotExist, ValueError, TypeError):
+                # Stale/garbage cached id (e.g. the cache outlived a DB
+                # restore/flush): treat it as a miss, drop the key, and fall
+                # through to recompute the latest period below rather than
+                # serving None for the whole TTL window.
+                logger.warning(
+                    'get_latest_period: stale cached period id %r; dropping key '
+                    'and re-querying', period_id,
+                )
+                cache.delete(LATEST_PERIOD_CACHE_KEY)
         period = Period.objects.filter(computed=True).latest('start')
         cache.set(LATEST_PERIOD_CACHE_KEY, period.id, LATEST_PERIOD_CACHE_TTL)
         return period
-    except:
+    except Period.DoesNotExist:
+        # No computed period exists yet (e.g. a fresh DB) — expected, stay quiet.
+        return None
+    except Exception:
+        # Operational cache/DB failure: degrade to "no latest period" (the
+        # pre-cache behavior) but log it; don't swallow BaseException
+        # (KeyboardInterrupt / SystemExit).
+        logger.exception('get_latest_period: failed to load latest period')
         return None
 
 
