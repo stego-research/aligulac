@@ -185,8 +185,8 @@ This is the template for the main player page, called from ratings.views.player.
              radius: 5
            },
            data: [{% for s in stories %}{% if not s.skip %} {
-             name: '{{s.text|jsescape|safe}}<br/>{{s.date|date:"DATE_FORMAT"|jsescape|safe}}{% if s.event %}: {{s.event.fullname|jsescape|safe}}{% endif %}',
-             {% if s.event %}url: '/results/events/{{s.event.id}}-{{s.event.fullname|urlfilter|jsescape}}/',{% endif %}
+             name: '{{s.text|escapejs}}<br/>{{s.date|date:"DATE_FORMAT"|escapejs}}{% if s.event %}: {{s.event.fullname|escapejs}}{% endif %}',
+             {% if s.event %}url: '/results/events/{{s.event.id}}-{{s.event.fullname|urlfilter|escapejs}}/',{% endif %}
              x: {{ s.ms }},
              y: {{ s.rating }}
                                 },{% endif %}{% endfor %}]
@@ -201,7 +201,7 @@ This is the template for the main player page, called from ratings.views.player.
              radius: 5
            },
            data: [{% for t in teampoints %} {
-             name: '{% for d in t.data %}{{d.date|date:"DATE_FORMAT"|jsescape|safe}}: {{player.tag|jsescape}} {{d.jol}} {{d.team.name|jsescape}}<br/>{% endfor %}',
+             name: '{% for d in t.data %}{{d.date|date:"DATE_FORMAT"|escapejs}}: {{player.tag|escapejs}} {{d.jol}} {{d.team.name|escapejs}}<br/>{% endfor %}',
              x: {{ t.ms }},
              y: {{ t.rating }}
                                 },{% endfor %}]
