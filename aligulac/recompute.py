@@ -34,12 +34,14 @@ def acquire_lock():
 
 acquire_lock()
 
+from django.core.cache import cache
 from django.db.models import F, Q
 from django.db.transaction import atomic
 
 from aligulac.settings import PROJECT_PATH
 
 from ratings.models import Match, Period, Player
+from ratings.tools import LATEST_PERIOD_CACHE_KEY
 
 print('[%s] Checking for Match <-> Period artifacts... ' % (str(datetime.now())), end="")
 
@@ -136,6 +138,18 @@ print('[%s] Recomputing periods %i through %i' % (str(datetime.now()), earliest.
 
 for i in range(earliest.id, latest.id + 1):
     subprocess.call([os.path.join(PROJECT_PATH, 'period.py'), str(i)])
+
+# period.py sets period.computed=True as it recomputes each period, so a newly
+# computed latest period now exists in the DB. base_ctx caches the latest-period
+# id (ratings.tools.get_latest_period) for up to 15 minutes; bust that key here,
+# before the team-ranking batch scripts run, so neither they nor live web traffic
+# read a stale period. (The batch scripts also query the DB directly via
+# get_latest_period_no_cache as defense-in-depth.) A cache outage must not abort
+# the recompute, so swallow any error.
+try:
+    cache.delete(LATEST_PERIOD_CACHE_KEY)
+except Exception as e:
+    print('[%s] WARNING: failed to bust latest-period cache: %r' % (str(datetime.now()), e), flush=True)
 
 if 'debug' not in sys.argv:
     subprocess.call([os.path.join(PROJECT_PATH, 'smoothing.py')])

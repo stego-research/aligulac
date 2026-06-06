@@ -1,10 +1,12 @@
 # {{{ Imports
+import logging
 import shlex
 from datetime import date
 from decimal import Decimal
 from math import sqrt
 
 import ccy
+from django.core.cache import cache
 from django.db.models import (
     Sum,
     Q
@@ -37,6 +39,8 @@ from ratings.models import (
 )
 
 # }}}
+
+logger = logging.getLogger(__name__)
 
 # {{{ Patchlist
 PATCHES = [
@@ -219,7 +223,7 @@ def find_player(query=None, lst=None, make=False, soft=False, strict=False):
     # }}}
 
     # {{{ If no results, make player if allowed
-    if not queryset.exists() and make:
+    if make and not queryset.exists():
         # {{{ Raise exceptions if missing crucial data
         if tag == None:
             msg = _("Player '%s' was not found and cound not be made (missing player tag)") % ' '.join(lst)
@@ -353,10 +357,70 @@ def icdf(c, loc=0.0, scale=1.0):
 # }}}
 
 # {{{ get_latest_period: Returns the latest computed period, or None.
-def get_latest_period():
+# Called on essentially every server-rendered request via base_ctx; the value
+# only changes after the quad-daily recompute, so cache the id for the same
+# 15-minute staleness window already accepted for ranking/period views.
+#
+# IMPORTANT: get_latest_period() is also called by the recompute batch scripts
+# (teamranks.py, teamratings.py, simul/playerlist.py via make_player) which
+# PERSIST team rankings filtered by the returned period. Those must never read a
+# stale period, so:
+#   * recompute.py busts LATEST_PERIOD_CACHE_KEY after computing a new period
+#     (right before it launches the batch scripts); see recompute.py.
+#   * the batch scripts call get_latest_period_no_cache() to query the DB
+#     directly, bypassing the cache entirely as defense-in-depth.
+# Import LATEST_PERIOD_CACHE_KEY wherever the cache is busted so the producer and
+# the buster cannot drift.
+LATEST_PERIOD_CACHE_KEY = 'aligulac:latest_period_id'
+LATEST_PERIOD_CACHE_TTL = 15 * 60
+
+
+def get_latest_period_no_cache():
+    """Return the latest computed Period straight from the DB, or None.
+
+    Bypasses the cache. Use this from any code path that must observe a
+    just-computed period (e.g. the recompute batch scripts that persist team
+    rankings)."""
     try:
         return Period.objects.filter(computed=True).latest('start')
-    except:
+    except Period.DoesNotExist:
+        # No computed period exists yet (e.g. a fresh DB) — expected, stay quiet.
+        return None
+    except Exception:
+        # Operational DB failure: keep the historical "return None" behavior but
+        # surface it instead of failing silently; don't swallow BaseException
+        # (KeyboardInterrupt / SystemExit).
+        logger.exception('get_latest_period_no_cache: failed to load latest period')
+        return None
+
+
+def get_latest_period():
+    try:
+        period_id = cache.get(LATEST_PERIOD_CACHE_KEY)
+        if period_id is not None:
+            try:
+                return Period.objects.get(id=period_id)
+            except (Period.DoesNotExist, ValueError, TypeError):
+                # Stale/garbage cached id (e.g. the cache outlived a DB
+                # restore/flush): treat it as a miss, drop the key, and fall
+                # through to recompute the latest period below rather than
+                # serving None for the whole TTL window.
+                logger.warning(
+                    'get_latest_period: stale cached period id %r; dropping key '
+                    'and re-querying', period_id,
+                )
+                cache.delete(LATEST_PERIOD_CACHE_KEY)
+        period = Period.objects.filter(computed=True).latest('start')
+        cache.set(LATEST_PERIOD_CACHE_KEY, period.id, LATEST_PERIOD_CACHE_TTL)
+        return period
+    except Period.DoesNotExist:
+        # No computed period exists yet (e.g. a fresh DB) — expected, stay quiet.
+        return None
+    except Exception:
+        # Operational cache/DB failure: degrade to "no latest period" (the
+        # pre-cache behavior) but log it; don't swallow BaseException
+        # (KeyboardInterrupt / SystemExit).
+        logger.exception('get_latest_period: failed to load latest period')
         return None
 
 

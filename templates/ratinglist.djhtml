@@ -206,7 +206,7 @@ example.)
               <!-- Link to adjustments -->
               <td class="rl_arrow {% if not rl_small %}hidden-xs{% endif %}">
                 {% if entry.decay == 0 %}
-                  <a href="/players/{{ entry.player.id }}-{{ entry.player.tag|urlfilter }}/period/{{ entry.period.id }}/">
+                  <a href="/players/{{ entry.player.id }}-{{ entry.player.tag|urlfilter }}/period/{{ entry.period_id }}/">
                     <span class="right-caret"></span>
                   </a>
                 {% endif %}

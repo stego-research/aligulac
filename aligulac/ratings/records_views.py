@@ -140,7 +140,7 @@ def hof(request):
     def get_hof():
         return list(Player.objects.filter(
             dom_val__isnull=False, dom_start__isnull=False, dom_end__isnull=False, dom_val__gt=0
-        ).order_by('-dom_val'))
+        ).select_related('dom_start', 'dom_end').order_by('-dom_val'))
 
     from aligulac.cache import cached_query
     from django.conf import settings

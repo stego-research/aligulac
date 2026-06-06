@@ -11,13 +11,11 @@ import django
 
 django.setup()
 
-from aligulac.tools import get_latest_period
-
 from ratings.models import (
     Group,
     Rating,
 )
-from ratings.tools import filter_active
+from ratings.tools import filter_active, get_latest_period_no_cache
 
 from simul.formats.teamak import TeamAK
 from simul.formats.teampl import TeamPL
@@ -30,7 +28,9 @@ nplayers_min = 6 if proleague else 1
 Simulator = TeamPL if proleague else TeamAK
 
 # {{{ Get a list of teams that can compete
-curp = get_latest_period()
+# Bypass the cache: this batch script persists team rankings and must see the
+# period just computed by recompute.py, not a possibly-stale cached id.
+curp = get_latest_period_no_cache()
 allowed_teams = []
 teams = Group.objects.filter(active=True, is_team=True)
 for t in teams:
