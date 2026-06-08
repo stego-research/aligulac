@@ -11,12 +11,16 @@ name: Reusable Build and Publish Docker Image
 # work (pipenv install / collectstatic / compilemessages) runs inside the Docker
 # build, so the per-arch split is at the Docker-build level + a manifest merge.
 #
-# PREREQ: the `prod-builds` environment in this repo must define
-#   - variable AWS_ECS_DEPLOY_ACCESS_KEY_ID   (the AKIA... id; non-secret)
-#   - secret   AWS_ECS_DEPLOY_SECRET_ACCESS_KEY
-# (the same github-deploy-user creds REPLAYMAN uses; that user has ecr push on the
-# aligulac repo via infra/terraform/iam_deploy.tf). The id is a VARIABLE, the
-# secret is a SECRET — referencing the id via secrets.* resolves empty.
+# PREREQ (creds for ECR push — the same github-deploy-user REPLAYMAN uses; that
+# user has ecr push on the aligulac repo via infra/terraform/iam_deploy.tf):
+#   - VARIABLE AWS_ECS_DEPLOY_ACCESS_KEY_ID  (the AKIA... id; non-secret).
+#     A repo/org variable — vars.* flow into reusable workflows directly.
+#   - SECRET   AWS_ECS_DEPLOY_SECRET_ACCESS_KEY  (a repo secret).
+#     Reusable workflows do NOT receive repo secrets implicitly, so it is declared
+#     in the secrets: interface below and PASSED IN by the caller workflows
+#     (docker-publish.yml / stable-publish.yml), exactly like S3_STATIC_*.
+# NB: reference the id via vars.* and the secret via secrets.* — crossing them
+# resolves empty.
 
 on:
   workflow_call:
@@ -28,6 +32,11 @@ on:
       S3_STATIC_ACCESS_KEY:
         required: true
       S3_STATIC_SECRET_KEY:
+        required: true
+      # ECR push secret. Reusable workflows don't get repo secrets implicitly, so
+      # it's passed in by the callers. The matching AWS_ECS_DEPLOY_ACCESS_KEY_ID is
+      # a variable (vars.*), which flows through without being declared here.
+      AWS_ECS_DEPLOY_SECRET_ACCESS_KEY:
         required: true
 
 env:
