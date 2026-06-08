@@ -6,6 +6,7 @@ from aligulac.tools import (
     base_ctx,
     get_param,
     get_param_choice,
+    get_param_range,
 )
 from countries import data
 from ratings.models import (
@@ -33,7 +34,7 @@ def history(request):
     base = base_ctx('Records', 'History', request)
 
     # {{{ Filtering (appears faster with custom SQL)
-    nplayers = int(get_param(request, 'nplayers', '5'))
+    nplayers = get_param_range(request, 'nplayers', (1, 100), 5)
     race = get_param_choice(request, 'race', ['ptzrs', 'p', 't', 'z', 'ptrs', 'tzrs', 'pzrs'], 'ptzrs')
     nats = get_param_choice(request, 'nats', ['all', 'foreigners'] + list(data.ccn_to_cca2.values()), 'all')
 

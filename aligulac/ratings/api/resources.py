@@ -243,6 +243,14 @@ class PlayerResource(ModelResource):
             'race', 'dom_val', 'current_rating', 'dom_start', 'dom_end',
         ]
 
+    def get_multiple(self, request, **kwargs):
+        # Reject non-numeric pks so a bad /player/set/ token returns 400, not 500.
+        kwarg_name = '%s_list' % self._meta.detail_uri_name
+        identifiers = kwargs.get(kwarg_name, '').split(';')
+        if not all(i.isdigit() for i in identifiers):
+            return http.HttpBadRequest("Invalid player id in set.")
+        return super(PlayerResource, self).get_multiple(request, **kwargs)
+
     def dehydrate_total_earnings(self, bundle):
         return ntz(bundle.obj.earnings_set.aggregate(Sum('earnings'))['earnings__sum'])
 
@@ -340,11 +348,11 @@ class EventResource(ModelResource):
         null=True, help_text='Prizes awarded'
     )
 
-    def build_filters(self, filters=None):
+    def build_filters(self, filters=None, **kwargs):
         check = ['uplink__parent', 'uplink__distance', 'downlink__child', 'downlink__distance']
         fits = lambda s: any(filter(lambda k: s.startswith(k), check))
         other_filters = {f: filters[f] for f in filters if not fits(f)}
-        orm_filters = super(EventResource, self).build_filters(other_filters)
+        orm_filters = super(EventResource, self).build_filters(other_filters, **kwargs)
         for f in filter(fits, filters):
             is_pure = f in check
             if is_pure or any(filter(lambda s: f.endswith(s), ['gt', 'gte', 'lt', 'lte'])):
@@ -389,7 +397,7 @@ class MatchResource(ModelResource):
     rtb = fields.ForeignKey(SmallRatingResource, 'rtb', null=True, full=True)
     eventobj = fields.ForeignKey(SmallEventResource, 'eventobj', null=True, full=True)
 
-    def build_filters(self, filters=None):
+    def build_filters(self, filters=None, **kwargs):
         check = [
             'eventobj__uplink__parent',
             'eventobj__uplink__distance',
@@ -398,7 +406,7 @@ class MatchResource(ModelResource):
         ]
         fits = lambda s: any(filter(lambda k: s.startswith(k), check))
         other_filters = {f: filters[f] for f in filters if not fits(f)}
-        orm_filters = super(MatchResource, self).build_filters(other_filters)
+        orm_filters = super(MatchResource, self).build_filters(other_filters, **kwargs)
         for f in filter(fits, filters):
             is_pure = f in check
             if is_pure or any(filter(lambda s: f.endswith(s), ['gt', 'gte', 'lt', 'lte'])):

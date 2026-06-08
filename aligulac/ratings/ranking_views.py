@@ -19,6 +19,7 @@ from aligulac.tools import (
     Message,
     base_ctx,
     get_param,
+    get_param_range,
 )
 from ratings.models import (
     Earnings,
@@ -161,7 +162,7 @@ def period(request, period_id=None):
     race = get_param(request, 'race', 'ptzrs')
     nats = get_param(request, 'nats', 'all')
     sort = get_param(request, 'sort', '')
-    page = int(get_param(request, 'page', 1))
+    page = get_param_range(request, 'page', (1, 9999), 1)
 
     # Initial filtering of ratings to determine total item count and normalize page
     entries_base = filter_active(period.rating_set).select_related('player')
@@ -271,9 +272,11 @@ def earnings(request):
 
     # {{{ Initial filtering of earnings
     year = get_param(request, 'year', 'all')
+    if year != 'all' and not str(year).isdigit():
+        year = 'all'
     nats = get_param(request, 'country', 'all')
     curs = get_param(request, 'currency', 'all')
-    page = int(get_param(request, 'page', 1))
+    page = get_param_range(request, 'page', (1, 9999), 1)
 
     base['filters'] = {'year': year, 'country': nats, 'currency': curs}
 
