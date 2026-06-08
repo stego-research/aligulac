@@ -142,7 +142,7 @@ def find_player(query=None, lst=None, make=False, soft=False, strict=False):
         try:
             lst = [s.strip() for s in shlex.split(query) if s.strip() != '']
         except:
-            return []
+            return Player.objects.none()
 
     tag, country, race = None, None, None
 
