@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+import re
 import shlex
 import string
 import subprocess
@@ -485,7 +486,10 @@ def search(query, search_for=['players', 'teams', 'events'], strict=False):
     lex.commenters = ''
     lex.quotes = '"'
 
-    terms = [s.strip() for s in list(lex) if s.strip() != '']
+    try:
+        terms = [s.strip() for s in list(lex) if s.strip() != '']
+    except ValueError:
+        return None
     if len(terms) == 0:
         return None
     # }}}
@@ -505,7 +509,7 @@ def search(query, search_for=['players', 'teams', 'events'], strict=False):
         events = Event.objects.filter(type__in=[TYPE_CATEGORY, TYPE_EVENT]).order_by('idx')
         events = events.filter(
             fullname__iregex=(
-                r"\s".join(r".*{}.*".format(term) for term in terms)
+                r"\s".join(r".*{}.*".format(re.escape(term)) for term in terms)
             )
         )
     else:

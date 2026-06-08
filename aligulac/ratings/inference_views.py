@@ -210,14 +210,24 @@ class SetupForm(forms.Form):
     bo = forms.CharField(max_length=200, required=True)
     ps = forms.CharField(max_length=200, required=True)
 
-    # {{{ Cleaning methods. NO VALIDATION IS PERFORMED HERE.
+    # {{{ Cleaning methods.
     def clean_bo(self):
-        return [(int(a) + 1) // 2 for a in self.cleaned_data['bo'].split(',')]
+        try:
+            return [(int(a) + 1) // 2 for a in self.cleaned_data['bo'].split(',')]
+        except ValueError:
+            raise forms.ValidationError('Invalid best-of list.')
 
     def clean_ps(self):
-        ids = [int(a) for a in self.cleaned_data['ps'].split(',')]
+        try:
+            ids = [int(a) for a in self.cleaned_data['ps'].split(',')]
+        except ValueError:
+            raise forms.ValidationError('Invalid player list.')
         players = Player.objects.in_bulk(ids)
-        return [players[id] if id in players else None for id in ids]
+        # An id of 0 is an intentional bye; any other unresolved id is invalid.
+        resolved = [players[id] if id in players else None for id in ids]
+        if any(p is None and id != 0 for p, id in zip(resolved, ids)):
+            raise forms.ValidationError('Unknown player id.')
+        return resolved
     # }}}
 
 
@@ -309,7 +319,7 @@ def match(request):
 
     # {{{ Get data, set up and simulate
     form = SetupForm(request.GET)
-    if not form.is_valid():
+    if not form.is_valid() or len(form.cleaned_data['ps']) != 2 or None in form.cleaned_data['ps']:
         return redirect('/inference/')
 
     result = MatchPredictionResult(
@@ -608,6 +618,10 @@ def sebracket(request):
     # {{{ Get data, set up and simulate
     form = SetupForm(request.GET)
     if not form.is_valid():
+        return redirect('/inference/')
+
+    nps = len(form.cleaned_data['ps'])
+    if nps < 2 or (nps & (nps - 1)) != 0:
         return redirect('/inference/')
 
     result = SingleEliminationPredictionResult(
