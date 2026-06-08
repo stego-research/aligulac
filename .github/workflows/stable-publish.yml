@@ -53,7 +53,8 @@ jobs:
     with:
       tags: |
         type=raw,value=stable
-        type=sha,format=short
+        type=sha,prefix=stable-sha-,format=short
     secrets:
       S3_STATIC_ACCESS_KEY: ${{ secrets.S3_STATIC_ACCESS_KEY }}
       S3_STATIC_SECRET_KEY: ${{ secrets.S3_STATIC_SECRET_KEY }}
+      AWS_ECS_DEPLOY_SECRET_ACCESS_KEY: ${{ secrets.AWS_ECS_DEPLOY_SECRET_ACCESS_KEY }}
