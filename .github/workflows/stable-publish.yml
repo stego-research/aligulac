@@ -53,7 +53,7 @@ jobs:
     with:
       tags: |
         type=raw,value=stable
-        type=sha,format=short
+        type=sha,prefix=stable-sha-,format=short
     secrets:
       S3_STATIC_ACCESS_KEY: ${{ secrets.S3_STATIC_ACCESS_KEY }}
       S3_STATIC_SECRET_KEY: ${{ secrets.S3_STATIC_SECRET_KEY }}
