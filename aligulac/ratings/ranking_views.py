@@ -4,6 +4,7 @@ from django.db.models import (
     Q,
     Sum,
 )
+from django.http import Http404
 from django.shortcuts import (
     get_object_or_404,
     render,
@@ -66,6 +67,9 @@ def period(request, period_id=None):
         period = base['curp']
     else:
         period = get_object_or_404(Period, id=period_id, computed=True)
+
+    if period is None:
+        raise Http404
 
     if period.is_preview():
         base['messages'].append(Message(msg_preview % django_date_filter(period.end, 'F jS'), type=Message.INFO))
@@ -190,7 +194,7 @@ def period(request, period_id=None):
         entries = entries.prefetch_related('prev')
         
         # Slice the queryset without evaluating it to a list yet
-        entries_slice = entries[(actual_page - 1) * pagesize: actual_page * pagesize] if actual_page > 0 else []
+        entries_slice = entries[(actual_page - 1) * pagesize: actual_page * pagesize] if actual_page > 0 else entries.none()
 
         # populate_teams needs to prefetch on the queryset object
         populated_data = populate_teams(entries_slice)
