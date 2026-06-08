@@ -1,5 +1,23 @@
 name: Reusable Build and Publish Docker Image
 
+# Multi-arch (amd64 + arm64) build, published to BOTH Amazon ECR (primary) and
+# GHCR (mirror, during the GHCR->ECR migration).
+#
+# Native per-arch, no QEMU: each platform builds on its own native runner
+# (ubuntu-latest / ubuntu-24.04-arm), pushes its image BY DIGEST to ECR, and a
+# `merge` job assembles the per-arch digests into a manifest list (per tag) in
+# ECR, then mirrors that manifest to GHCR. This mirrors how REPLAYMAN/rmserv
+# builds per-arch on native runners — adapted for aligulac, whose arch-specific
+# work (pipenv install / collectstatic / compilemessages) runs inside the Docker
+# build, so the per-arch split is at the Docker-build level + a manifest merge.
+#
+# PREREQ: the `prod-builds` environment in this repo must define
+#   - variable AWS_ECS_DEPLOY_ACCESS_KEY_ID   (the AKIA... id; non-secret)
+#   - secret   AWS_ECS_DEPLOY_SECRET_ACCESS_KEY
+# (the same github-deploy-user creds REPLAYMAN uses; that user has ecr push on the
+# aligulac repo via infra/terraform/iam_deploy.tf). The id is a VARIABLE, the
+# secret is a SECRET — referencing the id via secrets.* resolves empty.
+
 on:
   workflow_call:
     inputs:
@@ -13,17 +31,27 @@ on:
         required: true
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  GHCR_IMAGE: ghcr.io/${{ github.repository }}
+  ECR_IMAGE: 820242921606.dkr.ecr.us-east-1.amazonaws.com/aligulac
+  AWS_REGION: us-east-1
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  # Per-arch native build -> push the platform image BY DIGEST to ECR.
+  build:
+    runs-on: ${{ matrix.runner }}
     environment: prod-builds
     permissions:
       contents: read
-      packages: write
-
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            arch: arm64
+            runner: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,35 +76,50 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # The access key id is a VARIABLE; the secret key is a SECRET (see PREREQ).
+          aws-access-key-id: ${{ vars.AWS_ECS_DEPLOY_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ECS_DEPLOY_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: ${{ inputs.tags }}
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image (Local Load)
-        uses: docker/build-push-action@v5
+      - name: Build and push by digest (${{ matrix.platform }})
+        id: build
+        uses: docker/build-push-action@v6
         with:
           context: .
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          platforms: ${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+          outputs: type=image,name=${{ env.ECR_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
-      - name: Sync static files to S3
+      - name: Export digest
         run: |
-          # Use the newly built local image to sync files to S3.
-          # We pick the first tag to run the container.
-          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+      # collectstatic -> S3 runs ONCE (amd64 leg); the asset output is arch-agnostic.
+      # Rebuild the amd64 image with --load (cached from the push-by-digest build,
+      # so near-instant) to get a runnable local image, then sync to S3.
+      - name: Sync static files to S3 (amd64 only)
+        if: matrix.arch == 'amd64'
+        run: |
+          docker buildx build --load --platform linux/amd64 \
+            --cache-from type=gha,scope=amd64 \
+            -t aligulac-collectstatic:local .
           docker run --rm \
             -e S3_STATIC_BUCKET=${{ vars.S3_STATIC_BUCKET }} \
             -e S3_STATIC_ACCESS_KEY=${{ secrets.S3_STATIC_ACCESS_KEY }} \
@@ -86,10 +129,76 @@ jobs:
             -e S3_STATIC_CUSTOM_DOMAIN=${{ vars.S3_STATIC_CUSTOM_DOMAIN }} \
             -e SECRET_KEY="build-time-only-key" \
             -e DEBUG="False" \
-            $IMAGE_TAG \
+            aligulac-collectstatic:local \
             python aligulac/manage.py collectstatic --noinput
 
-      - name: Push Docker image
+  # Assemble per-arch digests into a manifest list (per tag) in ECR, then mirror
+  # the manifest to GHCR. imagetools create operates registry-to-registry; the
+  # ECR manifest is the source of truth and GHCR is a copy.
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: prod-builds
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ vars.AWS_ECS_DEPLOY_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ECS_DEPLOY_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve tags (ECR + GHCR)
+        id: meta_ecr
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ECR_IMAGE }}
+          tags: ${{ inputs.tags }}
+
+      - name: Resolve tags (GHCR)
+        id: meta_ghcr
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.GHCR_IMAGE }}
+          tags: ${{ inputs.tags }}
+
+      - name: Create ECR manifest list, then mirror to GHCR
+        working-directory: /tmp/digests
         run: |
-          # Push all tags generated for this image
-          echo "${{ steps.meta.outputs.tags }}" | xargs -I {} docker push {}
+          set -euo pipefail
+          # 1. Build the ECR manifest list (all ECR tags) from the per-arch digests.
+          ecr_t=$(echo "${{ steps.meta_ecr.outputs.tags }}" | sed 's/^/-t /')
+          sources=$(for d in *; do printf '%s@sha256:%s ' "${ECR_IMAGE}" "$d"; done)
+          docker buildx imagetools create $ecr_t $sources
+
+          # 2. Mirror that manifest to GHCR under all GHCR tags (single source ref;
+          #    stable/latest/sha-* of one build are the same image).
+          ghcr_t=$(echo "${{ steps.meta_ghcr.outputs.tags }}" | sed 's/^/-t /')
+          first_ecr_tag=$(echo "${{ steps.meta_ecr.outputs.tags }}" | head -n1)
+          docker buildx imagetools create $ghcr_t "$first_ecr_tag"
+
+      - name: Inspect published manifests
+        run: |
+          docker buildx imagetools inspect "$(echo "${{ steps.meta_ecr.outputs.tags }}" | head -n1)"
