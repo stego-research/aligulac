@@ -151,54 +151,7 @@ dump. Called from aligulac.views.db.
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 text">
       <h2>{% trans "Database dump" %}</h2>
 
-      {% if not dump %}
-        <p>{% blocktrans with span="<span style=\"color: #dd0000;\">" %}The database dump file is currently {{span}}offline</span> for reasons unknown.{% endblocktrans %}</p>
-      {% else %}
-        <p>
-          {% with datetime=modified|date:"DATETIME_FORMAT" tz=modified|date:"O" %}
-            {% if has_dump and has_gzdump %}
-              {% with dmb=megabytes|floatformat:1 gzdmb=gz_megabytes|floatformat:1 %}
-                {% blocktrans with du=dump_url gzdu=gzdump_url %}You can download a PostgreSQL dump <a href="{{du}}">here</a> ({{dmb}} MiB) or <a href="{{gzdu}}">here</a> ({{gzdmb}} MiB gzipped), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
-              {% endwith %}
-            {% elif has_dump %}
-              {% with dmb=megabytes|floatformat:1 %}
-                {% blocktrans with du=dump_url %}You can download a PostgreSQL dump <a href="{{du}}">here</a> ({{dmb}} MiB), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
-              {% endwith %}
-            {% elif has_gzdump %}
-              {% with gzdmb=gz_megabytes|floatformat:1 %}
-                {% blocktrans with gzdu=gzdump_url %}You can download a gzipped PostgreSQL dump <a href="{{gzdu}}">here</a> ({{gzdmb}} MiB), current as of {{datetime}} (UTC {{tz}}).{% endblocktrans %}
-              {% endwith %}
-            {% endif %}
-            {% trans "It is free to use for non-commercial purposes if you credit this website when doing so." %}
-          {% endwith %}
-        </p> 
-
-        <p>{% blocktrans %}The dump contains 11 tables. Some columns are foreign keys to tables that have been removed from the dump (primarily involving user accounts). Everything given below is in terms of <strong>PostgreSQL standards</strong>.{% endblocktrans %}</p>
-
-        {% for table in dbtables %}
-          <h3>{{ table.name }}</h3>
-          <p>{{ table.desc|safe }}</p>
-
-          <div class="table-responsive">
-            <table class="table table-condensed table-hover">
-              <thead>
-                <tr>
-                  <th style="width: 20%;">{% trans "Name" %}</th>
-                  <th style="width: 30%;">{% trans "Definition" %}</th>
-                  <th style="width: 50%;">{% trans "Description" %}</th>
-                </tr>
-              </thead>
-              {% for col in table.cols %}
-                <tr>
-                  <td>{{ col.0 }}</td>
-                  <td>{{ col.1 }}</td>
-                  <td>{{ col.2|safe }}</td>
-                </tr>
-              {% endfor %}
-            </table>
-          </div>
-        {% endfor %}
-      {% endif %}
+      <p>{% blocktrans %}Database dump downloads are temporarily unavailable. If you need access to the data, please reach out to <a href="mailto:contact@stego.ai">contact@stego.ai</a> to request access.{% endblocktrans %}</p>
     </div>
   </div>
 

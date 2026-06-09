@@ -429,55 +429,61 @@ def db(request):
         'dbtables': DBTABLES,
     })
 
-    if S3_DB_BUCKET:
-        sql_info = get_s3_info('aligulac.sql.gz')
-        if sql_info:
-            base.update({
-                'dump': True,
-                'has_gzdump': True,
-                'gz_megabytes': sql_info['size'] / 1048576,
-                'modified': sql_info['modified'],
-                'gzdump_url': sql_info['url'],
-            })
-
-        # Also try to get uncompressed if it exists
-        uncompressed_info = get_s3_info('aligulac.sql')
-        if uncompressed_info:
-            base.update({
-                'dump': True,
-                'has_dump': True,
-                'megabytes': uncompressed_info['size'] / 1048576,
-                'dump_url': uncompressed_info['url'],
-            })
-            if not base.get('modified'):
-                base['modified'] = uncompressed_info['modified']
-    else:
-        if os.path.exists(os.path.join(DUMP_PATH, 'aligulac.sql')):
-            base['dump'] = True
-            base['has_dump'] = True
-            try:
-                stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql'))
-                base.update({
-                    'megabytes': stat.st_size / 1048576,
-                    'modified': datetime.fromtimestamp(stat.st_mtime),
-                    'dump_url': '/static/aligulac.sql',
-                })
-            except (FileNotFoundError, OSError):
-                pass
-
-        if os.path.exists(os.path.join(DUMP_PATH, 'aligulac.sql.gz')):
-            base['dump'] = True
-            base['has_gzdump'] = True
-            try:
-                stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
-                base.update({
-                    'gz_megabytes': stat.st_size / 1048576,
-                    'gzdump_url': '/static/aligulac.sql.gz',
-                })
-                if not base.get('modified'):
-                    base['modified'] = datetime.fromtimestamp(stat.st_mtime)
-            except (FileNotFoundError, OSError):
-                pass
+    # NOTE: Database dump downloads are temporarily disabled. We intentionally
+    # skip all dump discovery here so the server never mints presigned S3 URLs
+    # (nor exposes /static/ dump paths). The db.djhtml template directs users to
+    # contact@stego.ai to request access. To re-enable, uncomment the dump
+    # discovery block below and restore the template's download links.
+    #
+    # if S3_DB_BUCKET:
+    #     sql_info = get_s3_info('aligulac.sql.gz')
+    #     if sql_info:
+    #         base.update({
+    #             'dump': True,
+    #             'has_gzdump': True,
+    #             'gz_megabytes': sql_info['size'] / 1048576,
+    #             'modified': sql_info['modified'],
+    #             'gzdump_url': sql_info['url'],
+    #         })
+    #
+    #     # Also try to get uncompressed if it exists
+    #     uncompressed_info = get_s3_info('aligulac.sql')
+    #     if uncompressed_info:
+    #         base.update({
+    #             'dump': True,
+    #             'has_dump': True,
+    #             'megabytes': uncompressed_info['size'] / 1048576,
+    #             'dump_url': uncompressed_info['url'],
+    #         })
+    #         if not base.get('modified'):
+    #             base['modified'] = uncompressed_info['modified']
+    # else:
+    #     if os.path.exists(os.path.join(DUMP_PATH, 'aligulac.sql')):
+    #         base['dump'] = True
+    #         base['has_dump'] = True
+    #         try:
+    #             stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql'))
+    #             base.update({
+    #                 'megabytes': stat.st_size / 1048576,
+    #                 'modified': datetime.fromtimestamp(stat.st_mtime),
+    #                 'dump_url': '/static/aligulac.sql',
+    #             })
+    #         except (FileNotFoundError, OSError):
+    #             pass
+    #
+    #     if os.path.exists(os.path.join(DUMP_PATH, 'aligulac.sql.gz')):
+    #         base['dump'] = True
+    #         base['has_gzdump'] = True
+    #         try:
+    #             stat = os.stat(os.path.join(DUMP_PATH, 'aligulac.sql.gz'))
+    #             base.update({
+    #                 'gz_megabytes': stat.st_size / 1048576,
+    #                 'gzdump_url': '/static/aligulac.sql.gz',
+    #             })
+    #             if not base.get('modified'):
+    #                 base['modified'] = datetime.fromtimestamp(stat.st_mtime)
+    #         except (FileNotFoundError, OSError):
+    #             pass
 
     try:
         base['updated'] = datetime.fromtimestamp(os.stat(os.path.join(PROJECT_PATH, 'update')).st_mtime)
