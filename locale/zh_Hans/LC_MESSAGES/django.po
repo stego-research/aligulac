@@ -2820,11 +2820,11 @@ msgstr "错误与"
 #: aligulac/ratings/player_views.py:66
 #, python-format
 msgid ""
-"Due to %s's lack of recent games, they have been marked as <em>inactive</em> "
+"Due to %s's lack of recent games, they have been marked as inactive "
 "and removed from the current rating list. Once they play a rated game they "
 "will be reinstated."
 msgstr ""
-"因为缺乏 %s 最近的比赛信息，他们被标记为 <em>不活跃</em> "
+"因为缺乏 %s 最近的比赛信息，他们被标记为 不活跃 "
 "并且被移出了当前评分榜，一旦他们进行了一盘被统计的比赛， "
 "他们将会被重新加入。"
 
@@ -3122,7 +3122,7 @@ msgstr "链接"
 #: aligulac/ratings/ranking_views.py:44
 #, python-format
 msgid ""
-"This is a <em>preview</em> of the next rating list. It will not be finalized "
+"This is a preview of the next rating list. It will not be finalized "
 "until %s."
 msgstr ""
 
@@ -5050,8 +5050,8 @@ msgstr "名人堂"
 
 #: templates/hof.djhtml:17
 msgid ""
-"This list ranks players by <em>periods of domination</em>. The relevant "
-"score is called PP (<em>period-points</em>), and is the sum over a range of "
+"This list ranks players by periods of domination. The relevant "
+"score is called PP (period-points), and is the sum over a range of "
 "lists of the signed distance from a player to number seven on the list."
 msgstr ""
 
@@ -5823,7 +5823,7 @@ msgstr ""
 #: templates/pred_4pswiss.djhtml:69 templates/pred_proleague.djhtml:74
 #: templates/pred_rrgroup.djhtml:60 templates/pred_sebracket.djhtml:65
 msgid ""
-"This is the median outcome <em>assuming the already entered results</em>."
+"This is the median outcome assuming the already entered results."
 msgstr ""
 
 #: templates/pred_4pswiss.djhtml:77 templates/pred_rrgroup.djhtml:114
@@ -6169,8 +6169,8 @@ msgstr ""
 
 #: templates/reports_balance.djhtml:196
 msgid ""
-"Note that this yields information about <em>metagame</em> balance near the "
-"<em>top of the skill ladder</em>, and is not to be confused with (although "
+"Note that this yields information about metagame balance near the "
+"top of the skill ladder, and is not to be confused with (although "
 "likely correlated to) actual game balance throughout the whole player "
 "population."
 msgstr ""
@@ -6185,9 +6185,9 @@ msgstr ""
 #: templates/reports_balance.djhtml:210
 #, python-format
 msgid ""
-"The performance difference chart shows the <em>approximate</em> difference "
-"between <em>actual performance</em> as evidenced by results and "
-"<em>predicted performance</em> by rating. For example, if, averaged over a "
+"The performance difference chart shows the approximate difference "
+"between actual performance as evidenced by results and "
+"predicted performance by rating. For example, if, averaged over a "
 "whole month, all Terrans had mean rating difference -100 (which is to say, "
 "their mean rating was equal to 100 less than that of their opponents), but "
 "they performed as if they had a mean rating difference of +100 (about 54.5%% "

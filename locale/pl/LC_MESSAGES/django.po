@@ -2893,12 +2893,12 @@ msgstr "Błąd"
 #: aligulac/ratings/player_views.py:68
 #, python-format
 msgid ""
-"Due to %s's lack of recent games, they have been marked as <em>inactive</em> "
+"Due to %s's lack of recent games, they have been marked as inactive "
 "and removed from the current rating list. Once they play a rated game they "
 "will be reinstated."
 msgstr ""
 "Przez brak ostatnio rozegranych przez %s's gier zostali oni oznaczeni jako "
-"<em>nieaktywni</em> i usunięci z obecnej listy ocen. Kiedy rozegrają "
+"nieaktywni i usunięci z obecnej listy ocen. Kiedy rozegrają "
 "oceniony mecz zostają ponownie wpisani."
 
 #: aligulac/ratings/player_views.py:71
@@ -3225,10 +3225,10 @@ msgstr "Link"
 #: aligulac/ratings/ranking_views.py:44
 #, python-format
 msgid ""
-"This is a <em>preview</em> of the next rating list. It will not be finalized "
+"This is a preview of the next rating list. It will not be finalized "
 "until %s."
 msgstr ""
-"To jest <em>podgląd</em> kolejnej listy ocen. Nie zostanie sfinalizowana do "
+"To jest podgląd kolejnej listy ocen. Nie zostanie sfinalizowana do "
 "%s."
 
 #: aligulac/ratings/ranking_views.py:67
@@ -5222,12 +5222,12 @@ msgstr "Sala Sław"
 
 #: templates/hof.djhtml:17
 msgid ""
-"This list ranks players by <em>periods of domination</em>. The relevant "
-"score is called PP (<em>period-points</em>), and is the sum over a range of "
+"This list ranks players by periods of domination. The relevant "
+"score is called PP (period-points), and is the sum over a range of "
 "lists of the signed distance from a player to number seven on the list."
 msgstr ""
-"Ta lista klasyfikuje graczy przez <em>okres dominacji</em>. Ważny wynik to "
-"PP (<em>period-points</em>), będący sumą innych list, patrząc na odległość "
+"Ta lista klasyfikuje graczy przez okres dominacji. Ważny wynik to "
+"PP (period-points), będący sumą innych list, patrząc na odległość "
 "gracza od numeru 7 na liście."
 
 #: templates/hof.djhtml:20
@@ -6040,8 +6040,8 @@ msgstr "Ostatnie transfery graczy"
 #: templates/pred_4pswiss.djhtml:69 templates/pred_proleague.djhtml:74
 #: templates/pred_rrgroup.djhtml:60 templates/pred_sebracket.djhtml:65
 msgid ""
-"This is the median outcome <em>assuming the already entered results</em>."
-msgstr "To mediana wyników <em>zakładając już wprowadzone rezultaty</em>."
+"This is the median outcome assuming the already entered results."
+msgstr "To mediana wyników zakładając już wprowadzone rezultaty."
 
 #: templates/pred_4pswiss.djhtml:77 templates/pred_rrgroup.djhtml:114
 msgid "Update group progress"
@@ -6393,13 +6393,13 @@ msgstr ""
 
 #: templates/reports_balance.djhtml:199
 msgid ""
-"Note that this yields information about <em>metagame</em> balance near the "
-"<em>top of the skill ladder</em>, and is not to be confused with (although "
+"Note that this yields information about metagame balance near the "
+"top of the skill ladder, and is not to be confused with (although "
 "likely correlated to) actual game balance throughout the whole player "
 "population."
 msgstr ""
-"Pamiętaj, że daje to informacje dotyczące <em>metagame'u</em> blisko "
-"<em>topki w skillu na ladderze</em> i nie powinno być mylone (mimo że "
+"Pamiętaj, że daje to informacje dotyczące metagame'u blisko "
+"topki w skillu na ladderze i nie powinno być mylone (mimo że "
 "najprawdopodobniej jest powiązane) z właściwym balansem gry dotyczącym "
 "wszystkich graczy."
 
@@ -6416,9 +6416,9 @@ msgstr ""
 #: templates/reports_balance.djhtml:213
 #, python-format
 msgid ""
-"The performance difference chart shows the <em>approximate</em> difference "
-"between <em>actual performance</em> as evidenced by results and "
-"<em>predicted performance</em> by rating. For example, if, averaged over a "
+"The performance difference chart shows the approximate difference "
+"between actual performance as evidenced by results and "
+"predicted performance by rating. For example, if, averaged over a "
 "whole month, all Terrans had mean rating difference -100 (which is to say, "
 "their mean rating was equal to 100 less than that of their opponents), but "
 "they performed as if they had a mean rating difference of +100 (about 54.5%% "
@@ -6426,9 +6426,9 @@ msgid ""
 "strong>, which is to be interpreted as that Terran players overall performed "
 "200 points better than expected."
 msgstr ""
-"Wykres różnicy wydajności pokazuje <em>przybliżoną</em> różnicę pomiędzy "
-"<em>aktualną wydajnością</em> potwierdzoną przez wyniki, a <em>wydajnością "
-"przewidywaną</em> przez ocenę. Na przykład, jeżeli, uśredniając do miesiąca, "
+"Wykres różnicy wydajności pokazuje przybliżoną różnicę pomiędzy "
+"aktualną wydajnością potwierdzoną przez wyniki, a wydajnością "
+"przewidywaną przez ocenę. Na przykład, jeżeli, uśredniając do miesiąca, "
 "wszyscy Terranie mieli średnią różnicę w ocenie -100 (co trzeba uściślić, że "
 "ich średnia ocena była równa 100 mniej niż ich przeciwników), ale grali tak, "
 "jakby ich średnia różnica w ocenie wynosiła +100 (około 54.5%% w "

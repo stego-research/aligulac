@@ -2896,11 +2896,11 @@ msgstr "Fejl"
 #: aligulac/ratings/player_views.py:68
 #, python-format
 msgid ""
-"Due to %s's lack of recent games, they have been marked as <em>inactive</em> "
+"Due to %s's lack of recent games, they have been marked as inactive "
 "and removed from the current rating list. Once they play a rated game they "
 "will be reinstated."
 msgstr ""
-"Pga. %s's mangel på nylige kampe er de markeret som <em>inaktiv</em> og "
+"Pga. %s's mangel på nylige kampe er de markeret som inaktiv og "
 "fjernet fra den nuværende ratingliste. Når de har spillet en kamp bliver de "
 "genindsat. "
 
@@ -3228,10 +3228,10 @@ msgstr "Link"
 #: aligulac/ratings/ranking_views.py:44
 #, python-format
 msgid ""
-"This is a <em>preview</em> of the next rating list. It will not be finalized "
+"This is a preview of the next rating list. It will not be finalized "
 "until %s."
 msgstr ""
-"Dette er et <em>preview</em> af den næste ratingliste. Den er ikke endelig "
+"Dette er et preview af den næste ratingliste. Den er ikke endelig "
 "før %s."
 
 #: aligulac/ratings/ranking_views.py:67
@@ -5189,12 +5189,12 @@ msgstr "Hall of Fame"
 
 #: templates/hof.djhtml:17
 msgid ""
-"This list ranks players by <em>periods of domination</em>. The relevant "
-"score is called PP (<em>period-points</em>), and is the sum over a range of "
+"This list ranks players by periods of domination. The relevant "
+"score is called PP (period-points), and is the sum over a range of "
 "lists of the signed distance from a player to number seven on the list."
 msgstr ""
-"Denne liste rangerer spillere ud fra <em>dominationsperiode</em>. Den "
-"relevante score kaldes PP (<em>periode-points</em>) og er summen over en "
+"Denne liste rangerer spillere ud fra dominationsperiode. Den "
+"relevante score kaldes PP (periode-points) og er summen over en "
 "række lister af den samlede distance fra en spiller til nummer 7 på listen."
 
 #: templates/hof.djhtml:20
@@ -6003,10 +6003,10 @@ msgstr "Nylige spillertransfers"
 #: templates/pred_4pswiss.djhtml:69 templates/pred_proleague.djhtml:74
 #: templates/pred_rrgroup.djhtml:60 templates/pred_sebracket.djhtml:65
 msgid ""
-"This is the median outcome <em>assuming the already entered results</em>."
+"This is the median outcome assuming the already entered results."
 msgstr ""
-"Dette er median udfaldet <em>hvis man anvender de allerede indtastede "
-"resultater</em>."
+"Dette er median udfaldet hvis man anvender de allerede indtastede "
+"resultater."
 
 #: templates/pred_4pswiss.djhtml:77 templates/pred_rrgroup.djhtml:114
 msgid "Update group progress"
@@ -6356,13 +6356,13 @@ msgstr ""
 
 #: templates/reports_balance.djhtml:199
 msgid ""
-"Note that this yields information about <em>metagame</em> balance near the "
-"<em>top of the skill ladder</em>, and is not to be confused with (although "
+"Note that this yields information about metagame balance near the "
+"top of the skill ladder, and is not to be confused with (although "
 "likely correlated to) actual game balance throughout the whole player "
 "population."
 msgstr ""
-"Bemærk at dette giver information om <em>metagame</em> balance i <em>toppen "
-"af rangstigen for spillere</em>, og må ikke sammenlignes med (omend højst "
+"Bemærk at dette giver information om metagame balance i toppen "
+"af rangstigen for spillere, og må ikke sammenlignes med (omend højst "
 "sandsynligt korreleret med) faktisk spilbalance i hele spillerpopulationen."
 
 #: templates/reports_balance.djhtml:201
@@ -6378,9 +6378,9 @@ msgstr ""
 #: templates/reports_balance.djhtml:213
 #, python-format
 msgid ""
-"The performance difference chart shows the <em>approximate</em> difference "
-"between <em>actual performance</em> as evidenced by results and "
-"<em>predicted performance</em> by rating. For example, if, averaged over a "
+"The performance difference chart shows the approximate difference "
+"between actual performance as evidenced by results and "
+"predicted performance by rating. For example, if, averaged over a "
 "whole month, all Terrans had mean rating difference -100 (which is to say, "
 "their mean rating was equal to 100 less than that of their opponents), but "
 "they performed as if they had a mean rating difference of +100 (about 54.5%% "
@@ -6388,9 +6388,9 @@ msgid ""
 "strong>, which is to be interpreted as that Terran players overall performed "
 "200 points better than expected."
 msgstr ""
-"Denne performanceforskels graf viser den <em>approksimerede</em> forskel "
-"mellem <em>reel performance</em> på baggrund af resultater og <em>forudsagt "
-"performance</em> på baggrund af rating. For eksempel, hvis, gennemsnitligt "
+"Denne performanceforskels graf viser den approksimerede forskel "
+"mellem reel performance på baggrund af resultater og forudsagt "
+"performance på baggrund af rating. For eksempel, hvis, gennemsnitligt "
 "fordelt på en hel måned, alle Terrans havde en gennemsnitlig rating forskel "
 "på -100 (hvilket betyder at deres gennemsnitlige rating var 100 mindre end "
 "deres modstandere), men de performede som om de havde en gennemsnitlig "
