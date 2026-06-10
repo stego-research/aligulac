@@ -44,7 +44,7 @@ from ratings.tools import (
 
 # }}}
 
-msg_preview = _('This is a <em>preview</em> of the next rating list. It will not be finalized until %s.')
+msg_preview = _('This is a preview of the next rating list. It will not be finalized until %s.')
 
 
 # {{{ periods view
