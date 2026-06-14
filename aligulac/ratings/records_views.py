@@ -184,9 +184,9 @@ def race(request):
                 return ret
         return ret
 
-    # Each ordering below is a full scan + sort over the active rating set on a
-    # *computed* column (rating + rating_vX) that no index can satisfy. Cache the
-    # small sifted top-5 results per race instead of re-running four such queries
+    # The tot_v* orderings below are full scans + sorts over the active rating set
+    # on *computed* columns (rating + rating_vX) that no index can satisfy. Cache
+    # the small sifted top-5 results per race instead of re-running these queries
     # on every request (cache_page is intentionally a no-op; see aligulac.cache).
     def get_records():
         high = (
