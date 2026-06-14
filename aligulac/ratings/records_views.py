@@ -184,21 +184,35 @@ def race(request):
                 return ret
         return ret
 
-    high = (
-        filter_active(total_ratings(Rating.objects.all()))
-        .filter(period__id__gt=16).select_related('player', 'period')
+    # The tot_v* orderings below are full scans + sorts over the active rating set
+    # on *computed* columns (rating + rating_vX) that no index can satisfy. Cache
+    # the small sifted top-5 results per race instead of re-running these queries
+    # on every request (cache_page is intentionally a no-op; see aligulac.cache).
+    def get_records():
+        high = (
+            filter_active(total_ratings(Rating.objects.all()))
+            .filter(period__id__gt=16).select_related('player', 'period')
+        )
+        if race != 'all':
+            high = high.filter(player__race=race)
+        return {
+            'hightot': sift(high.order_by('-rating')[:200]),
+            'highp': sift(high.order_by('-tot_vp')[:200]),
+            'hight': sift(high.order_by('-tot_vt')[:200]),
+            'highz': sift(high.order_by('-tot_vz')[:200]),
+        }
+
+    from aligulac.cache import cached_query
+    from django.conf import settings
+    records = cached_query(
+        request,
+        f"records_race_{race}",
+        get_records,
+        timeout=settings.CACHE_TIMES.get('ratings.records_views.race', 900)
     )
 
-    if race != 'all':
-        high = high.filter(player__race=race)
-
-    base.update({
-        'hightot': sift(high.order_by('-rating')[:200]),
-        'highp': sift(high.order_by('-tot_vp')[:200]),
-        'hight': sift(high.order_by('-tot_vt')[:200]),
-        'highz': sift(high.order_by('-tot_vz')[:200]),
-        'race': race if race != 'all' else '',
-    })
+    base.update(records)
+    base['race'] = race if race != 'all' else ''
 
     return render(request, 'records.djhtml', base)
 # }}}
